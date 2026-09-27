@@ -4101,8 +4101,46 @@ html:not(.secret-content-ready) [data-secret-emoji] {
 <!-- 3. 隨手記帳功能與分類圓餅圖 -->
 <div class="bg-white p-5 rounded-xl border border-[#E2DDD5] space-y-4 shadow-sm">
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-<h3 class="font-bold text-base text-[#2C3E35]">📝 隨手記帳・CC × YD 自動分帳</h3>
+<h3 class="font-bold text-base text-[#2C3E35]">📝 隨手記帳・自動分帳</h3>
 <div class="text-sm font-bold text-[#C66914]" id="total-expense">總計支出：NT$ 0</div>
+</div>
+
+
+<!-- 分帳角色名稱設定 -->
+<div class="rounded-2xl border border-[#E2DDD5] bg-[#FFFDF9] p-4 space-y-3">
+<div class="flex items-center justify-between gap-3">
+<div>
+<div class="text-[10px] tracking-[0.15em] text-gray-400 font-bold">PARTICIPANTS</div>
+<div class="text-sm font-bold text-[#2C3E35] mt-1">👥 分帳名稱</div>
+</div>
+<div id="participant-name-preview" class="text-xs font-bold text-[#C66914]">CC × YD</div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<label class="text-[10px] font-bold text-gray-500">第一位
+<input id="participant-name-cc" type="text" maxlength="12" value="CC"
+class="mt-1 w-full bg-[#F0EDEA] border border-[#E2DDD5] rounded-xl px-3 py-2.5 text-xs focus:outline-none"/>
+</label>
+<label class="text-[10px] font-bold text-gray-500">第二位
+<input id="participant-name-yd" type="text" maxlength="12" value="YD"
+class="mt-1 w-full bg-[#F0EDEA] border border-[#E2DDD5] rounded-xl px-3 py-2.5 text-xs focus:outline-none"/>
+</label>
+</div>
+<button type="button" onclick="saveParticipantNames()"
+class="w-full bg-white border border-[#E2DDD5] text-[#2C3E35] rounded-xl px-4 py-2.5 text-xs font-bold">
+儲存名稱
+</button>
+<div class="text-[10px] text-gray-400 leading-relaxed">名稱只影響顯示；系統內部仍以兩位固定角色計算，因此改名不會弄亂既有帳目。</div>
+</div>
+
+<div id="legacy-expense-banner" class="hidden rounded-2xl border border-[#E89344]/35 bg-[#FFF6EA] p-4">
+<div class="flex items-start justify-between gap-3">
+<div>
+<div class="text-sm font-bold text-[#2C3E35]">🧾 有舊帳尚未補分帳資料</div>
+<div id="legacy-expense-count" class="text-xs text-gray-600 mt-1"></div>
+</div>
+<button type="button" onclick="scrollToLegacyExpense()" class="shrink-0 bg-[#C66914] text-white rounded-xl px-3 py-2 text-xs font-bold">去補資料</button>
+</div>
+<div class="text-[10px] text-gray-500 mt-2 leading-relaxed">舊帳在你補資料前只會計入總支出，不會影響誰欠誰。</div>
 </div>
 
 <div class="expense-quick-summary">
@@ -4176,15 +4214,15 @@ html:not(.secret-content-ready) [data-secret-emoji] {
 <option value="其他">📦 其他</option>
 </select>
 <select class="bg-[#F0EDEA] border border-[#E2DDD5] rounded-xl px-3 py-2.5 text-xs focus:outline-none" id="expense-payer">
-<option value="CC">💳 CC 付款</option>
-<option value="YD">💳 YD 付款</option>
+<option value="CC" id="payer-option-cc">💳 CC 付款</option>
+<option value="YD" id="payer-option-yd" selected>💳 YD 付款</option>
 </select>
 <select class="bg-[#F0EDEA] border border-[#E2DDD5] rounded-xl px-3 py-2.5 text-xs focus:outline-none" id="expense-split-mode" onchange="toggleCustomSplitFields()">
+<option value="record" selected>🧾 純紀錄／不分帳（預設）</option>
 <option value="equal">🤝 AA 平分</option>
-<option value="cc">CC 自付</option>
-<option value="yd">YD 自付</option>
+<option value="cc" id="split-option-cc">CC 負擔</option>
+<option value="yd" id="split-option-yd">YD 負擔</option>
 <option value="custom">✏️ 自訂金額</option>
-<option value="record">🧾 純紀錄／不分帳</option>
 </select>
 </div>
 
@@ -5386,6 +5424,55 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
         let expenses = JSON.parse(localStorage.getItem('travel_expenses_v2')) || [];
         let settlements = JSON.parse(localStorage.getItem('travel_settlements_v1')) || [];
 
+        let participantNames = JSON.parse(localStorage.getItem('travel_participant_names_v1') || '{"CC":"CC","YD":"YD"}');
+
+        function cleanParticipantName(value, fallback) {
+            const v = String(value || '').trim().slice(0, 12);
+            return v || fallback;
+        }
+
+        function getParticipantName(role) {
+            return role === 'YD'
+                ? cleanParticipantName(participantNames?.YD, 'YD')
+                : cleanParticipantName(participantNames?.CC, 'CC');
+        }
+
+        function renderParticipantNames() {
+            const cc = getParticipantName('CC');
+            const yd = getParticipantName('YD');
+            const ccInput = document.getElementById('participant-name-cc');
+            const ydInput = document.getElementById('participant-name-yd');
+            const preview = document.getElementById('participant-name-preview');
+            const payerCC = document.getElementById('payer-option-cc');
+            const payerYD = document.getElementById('payer-option-yd');
+            const splitCC = document.getElementById('split-option-cc');
+            const splitYD = document.getElementById('split-option-yd');
+
+            if (ccInput) ccInput.value = cc;
+            if (ydInput) ydInput.value = yd;
+            if (preview) preview.textContent = `${cc} × ${yd}`;
+            if (payerCC) payerCC.textContent = `💳 ${cc} 付款`;
+            if (payerYD) payerYD.textContent = `💳 ${yd} 付款`;
+            if (splitCC) splitCC.textContent = `${cc} 負擔`;
+            if (splitYD) splitYD.textContent = `${yd} 負擔`;
+
+            document.querySelectorAll('[data-participant-role="CC"]').forEach(el => el.textContent = cc);
+            document.querySelectorAll('[data-participant-role="YD"]').forEach(el => el.textContent = yd);
+        }
+
+        function saveParticipantNames() {
+            const cc = cleanParticipantName(document.getElementById('participant-name-cc')?.value, 'CC');
+            const yd = cleanParticipantName(document.getElementById('participant-name-yd')?.value, 'YD');
+            if (cc === yd) {
+                alert('兩位分帳名稱請設定成不同名稱。');
+                return;
+            }
+            participantNames = { CC: cc, YD: yd };
+            localStorage.setItem('travel_participant_names_v1', JSON.stringify(participantNames));
+            renderParticipantNames();
+            renderExpenses();
+        }
+
         const categoryColors = {
             '餐飲美食': '#E89344',
             '交通車資': '#2C3E35',
@@ -5397,12 +5484,13 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
 
         function normalizeExpenseForSplit(item) {
             const cost = Number(item?.cost || 0);
+            const hadSplitData = !!item?.splitMode;
             const payer = item?.payer === 'YD' ? 'YD' : 'CC';
             let splitMode = ['equal','cc','yd','custom','record'].includes(item?.splitMode) ? item.splitMode : 'record';
             let ccShare = Number(item?.ccShare);
             let ydShare = Number(item?.ydShare);
+            const needsSplitSetup = item?.needsSplitSetup === true || !hadSplitData;
 
-            // 舊版記帳沒有分帳資料：預設視為純紀錄，不製造歷史欠款。
             if (!Number.isFinite(ccShare) || !Number.isFinite(ydShare)) {
                 if (splitMode === 'equal') {
                     ccShare = cost / 2;
@@ -5426,7 +5514,8 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
                 payer,
                 splitMode,
                 ccShare: Math.max(0, ccShare),
-                ydShare: Math.max(0, ydShare)
+                ydShare: Math.max(0, ydShare),
+                needsSplitSetup
             };
         }
 
@@ -5439,10 +5528,13 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
         }
 
         function splitModeLabel(item) {
+            if (item.needsSplitSetup) return '待補資料';
+            const cc = getParticipantName('CC');
+            const yd = getParticipantName('YD');
             if (item.splitMode === 'equal') return 'AA 平分';
-            if (item.splitMode === 'cc') return 'CC 自付';
-            if (item.splitMode === 'yd') return 'YD 自付';
-            if (item.splitMode === 'custom') return `CC ${formatMoney(item.ccShare).replace('NT$ ','')} / YD ${formatMoney(item.ydShare).replace('NT$ ','')}`;
+            if (item.splitMode === 'cc') return `${cc} 負擔`;
+            if (item.splitMode === 'yd') return `${yd} 負擔`;
+            if (item.splitMode === 'custom') return `${cc} ${formatMoney(item.ccShare).replace('NT$ ','')} / ${yd} ${formatMoney(item.ydShare).replace('NT$ ','')}`;
             return '純紀錄';
         }
 
@@ -5454,6 +5546,7 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
 
             expenses.forEach(raw => {
                 const item = normalizeExpenseForSplit(raw);
+                if (item.needsSplitSetup) return;
                 if (item.payer === 'CC') ccPaid += item.cost;
                 else ydPaid += item.cost;
                 ccOwes += item.ccShare;
@@ -5488,16 +5581,16 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
             if (ydPaidEl) ydPaidEl.textContent = formatMoney(b.ydPaid);
 
             if (b.ccNet > 0) {
-                main.textContent = `YD 應付 CC ${formatMoney(b.ccNet)}`;
+                main.textContent = `${getParticipantName('YD')} 應付 ${getParticipantName('CC')} ${formatMoney(b.ccNet)}`;
                 sub.textContent = '已自動抵銷雙方代墊與歷次結清紀錄';
                 btn?.classList.remove('hidden');
             } else if (b.ccNet < 0) {
-                main.textContent = `CC 應付 YD ${formatMoney(Math.abs(b.ccNet))}`;
+                main.textContent = `${getParticipantName('CC')} 應付 ${getParticipantName('YD')} ${formatMoney(Math.abs(b.ccNet))}`;
                 sub.textContent = '已自動抵銷雙方代墊與歷次結清紀錄';
                 btn?.classList.remove('hidden');
             } else {
                 main.textContent = '目前已結清';
-                sub.textContent = 'CC 與 YD 目前沒有未結清款項';
+                sub.textContent = `${getParticipantName('CC')} 與 ${getParticipantName('YD')} 目前沒有未結清款項`;
                 btn?.classList.add('hidden');
             }
 
@@ -5566,10 +5659,13 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
                 tr.innerHTML = `
                     <td class="py-2.5 font-medium text-[#2C3E35]">${item.name}</td>
                     <td class="py-2.5"><span class="bg-[#F0EDEA] px-2 py-0.5 rounded text-[10px] font-bold text-[#2C3E35]">${item.category}</span></td>
-                    <td class="py-2.5 font-bold text-[#2C3E35]">${item.payer}</td>
+                    <td class="py-2.5 font-bold text-[#2C3E35]">${item.needsSplitSetup ? '—' : getParticipantName(item.payer)}</td>
                     <td class="py-2.5 text-gray-600">${splitModeLabel(item)}</td>
                     <td class="py-2.5 font-bold text-[#C66914]">${formatMoney(item.cost)}</td>
-                    <td class="py-2.5 text-right"><button onclick="deleteExpense(${index})" class="text-gray-400 hover:text-rose-600 font-bold px-2 py-1 rounded">刪除</button></td>
+                    <td class="py-2.5 text-right whitespace-nowrap">
+                        ${item.needsSplitSetup ? `<button onclick="editLegacyExpenseSplit(${index})" class="text-[#C66914] font-bold px-2 py-1 rounded">補分帳</button>` : ''}
+                        <button onclick="deleteExpense(${index})" class="text-gray-400 hover:text-rose-600 font-bold px-2 py-1 rounded">刪除</button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -5608,11 +5704,83 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
                 legendEl.innerHTML = legendHtml;
             }
 
+
+            const legacyCount = expenses.filter(item => item.needsSplitSetup).length;
+            const legacyBanner = document.getElementById('legacy-expense-banner');
+            const legacyCountEl = document.getElementById('legacy-expense-count');
+            if (legacyBanner) legacyBanner.classList.toggle('hidden', legacyCount === 0);
+            if (legacyCountEl) legacyCountEl.textContent = `目前有 ${legacyCount} 筆舊帳待補「付款人／分帳方式」。`;
+
+            renderParticipantNames();
             localStorage.setItem('travel_expenses_v2', JSON.stringify(expenses));
             localStorage.setItem('travel_settlements_v1', JSON.stringify(settlements));
             renderSettlementSummary();
             if (typeof updateAchievementWall === 'function') updateAchievementWall();
             if (typeof refreshJourneyOverview === 'function') refreshJourneyOverview();
+        }
+
+
+        function scrollToLegacyExpense() {
+            const index = expenses.findIndex(item => item.needsSplitSetup);
+            if (index < 0) return;
+            const rows = document.querySelectorAll('#expense-table-body tr');
+            rows[index]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function editLegacyExpenseSplit(index) {
+            const item = expenses[index];
+            if (!item) return;
+
+            const cc = getParticipantName('CC');
+            const yd = getParticipantName('YD');
+            const payerChoice = prompt(`這筆「${item.name}」是誰付款？\n輸入 1 = ${cc}\n輸入 2 = ${yd}`, '1');
+            if (payerChoice === null) return;
+            const payer = String(payerChoice).trim() === '2' ? 'YD' : 'CC';
+
+            const modeChoice = prompt(
+                `這筆要怎麼分？\n0 = 純紀錄／不分帳\n1 = AA 平分\n2 = ${cc} 負擔\n3 = ${yd} 負擔\n4 = 自訂金額`,
+                '0'
+            );
+            if (modeChoice === null) return;
+
+            const cost = Number(item.cost || 0);
+            let splitMode = 'record';
+            let ccShare = payer === 'CC' ? cost : 0;
+            let ydShare = payer === 'YD' ? cost : 0;
+
+            if (String(modeChoice).trim() === '1') {
+                splitMode = 'equal';
+                ccShare = cost / 2;
+                ydShare = cost - ccShare;
+            } else if (String(modeChoice).trim() === '2') {
+                splitMode = 'cc';
+                ccShare = cost;
+                ydShare = 0;
+            } else if (String(modeChoice).trim() === '3') {
+                splitMode = 'yd';
+                ccShare = 0;
+                ydShare = cost;
+            } else if (String(modeChoice).trim() === '4') {
+                splitMode = 'custom';
+                const ccInput = prompt(`${cc} 應負擔多少？`, String(Math.round(cost / 2)));
+                if (ccInput === null) return;
+                ccShare = Number(ccInput);
+                ydShare = cost - ccShare;
+                if (!Number.isFinite(ccShare) || ccShare < 0 || ydShare < 0) {
+                    alert('自訂金額無效。');
+                    return;
+                }
+            }
+
+            expenses[index] = {
+                ...item,
+                payer,
+                splitMode,
+                ccShare,
+                ydShare,
+                needsSplitSetup: false
+            };
+            renderExpenses();
         }
 
         function addExpense() {
@@ -5625,8 +5793,8 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
             const name = nameInput.value.trim();
             const category = catSelect.value;
             const cost = parseFloat(costInput.value);
-            const payer = payerSelect?.value === 'YD' ? 'YD' : 'CC';
-            const splitMode = modeSelect?.value || 'equal';
+            const payer = payerSelect?.value === 'CC' ? 'CC' : 'YD';
+            const splitMode = modeSelect?.value || 'record';
 
             if (!name || isNaN(cost) || cost <= 0) {
                 alert('請輸入有效的項目名稱與金額！');
@@ -5662,7 +5830,7 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
 
             expenses.push({
                 name, category, cost, date: getLocalExpenseDate(),
-                payer, splitMode, ccShare, ydShare
+                payer, splitMode, ccShare, ydShare, needsSplitSetup: false
             });
 
             nameInput.value = '';
@@ -7272,7 +7440,8 @@ document.addEventListener('DOMContentLoaded', initPrivateTestAccess);
                 payer,
                 splitMode,
                 ccShare,
-                ydShare
+                ydShare,
+                needsSplitSetup: item?.needsSplitSetup === true
             };
         }).filter(item => item.name && Number.isFinite(item.cost) && item.cost > 0);
     }
@@ -7324,10 +7493,18 @@ document.addEventListener('DOMContentLoaded', initPrivateTestAccess);
             settlementCopy = [];
         }
 
+        let sharedParticipantNames = { CC: 'CC', YD: 'YD' };
+        try {
+            sharedParticipantNames = typeof participantNames !== 'undefined'
+                ? { CC: getParticipantName('CC'), YD: getParticipantName('YD') }
+                : JSON.parse(localStorage.getItem('travel_participant_names_v1') || '{"CC":"CC","YD":"YD"}');
+        } catch (e) {}
+
         return {
             schemaVersion: SYNC_SCHEMA_VERSION,
             expenses: expenseCopy,
             settlements: settlementCopy,
+            participantNames: sharedParticipantNames,
             food,
             achievements
         };
@@ -7337,6 +7514,7 @@ document.addEventListener('DOMContentLoaded', initPrivateTestAccess);
         return JSON.stringify({
             expenses: state?.expenses || [],
             settlements: state?.settlements || [],
+            participantNames: state?.participantNames || { CC: 'CC', YD: 'YD' },
             food: state?.food || {},
             achievements: state?.achievements || {}
         });
@@ -7362,6 +7540,15 @@ document.addEventListener('DOMContentLoaded', initPrivateTestAccess);
                     remoteSettlements.forEach(item => settlements.push(item));
                 }
                 localStorage.setItem('travel_settlements_v1', JSON.stringify(remoteSettlements));
+            }
+
+            if (data.participantNames && typeof data.participantNames === 'object') {
+                const remoteNames = {
+                    CC: String(data.participantNames.CC || 'CC').trim().slice(0, 12) || 'CC',
+                    YD: String(data.participantNames.YD || 'YD').trim().slice(0, 12) || 'YD'
+                };
+                if (typeof participantNames !== 'undefined') participantNames = remoteNames;
+                localStorage.setItem('travel_participant_names_v1', JSON.stringify(remoteNames));
             }
 
             if (data.food && typeof data.food === 'object') {

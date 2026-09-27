@@ -4220,8 +4220,6 @@ class="w-full bg-white border border-[#E2DDD5] text-[#2C3E35] rounded-xl px-4 py
 <select class="bg-[#F0EDEA] border border-[#E2DDD5] rounded-xl px-3 py-2.5 text-xs focus:outline-none" id="expense-split-mode" onchange="toggleCustomSplitFields()">
 <option value="record" selected>🧾 純紀錄／不分帳（預設）</option>
 <option value="equal">🤝 AA 平分</option>
-<option value="cc" id="split-option-cc">CC 負擔</option>
-<option value="yd" id="split-option-yd">YD 負擔</option>
 <option value="custom">✏️ 自訂金額</option>
 </select>
 </div>
@@ -5445,16 +5443,12 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
             const preview = document.getElementById('participant-name-preview');
             const payerCC = document.getElementById('payer-option-cc');
             const payerYD = document.getElementById('payer-option-yd');
-            const splitCC = document.getElementById('split-option-cc');
-            const splitYD = document.getElementById('split-option-yd');
 
             if (ccInput) ccInput.value = cc;
             if (ydInput) ydInput.value = yd;
             if (preview) preview.textContent = `${cc} × ${yd}`;
             if (payerCC) payerCC.textContent = `💳 ${cc} 付款`;
             if (payerYD) payerYD.textContent = `💳 ${yd} 付款`;
-            if (splitCC) splitCC.textContent = `${cc} 負擔`;
-            if (splitYD) splitYD.textContent = `${yd} 負擔`;
 
             document.querySelectorAll('[data-participant-role="CC"]').forEach(el => el.textContent = cc);
             document.querySelectorAll('[data-participant-role="YD"]').forEach(el => el.textContent = yd);
@@ -5738,7 +5732,7 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
             const payer = String(payerChoice).trim() === '2' ? 'YD' : 'CC';
 
             const modeChoice = prompt(
-                `這筆要怎麼分？\n0 = 純紀錄／不分帳\n1 = AA 平分\n2 = ${cc} 負擔\n3 = ${yd} 負擔\n4 = 自訂金額`,
+                `這筆要怎麼分？\n0 = 純紀錄／不分帳\n1 = AA 平分\n2 = 自訂金額`,
                 '0'
             );
             if (modeChoice === null) return;
@@ -5753,14 +5747,6 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
                 ccShare = cost / 2;
                 ydShare = cost - ccShare;
             } else if (String(modeChoice).trim() === '2') {
-                splitMode = 'cc';
-                ccShare = cost;
-                ydShare = 0;
-            } else if (String(modeChoice).trim() === '3') {
-                splitMode = 'yd';
-                ccShare = 0;
-                ydShare = cost;
-            } else if (String(modeChoice).trim() === '4') {
                 splitMode = 'custom';
                 const ccInput = prompt(`${cc} 應負擔多少？`, String(Math.round(cost / 2)));
                 if (ccInput === null) return;
@@ -5807,10 +5793,6 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
             if (splitMode === 'equal') {
                 ccShare = cost / 2;
                 ydShare = cost - ccShare;
-            } else if (splitMode === 'cc') {
-                ccShare = cost;
-            } else if (splitMode === 'yd') {
-                ydShare = cost;
             } else if (splitMode === 'custom') {
                 ccShare = parseFloat(document.getElementById('expense-cc-share')?.value);
                 ydShare = parseFloat(document.getElementById('expense-yd-share')?.value);

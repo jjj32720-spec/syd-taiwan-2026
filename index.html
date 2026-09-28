@@ -2037,7 +2037,7 @@ html:not(.secret-content-ready) [data-secret-emoji] {
 <span class="text-xs font-bold bg-[#2C3E35] text-white px-2.5 py-1 rounded-lg">Day 1 - Day 3</span>
 </div>
 <h3 class="text-xl font-bold text-[#2C3E35] group-hover:text-[#C66914] transition">北台灣：台北都會與北海岸</h3>
-<p class="text-xs text-gray-600 mt-2 leading-relaxed">桃園機場抵達、台北夜生活、北海岸（野柳/九份/十分）、故宮與陽明山漫遊。</p>
+<p class="text-xs text-gray-600 mt-2 leading-relaxed">桃園機場抵達、台北夜生活、故宮文化巡禮、北海岸（野柳/九份/十分）。</p>
 <div class="mt-4 flex items-center text-xs font-bold text-[#2C3E35] gap-1">
 <span>北台灣行程 ➔</span>
 </div>
@@ -4489,7 +4489,7 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
             if (day === 1 && !secretIsRevealed('ximenCraft')) {
                 return ['✈️ 桃園機場抵達','🔒 登陸台北！'];
             }
-            if (day === 3 && !secretIsRevealed('theTop')) {
+            if (day === 2 && !secretIsRevealed('theTop')) {
                 return ['🥣 阜杭豆漿・中正紀念堂','🏛️ 故宮・士林','🔒 伸手也能 touch the sky'];
             }
             if (day === 4 && !secretIsRevealed('dessertDIY')) {
@@ -4506,8 +4506,8 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
 
         const OVERVIEW_DAY_DATA = {
             1:{emoji:'🏙️',title:'抵達台灣・台北',highlights:['✈️ 桃園機場抵達','🏙️ 台北夜間自由活動']},
-            2:{emoji:'🏮',title:'北海岸・九份・十分',highlights:['🌊 野柳・陰陽海・黃金瀑布','🏮 九份山城・十分天燈']},
-            3:{emoji:'🏛️',title:'台北經典巡禮',highlights:['🥣 阜杭豆漿・中正紀念堂','🏛️ 故宮・士林・The Top']},
+            2:{emoji:'🏛️',title:'台北經典巡禮',highlights:['🥣 阜杭豆漿・中正紀念堂','🏛️ 故宮・士林・The Top']},
+            3:{emoji:'🏮',title:'北海岸・九份・十分',highlights:['🌊 野柳・陰陽海・黃金瀑布','🏮 九份山城・十分天燈']},
             4:{emoji:'🌊',title:'台北 → 日月潭',highlights:['🍰 Cookinn DIY','🚄 高鐵台中 → 🌊 日月潭']},
             5:{emoji:'🧋',title:'日月潭 → 台中',highlights:['🎢 九族文化村','🌅 高美濕地・🧋 春水堂']},
             6:{emoji:'⛰️',title:'武嶺 → 台南',highlights:['🌄 武嶺日出','🍧 莫奶奶冰店','🌅 漁光島']},

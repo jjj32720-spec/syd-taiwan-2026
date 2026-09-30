@@ -6038,6 +6038,22 @@ function addLastDanceEasterEgg() {
 
 const ACHIEVEMENT_RESET_SEED = 'formal-reset-v19';
 
+    // 2026-09-30：撤回 21:48 前誤觸造成的單人副本解鎖；只執行一次，不影響其他成就。
+    (function revokePrematureSoloUnlockOnce() {
+        try {
+            const markerKey = 'solo_unlock_2148_fix_v1';
+            if (localStorage.getItem(markerKey) === 'done') return;
+            const t = getTaiwanTimeParts();
+            const before2148 = t.date === '2026-09-30' && (t.hour < 21 || (t.hour === 21 && t.minute < 48));
+            if (before2148) {
+                localStorage.removeItem(ACH_KEYS.solo);
+                localStorage.setItem(markerKey, 'done');
+            }
+        } catch (e) {
+            console.warn('Solo unlock correction skipped:', e);
+        }
+    })();
+
     function resetAchievementProgressOnce() {
         try {
             const markerKey = 'achievement_reset_seed';
@@ -6097,9 +6113,9 @@ const ACHIEVEMENT_RESET_SEED = 'formal-reset-v19';
         }
 
         if (dayNum === 4 && t.date === '2026-09-30') {
-            const after1530 = t.hour > 15 || (t.hour === 15 && t.minute >= 30);
+            const after2148 = t.hour > 21 || (t.hour === 21 && t.minute >= 48);
             const visited = getVisitedDays();
-            if (after1530 && [1,2,3].every(d => visited.includes(d))) {
+            if (after2148 && [1,2,3].every(d => visited.includes(d))) {
                 unlockHiddenAchievement(ACH_KEYS.solo);
             }
         }

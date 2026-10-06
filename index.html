@@ -1983,21 +1983,75 @@ html:not(.secret-content-ready) [data-secret-emoji] {
 }
 </style>
 
-<style id="posttrip-survey-test-style">
-#posttrip-survey-test{display:none}
-body.posttrip-survey-test-visible #posttrip-survey-test{display:block}
-.survey-card{background:#FFFDF9;border:1px solid #E2DDD5;border-radius:18px;padding:16px}
-.survey-title{font-size:14px;font-weight:800;color:#2C3E35;line-height:1.55}
-.survey-hint{font-size:11px;color:#8B8B86;margin-top:4px}
-.survey-input,.survey-textarea,.survey-select{width:100%;margin-top:6px;background:#F0EDEA;border:1px solid #E2DDD5;border-radius:12px;padding:10px 12px;font-size:12px;outline:none}
-.survey-rank-item{display:flex;justify-content:space-between;gap:10px;background:#F7F5F0;border:1px solid #E2DDD5;border-radius:12px;padding:11px 13px;font-size:12px;font-weight:700;color:#2C3E35;touch-action:none}
-.survey-rank-item.dragging{opacity:.5}
-.survey-check{display:flex;align-items:center;gap:7px;background:#F7F5F0;border:1px solid #E2DDD5;border-radius:12px;padding:10px;font-size:11px}
-.survey-duel{width:100%;min-height:84px;border:1px solid #E2DDD5;background:white;border-radius:14px;padding:12px;font-size:13px;font-weight:800;color:#2C3E35}
-.bracket-wrap{display:flex;gap:12px;min-width:max-content}
-.bracket-col{min-width:145px;display:flex;flex-direction:column;gap:7px}
-.bracket-node{border:1px solid #E2DDD5;background:#F7F5F0;border-radius:10px;padding:7px 8px;font-size:10px;color:#2C3E35}
-.bracket-node.win{border-color:#E89344;background:#FFF6EA;font-weight:800}
+<style id="trip-survey-test-style">
+#trip-survey-test-page {
+    position: fixed;
+    inset: 0;
+    z-index: 2500;
+    background: #F7F5F0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+#trip-survey-test-page.hidden { display:none !important; }
+.survey-shell { min-height:100dvh; max-width:680px; margin:0 auto; padding:18px 16px calc(30px + env(safe-area-inset-bottom)); }
+.survey-topbar { position:sticky; top:0; z-index:4; background:rgba(247,245,240,.96); backdrop-filter:blur(12px); padding:8px 0 14px; }
+.survey-card { background:#FFFDF9; border:1px solid #E2DDD5; border-radius:22px; padding:20px; box-shadow:0 10px 30px rgba(44,62,53,.06); }
+.survey-kicker { font-size:10px; letter-spacing:.18em; font-weight:800; color:#C66914; }
+.survey-title { margin-top:5px; font-size:22px; line-height:1.3; font-weight:800; color:#2C3E35; }
+.survey-copy { margin-top:8px; font-size:12px; line-height:1.7; color:#6B7280; }
+.survey-progress { height:7px; background:#E7E2DA; border-radius:999px; overflow:hidden; margin-top:12px; }
+.survey-progress > div { height:100%; background:#C66914; transition:width .25s ease; }
+.survey-input,.survey-textarea,.survey-select {
+    width:100%; border:1px solid #E2DDD5; background:#F7F5F0; border-radius:14px;
+    padding:12px 13px; font-size:13px; color:#2C3E35; outline:none;
+}
+.survey-textarea { min-height:105px; resize:vertical; }
+.survey-label { display:block; font-size:11px; font-weight:800; color:#59635E; margin:14px 0 6px; }
+.survey-nav { display:grid; grid-template-columns:1fr 1.4fr; gap:10px; margin-top:16px; }
+.survey-btn { border-radius:14px; padding:13px 14px; font-size:12px; font-weight:800; border:1px solid #E2DDD5; background:#fff; color:#2C3E35; }
+.survey-btn.primary { background:#2C3E35; color:white; border-color:#2C3E35; }
+.survey-btn:disabled { opacity:.38; }
+.survey-rank-row {
+    display:flex; align-items:center; gap:9px; background:#F7F5F0; border:1px solid #E2DDD5;
+    border-radius:14px; padding:10px; margin-top:8px; touch-action:none;
+}
+.survey-drag-handle { font-size:18px; color:#9CA3AF; cursor:grab; padding:2px 5px; }
+.survey-rank-label { flex:1; font-size:12px; font-weight:750; color:#2C3E35; }
+.survey-rank-move { width:30px; height:30px; border-radius:10px; border:1px solid #DDD7CE; background:#fff; font-size:12px; }
+.survey-choice {
+    display:block; width:100%; text-align:left; margin-top:9px; padding:13px;
+    border:1px solid #E2DDD5; background:#F7F5F0; border-radius:14px; font-size:12px; color:#2C3E35;
+}
+.survey-choice.selected { border-color:#C66914; background:#FFF1E3; color:#8C4308; font-weight:800; }
+.memory-grid { display:grid; grid-template-columns:1fr; gap:10px; }
+.rating-row { margin-top:15px; padding-bottom:11px; border-bottom:1px dashed #E2DDD5; }
+.rating-head { display:flex; align-items:center; justify-content:space-between; font-size:12px; font-weight:800; color:#2C3E35; }
+.rating-row input[type="range"] { width:100%; margin-top:9px; accent-color:#C66914; }
+.tournament-vs { display:grid; grid-template-columns:1fr auto 1fr; gap:9px; align-items:stretch; margin-top:16px; }
+.tournament-pick {
+    min-height:112px; border:1px solid #E2DDD5; background:#F7F5F0; border-radius:18px; padding:15px 10px;
+    font-size:13px; font-weight:800; color:#2C3E35;
+}
+.tournament-vs-mark { display:flex; align-items:center; font-size:11px; font-weight:900; color:#C66914; }
+.bracket-scroll { overflow-x:auto; margin-top:15px; padding-bottom:8px; }
+.bracket { display:flex; align-items:flex-start; gap:14px; min-width:max-content; }
+.bracket-round { width:150px; }
+.bracket-round-title { font-size:10px; letter-spacing:.12em; font-weight:800; color:#9A6A3D; margin-bottom:8px; }
+.bracket-node { background:#F7F5F0; border:1px solid #E2DDD5; border-radius:11px; padding:8px 9px; font-size:10px; color:#2C3E35; margin-bottom:7px; }
+.bracket-node.winner { border-color:#C66914; background:#FFF1E3; font-weight:800; }
+.test-survey-achievement {
+    margin-top:14px; padding:13px; border:1px dashed #C66914; border-radius:14px; background:#FFF6EA;
+}
+.test-survey-achievement .tiny { font-size:10px; color:#8B6B4F; line-height:1.6; }
+body.dark-mode #trip-survey-test-page { background:#17201C; }
+body.dark-mode .survey-topbar { background:rgba(23,32,28,.96); }
+body.dark-mode .survey-card { background:#202B26; border-color:#3A4A42; }
+body.dark-mode .survey-title, body.dark-mode .survey-rank-label, body.dark-mode .rating-head { color:#F2EEE8; }
+body.dark-mode .survey-copy, body.dark-mode .survey-label { color:#B9C2BD; }
+body.dark-mode .survey-input, body.dark-mode .survey-textarea, body.dark-mode .survey-select,
+body.dark-mode .survey-rank-row, body.dark-mode .survey-choice, body.dark-mode .bracket-node {
+    background:#18211D; border-color:#3A4A42; color:#EAE7E0;
+}
 </style>
 
 </head>
@@ -4318,113 +4372,6 @@ class="w-full bg-white border border-[#E2DDD5] text-[#2C3E35] rounded-xl px-4 py
 <!-- 隱藏音樂元素：《想見你》Last Dance -->
 <audio id="bgm-audio" preload="auto" src="China_Blue_-_Last_Dance_(mp3.pm).mp3"></audio>
 <!-- 頁尾 Footer -->
-
-<section id="posttrip-survey-test" class="max-w-3xl mx-auto px-4 mt-8 mb-28">
-<div class="bg-white border border-[#E2DDD5] rounded-3xl p-5 shadow-sm space-y-4">
-  <div>
-    <div class="text-[10px] tracking-[0.18em] font-bold text-[#C66914]">PRIVATE TEST · POST-TRIP BONUS</div>
-    <h2 class="text-xl font-bold text-[#2C3E35] mt-1">💌 旅後問卷特典</h2>
-    <p class="text-xs text-gray-500 mt-2">目前只在你的秘密測試模式看得到；正式頁面完全不顯示，測試答案也不會寫入 Firebase。</p>
-    <div class="mt-3 p-3 rounded-2xl bg-[#F7F5F0] border border-[#E2DDD5] text-xs leading-relaxed">
-      生日密碼正式條件預覽：<b>10 公開＋6 指定隱藏＋1 問卷特典＝17</b><br>
-      👻 調皮搗蛋鬼保留為額外彩蛋，不再影響生日密碼。
-    </div>
-  </div>
-
-  <div class="survey-card">
-    <div class="survey-title">01｜Day 2～Day 9 重玩排行</div>
-    <p class="survey-hint">請依「最想完整重玩 → 相對沒那麼想重玩」拖曳排序。</p>
-    <div id="survey-day-ranking" class="space-y-2 mt-3">
-      <div class="survey-rank-item" draggable="true" data-v="Day 2｜台北文化與故宮"><span>Day 2｜台北文化與故宮</span><span>≡</span></div>
-      <div class="survey-rank-item" draggable="true" data-v="Day 3｜野柳＋九份＋十分"><span>Day 3｜野柳＋九份＋十分</span><span>≡</span></div>
-      <div class="survey-rank-item" draggable="true" data-v="Day 4｜日月潭"><span>Day 4｜日月潭</span><span>≡</span></div>
-      <div class="survey-rank-item" draggable="true" data-v="Day 5｜九族＋高美濕地"><span>Day 5｜九族＋高美濕地</span><span>≡</span></div>
-      <div class="survey-rank-item" draggable="true" data-v="Day 6｜武嶺＋合歡山・台南"><span>Day 6｜武嶺＋合歡山・台南</span><span>≡</span></div>
-      <div class="survey-rank-item" draggable="true" data-v="Day 7｜台南・月世界・高雄"><span>Day 7｜台南・月世界・高雄</span><span>≡</span></div>
-      <div class="survey-rank-item" draggable="true" data-v="Day 8｜墾丁海線＋海生館夜宿"><span>Day 8｜墾丁海線＋海生館夜宿</span><span>≡</span></div>
-      <div class="survey-rank-item" draggable="true" data-v="Day 9｜海生館＋高雄"><span>Day 9｜海生館＋高雄</span><span>≡</span></div>
-    </div>
-  </div>
-
-  <div class="survey-card">
-    <div class="survey-title">02｜這趟旅程中，你最喜歡哪一個景點或體驗？</div>
-    <textarea id="sv-fav" class="survey-textarea" rows="3" placeholder="最喜歡的是…為什麼？"></textarea>
-    <div class="survey-title mt-3">有沒有哪個原本沒特別期待，實際去過後卻意外喜歡？</div>
-    <textarea id="sv-surprise-spot" class="survey-textarea" rows="3"></textarea>
-  </div>
-
-  <div class="survey-card">
-    <div class="survey-title">03｜這趟旅程的最愛體驗 TOP</div>
-    <p class="survey-hint">每次二選一，一路選到最後冠軍；完成後會顯示淘汰樹狀圖。</p>
-    <div id="survey-duel" class="mt-3"></div>
-    <button type="button" class="test-btn mt-3" onclick="startPostTripBracket()">重新開始淘汰賽</button>
-    <div id="survey-bracket-result" class="hidden mt-4">
-      <div class="font-bold text-[#2C3E35]">🏆 冠軍：<span id="survey-champion" class="text-[#C66914]"></span></div>
-      <div id="survey-bracket-tree" class="overflow-x-auto mt-3 pb-2"></div>
-    </div>
-  </div>
-
-  <div class="survey-card">
-    <div class="survey-title">04｜台灣胃頒獎典禮</div>
-    <input id="sv-food-repeat" class="survey-input" placeholder="🏆 最想再吃一次">
-    <input id="sv-food-surprise" class="survey-input" placeholder="🤯 最意外好吃">
-    <input id="sv-food-fail" class="survey-input" placeholder="💀 最踩雷／最不合口味">
-    <input id="sv-food-take" class="survey-input" placeholder="🎁 如果只能帶一樣回去">
-  </div>
-
-  <div class="survey-card"><div class="survey-title">05｜如果要選一張照片當作這趟旅行的封面，你會選哪一天、哪一段行程的照片？</div><textarea id="sv-cover" class="survey-textarea" rows="3" placeholder="Day 幾／哪一段／為什麼？"></textarea></div>
-  <div class="survey-card"><div class="survey-title">06｜這十天裡，有沒有哪一刻讓你覺得「還好這次有來」？</div><textarea id="sv-glad" class="survey-textarea" rows="3"></textarea></div>
-
-  <div class="survey-card">
-    <div class="survey-title">07｜旅行記憶四格</div>
-    <textarea id="sv-happy" class="survey-textarea" rows="2" placeholder="😆 最開心"></textarea>
-    <textarea id="sv-wow" class="survey-textarea" rows="2" placeholder="🤯 最驚喜"></textarea>
-    <textarea id="sv-funny" class="survey-textarea" rows="2" placeholder="😂 最好笑"></textarea>
-    <textarea id="sv-messy" class="survey-textarea" rows="2" placeholder="🫠 最狼狽"></textarea>
-  </div>
-
-  <div class="survey-card"><div class="survey-title">08｜如果可以重新安排一次，哪一段行程你最想調整？為什麼？</div><textarea id="sv-change" class="survey-textarea" rows="3"></textarea></div>
-  <div class="survey-card"><div class="survey-title">09｜整趟行程裡，哪一個安排最值得我邀功？</div><textarea id="sv-credit" class="survey-textarea" rows="3" placeholder="請開始誇 😌"></textarea></div>
-
-  <div class="survey-card">
-    <div class="survey-title">10｜這趟旅行結束後，哪些是你對台灣留下最深印象、或最喜歡的部分？</div>
-    <p class="survey-hint">最多選 5 個。</p>
-    <div id="sv-impressions" class="grid grid-cols-2 gap-2 mt-3">
-      <label class="survey-check"><input type="checkbox" value="小吃與美食">小吃與美食</label>
-      <label class="survey-check"><input type="checkbox" value="自然風景">自然風景</label>
-      <label class="survey-check"><input type="checkbox" value="城市氛圍">城市氛圍</label>
-      <label class="survey-check"><input type="checkbox" value="人情味">人情味</label>
-      <label class="survey-check"><input type="checkbox" value="夜市文化">夜市文化</label>
-      <label class="survey-check"><input type="checkbox" value="便利商店">便利商店</label>
-      <label class="survey-check"><input type="checkbox" value="交通便利">交通便利</label>
-      <label class="survey-check"><input type="checkbox" value="傳統文化與廟宇">傳統文化與廟宇</label>
-      <label class="survey-check"><input type="checkbox" value="山景">山景</label>
-      <label class="survey-check"><input type="checkbox" value="海景">海景</label>
-      <label class="survey-check"><input type="checkbox" value="咖啡店／文青氛圍">咖啡店／文青氛圍</label>
-      <label class="survey-check"><input type="checkbox" value="生活便利">生活便利</label>
-      <label class="survey-check"><input type="checkbox" value="城市與自然距離很近">城市與自然距離很近</label>
-      <label class="survey-check"><input type="checkbox" value="其他">其他</label>
-    </div>
-    <input id="sv-impression-top" class="survey-input" placeholder="如果只能留一個，你會選？">
-  </div>
-
-  <div class="survey-card">
-    <div class="survey-title">11｜整體評分（1～10）</div>
-    <div id="sv-ratings" class="space-y-2 mt-3"></div>
-  </div>
-
-  <div class="survey-card">
-    <div class="survey-title">12｜請用三個詞形容這趟旅行。</div>
-    <div class="grid grid-cols-3 gap-2 mt-2"><input id="sv-word1" class="survey-input text-center" placeholder="詞 1"><input id="sv-word2" class="survey-input text-center" placeholder="詞 2"><input id="sv-word3" class="survey-input text-center" placeholder="詞 3"></div>
-  </div>
-
-  <div class="survey-card"><div class="survey-title">13｜最後，有沒有一句話想留給規劃這趟旅程的人？</div><textarea id="sv-final" class="survey-textarea" rows="4"></textarea></div>
-
-  <button type="button" onclick="completePostTripSurveyTest()" class="w-full bg-[#2C3E35] text-white rounded-2xl py-4 text-sm font-bold">完成問卷・測試解鎖 +1 特典</button>
-  <div id="sv-complete" class="hidden p-4 rounded-2xl bg-[#FFF6EA] border border-[#E89344]/35 text-center"><div class="text-3xl">💌</div><div class="font-bold mt-2">旅後問卷特典已解鎖（測試）</div><div class="text-xs text-gray-500 mt-1">只存在本機測試資料，不會同步到 Firebase。</div></div>
-</div>
-</section>
-
 <footer class="bg-[#2C3E35] text-[#D1D8D2] text-center py-8 mt-12 text-sm">
 <p>SYD’s Taiwan Grand Traverse App 2026</p>
 <p class="text-xs mt-1 text-gray-400">Designed by Chechen Wu 🚀</p>
@@ -7235,7 +7182,15 @@ function updateAchievementWall() {
 <button class="test-btn" onclick="triggerCameraFlash()">📸 截圖效果</button>
 <button class="test-btn" onclick="testAchievementModal()">🏆 成就彈窗</button>
 <button class="test-btn" onclick="finishTaiwanTrip(true)">完成旅程</button>
-<button class="test-btn" onclick="openPostTripSurveyTest()">💌 旅後問卷</button>
+</div>
+
+<div class="mt-3 text-[11px] font-bold">💌 旅後問卷（僅測試模式可見）</div>
+<div class="test-row">
+<button class="test-btn" onclick="openTripSurveyTest()">開啟旅後問卷</button>
+</div>
+<div class="test-survey-achievement">
+<div class="text-[11px] font-bold text-[#2C3E35]">💌 ＋1｜邵奶奶的台灣心得報告</div>
+<div class="tiny mt-1">目前只在私人測試模式預覽。正式上線後，完成旅後問卷才會解鎖；它會作為生日密碼的「＋1」，正式完成條件為 10 個公開＋6 個指定隱藏＋1 個旅後問卷＝17。</div>
 </div>
 <div class="mt-3 text-[11px] font-bold">🧹 測試資料</div>
 <div class="test-row">
@@ -7244,6 +7199,478 @@ function updateAchievementWall() {
 <button class="test-btn" onclick="exitPrivateTestMode()">退出測試模式</button>
 </div>
 </div>
+
+<!-- ==================== 💌 旅後問卷：目前僅私人測試模式可開啟 ==================== -->
+<div class="hidden" id="trip-survey-test-page" aria-hidden="true">
+  <div class="survey-shell">
+    <div class="survey-topbar">
+      <div class="flex items-center justify-between gap-3">
+        <button type="button" class="survey-btn !py-2 !px-3" onclick="closeTripSurveyTest()">✕ 返回測試台</button>
+        <div class="text-[10px] font-bold text-gray-400"><span id="survey-step-current">1</span> / <span id="survey-step-total">13</span></div>
+      </div>
+      <div class="survey-progress"><div id="survey-progress-bar" style="width:7.69%"></div></div>
+    </div>
+
+    <div class="survey-card">
+      <div class="survey-kicker">POST-TRIP QUESTIONNAIRE · TEST PREVIEW</div>
+      <h2 class="survey-title" id="survey-question-title">旅後問卷</h2>
+      <p class="survey-copy" id="survey-question-copy"></p>
+      <div id="survey-question-body" class="mt-4"></div>
+
+      <div class="survey-nav">
+        <button type="button" class="survey-btn" id="survey-prev-btn" onclick="surveyPrev()">← 前一題</button>
+        <button type="button" class="survey-btn primary" id="survey-next-btn" onclick="surveyNext()">後一題 →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script id="trip-survey-test-script">
+(() => {
+    const TEST_SURVEY_KEY = 'test_trip_survey_v1';
+    const EXPERIENCE_POOL = [
+      '西門町','永康商圈','中正紀念堂','故宮','陽明山 / The Top','野柳＋九份＋十分',
+      '寧夏夜市','日月潭','九族文化村','高美濕地','宮原眼科','武嶺＋合歡山',
+      'Cookinn','四草綠色隧道','聖母廟','漁光島','台南小吃巡禮','東來理髮廳',
+      '月世界','墾丁海線','海生館夜宿','高雄港＋85大樓','瑞豐夜市','六合夜市'
+    ];
+    const DAY_RANK_DEFAULT = [
+      'Day 2｜台北經典文化與故宮',
+      'Day 3｜野柳＋九份＋十分',
+      'Day 4｜日月潭',
+      'Day 5｜九族＋高美＋台中',
+      'Day 6｜武嶺＋合歡山＋台南',
+      'Day 7｜台南＋月世界＋高雄',
+      'Day 8｜墾丁海線＋海生館夜宿',
+      'Day 9｜海生館＋高雄'
+    ];
+    const IMPRESSIONS = [
+      '小吃與美食','自然風景','城市氛圍','人情味','夜市文化','便利商店',
+      '交通便利','傳統文化與廟宇','山景','海景','咖啡店／文青氛圍',
+      '生活便利','城市與自然距離很近','其他'
+    ];
+
+    let surveyStep = 0;
+    let surveyState = loadSurveyState();
+    let draggedRankEl = null;
+
+    function blankSurveyState() {
+      return {
+        dayRank:[...DAY_RANK_DEFAULT],
+        favoriteSpot:'', surpriseSpot:'',
+        tournament:null,
+        foodAgain:'', foodSurprise:'', foodFail:'', foodTakeHome:'',
+        coverPhoto:'', gladCame:'',
+        happiest:'', biggestSurprise:'', funniest:'', messiest:'',
+        rearrange:'', credit:'',
+        impressions:[], impressionTop:'',
+        threeWords:'',
+        ratings:{ overall:8, itinerary:8, food:8, stay:8, transport:8, comfort:8, returnTaiwan:8 },
+        finalMessage:''
+      };
+    }
+
+    function loadSurveyState() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(TEST_SURVEY_KEY) || 'null');
+        return parsed && typeof parsed === 'object' ? { ...blankSurveyState(), ...parsed } : blankSurveyState();
+      } catch (e) { return blankSurveyState(); }
+    }
+
+    function saveSurveyState() {
+      if (!window.__TEST_MODE_ACTIVE__) return;
+      localStorage.setItem(TEST_SURVEY_KEY, JSON.stringify(surveyState));
+    }
+
+    function esc(v) {
+      return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+    }
+
+    const QUESTIONS = [
+      {
+        title:'如果可以完整重玩一次',
+        copy:'請把 Day 2～Day 9 依照「最想完整重來 → 相對沒那麼想重來」排序。可以拖曳，也可以用右側箭頭調整。',
+        render: renderDayRanking, collect: collectDayRanking
+      },
+      {
+        title:'景點與體驗回想',
+        copy:'先不要比冠軍，憑第一直覺回答就好。',
+        render: () => `
+          <label class="survey-label">這趟旅程中，你最喜歡哪一個景點或體驗？</label>
+          <textarea class="survey-textarea" id="sv-favorite-spot" placeholder="寫下第一個想到的答案">${esc(surveyState.favoriteSpot)}</textarea>
+          <label class="survey-label">有沒有哪個原本沒有特別期待，實際去過後卻意外喜歡？</label>
+          <textarea class="survey-textarea" id="sv-surprise-spot" placeholder="可以寫景點，也可以寫一段體驗">${esc(surveyState.surpriseSpot)}</textarea>
+        `,
+        collect: () => {
+          surveyState.favoriteSpot = document.getElementById('sv-favorite-spot')?.value.trim() || '';
+          surveyState.surpriseSpot = document.getElementById('sv-surprise-spot')?.value.trim() || '';
+        }
+      },
+      {
+        title:'這趟旅程的最愛體驗 TOP',
+        copy:'24 個實際去過的地方／體驗，一次只選兩個。一路二選一，直到選出最後冠軍；完成後會顯示淘汰樹狀圖。',
+        render: renderTournament,
+        collect: () => {}
+      },
+      {
+        title:'台灣胃頒獎典禮',
+        copy:'不必每一題都填同一個答案，想想看它們各自代表哪一種記憶。',
+        render: () => `
+          <label class="survey-label">🏆 最想再吃一次</label><input class="survey-input" id="sv-food-again" value="${esc(surveyState.foodAgain)}">
+          <label class="survey-label">🤯 最意外好吃</label><input class="survey-input" id="sv-food-surprise" value="${esc(surveyState.foodSurprise)}">
+          <label class="survey-label">💀 最踩雷／最不合口味</label><input class="survey-input" id="sv-food-fail" value="${esc(surveyState.foodFail)}">
+          <label class="survey-label">🎁 如果只能帶一樣回去，你會帶什麼？</label><input class="survey-input" id="sv-food-takehome" value="${esc(surveyState.foodTakeHome)}">
+        `,
+        collect: () => {
+          surveyState.foodAgain=document.getElementById('sv-food-again')?.value.trim()||'';
+          surveyState.foodSurprise=document.getElementById('sv-food-surprise')?.value.trim()||'';
+          surveyState.foodFail=document.getElementById('sv-food-fail')?.value.trim()||'';
+          surveyState.foodTakeHome=document.getElementById('sv-food-takehome')?.value.trim()||'';
+        }
+      },
+      {
+        title:'這趟旅行的封面',
+        copy:'如果最後只能留一張照片代表這十天，你會挑哪一張？',
+        render: () => `<label class="survey-label">如果要選一張照片當作這趟旅行的封面，你會選哪一天、哪一段行程的照片？為什麼？</label><textarea class="survey-textarea" id="sv-cover">${esc(surveyState.coverPhoto)}</textarea>`,
+        collect: () => surveyState.coverPhoto=document.getElementById('sv-cover')?.value.trim()||''
+      },
+      {
+        title:'「還好這次有來」',
+        copy:'不是問最好玩，而是回頭看時最慶幸自己有經歷到的那一刻。',
+        render: () => `<label class="survey-label">這十天裡，有沒有哪一刻讓你覺得「還好這次有來」？</label><textarea class="survey-textarea" id="sv-glad">${esc(surveyState.gladCame)}</textarea>`,
+        collect: () => surveyState.gladCame=document.getElementById('sv-glad')?.value.trim()||''
+      },
+      {
+        title:'旅行記憶四格',
+        copy:'各寫一小段就可以。四個答案可以來自完全不同的日子。',
+        render: () => `
+          <div class="memory-grid">
+            <div><label class="survey-label">😆 最開心的一幕</label><textarea class="survey-textarea" id="sv-happy">${esc(surveyState.happiest)}</textarea></div>
+            <div><label class="survey-label">🤯 最驚喜的一幕</label><textarea class="survey-textarea" id="sv-big-surprise">${esc(surveyState.biggestSurprise)}</textarea></div>
+            <div><label class="survey-label">😂 現在想起來最好笑的一幕</label><textarea class="survey-textarea" id="sv-funny">${esc(surveyState.funniest)}</textarea></div>
+            <div><label class="survey-label">🫠 最狼狽的一幕</label><textarea class="survey-textarea" id="sv-messy">${esc(surveyState.messiest)}</textarea></div>
+          </div>`,
+        collect: () => {
+          surveyState.happiest=document.getElementById('sv-happy')?.value.trim()||'';
+          surveyState.biggestSurprise=document.getElementById('sv-big-surprise')?.value.trim()||'';
+          surveyState.funniest=document.getElementById('sv-funny')?.value.trim()||'';
+          surveyState.messiest=document.getElementById('sv-messy')?.value.trim()||'';
+        }
+      },
+      {
+        title:'如果可以重新排一次',
+        copy:'可以是順序、時間、交通方式、停留長度，或任何你覺得可以更好的地方。',
+        render: () => `<label class="survey-label">哪一段行程你最想調整？為什麼？</label><textarea class="survey-textarea" id="sv-rearrange">${esc(surveyState.rearrange)}</textarea>`,
+        collect: () => surveyState.rearrange=document.getElementById('sv-rearrange')?.value.trim()||''
+      },
+      {
+        title:'該邀功的還是要邀',
+        copy:'這題維持主觀，不接受客套 😌',
+        render: () => `<label class="survey-label">整趟行程裡，哪一個安排最值得我邀功？</label><textarea class="survey-textarea" id="sv-credit">${esc(surveyState.credit)}</textarea>`,
+        collect: () => surveyState.credit=document.getElementById('sv-credit')?.value.trim()||''
+      },
+      {
+        title:'旅行結束後的台灣印象',
+        copy:'最多選 5 個「印象最深或最喜歡」的部分，再從裡面選出最有感的一個。',
+        render: renderImpressions,
+        collect: collectImpressions
+      },
+      {
+        title:'用三個詞留下這十天',
+        copy:'前面已經回想了一輪，現在只留三個詞。',
+        render: () => `<label class="survey-label">請用三個詞形容這趟旅行</label><input class="survey-input" id="sv-three" placeholder="例如：意外、好吃、很瘋" value="${esc(surveyState.threeWords)}">`,
+        collect: () => surveyState.threeWords=document.getElementById('sv-three')?.value.trim()||''
+      },
+      {
+        title:'最後的整體評分',
+        copy:'不用每項都給高分；這區就是留給你把不同面向分開評價。',
+        render: renderRatings,
+        collect: collectRatings
+      },
+      {
+        title:'最後一句',
+        copy:'這是送出前的最後一題。',
+        render: () => `<label class="survey-label">最後，有沒有一句話想留給規劃這趟旅程的人？</label><textarea class="survey-textarea" id="sv-final" style="min-height:150px">${esc(surveyState.finalMessage)}</textarea>`,
+        collect: () => surveyState.finalMessage=document.getElementById('sv-final')?.value.trim()||''
+      }
+    ];
+
+    function renderDayRanking() {
+      const items = Array.isArray(surveyState.dayRank) && surveyState.dayRank.length===8 ? surveyState.dayRank : [...DAY_RANK_DEFAULT];
+      return `<div id="survey-rank-list">${items.map((x,i)=>`
+        <div class="survey-rank-row" draggable="true" data-rank="${esc(x)}">
+          <span class="survey-drag-handle">⠿</span>
+          <span class="survey-rank-label"><b>${i+1}.</b> ${esc(x)}</span>
+          <button type="button" class="survey-rank-move" onclick="moveSurveyRank(this,-1)">↑</button>
+          <button type="button" class="survey-rank-move" onclick="moveSurveyRank(this,1)">↓</button>
+        </div>`).join('')}</div>`;
+    }
+
+    function collectDayRanking() {
+      surveyState.dayRank=[...document.querySelectorAll('#survey-rank-list .survey-rank-row')].map(el=>el.dataset.rank);
+    }
+
+    window.moveSurveyRank = function(btn, delta) {
+      const row=btn.closest('.survey-rank-row'), list=row?.parentElement;
+      if (!row || !list) return;
+      if (delta<0 && row.previousElementSibling) list.insertBefore(row,row.previousElementSibling);
+      if (delta>0 && row.nextElementSibling) list.insertBefore(row.nextElementSibling,row);
+      relabelRanking();
+    };
+
+    function relabelRanking() {
+      document.querySelectorAll('#survey-rank-list .survey-rank-row').forEach((row,i)=>{
+        const label=row.querySelector('.survey-rank-label');
+        if (label) label.innerHTML=`<b>${i+1}.</b> ${esc(row.dataset.rank)}`;
+      });
+    }
+
+    function attachRankingDrag() {
+      const list=document.getElementById('survey-rank-list');
+      if (!list) return;
+      list.querySelectorAll('.survey-rank-row').forEach(row=>{
+        row.addEventListener('dragstart',()=>{draggedRankEl=row; row.style.opacity='.45';});
+        row.addEventListener('dragend',()=>{row.style.opacity=''; draggedRankEl=null; relabelRanking();});
+        row.addEventListener('dragover',e=>{
+          e.preventDefault();
+          if (!draggedRankEl || draggedRankEl===row) return;
+          const r=row.getBoundingClientRect();
+          list.insertBefore(draggedRankEl, e.clientY < r.top+r.height/2 ? row : row.nextSibling);
+        });
+        row.addEventListener('touchstart',()=>{draggedRankEl=row;},{passive:true});
+        row.addEventListener('touchmove',e=>{
+          if (!draggedRankEl) return;
+          const t=e.touches[0], under=document.elementFromPoint(t.clientX,t.clientY)?.closest('.survey-rank-row');
+          if (under && under!==draggedRankEl && under.parentElement===list) {
+            const r=under.getBoundingClientRect();
+            list.insertBefore(draggedRankEl, t.clientY < r.top+r.height/2 ? under : under.nextSibling);
+          }
+        },{passive:true});
+        row.addEventListener('touchend',()=>{draggedRankEl=null; relabelRanking();},{passive:true});
+      });
+    }
+
+    function makeTournament() {
+      const entrants=[...EXPERIENCE_POOL];
+      // 32 格淘汰表：24 個參賽者＋8 個 bye。測試時固定順序，方便重現結果。
+      const slots=new Array(32).fill(null);
+      let cursor=0;
+      for (let pair=0; pair<16; pair++) {
+        if (pair<8) {
+          slots[pair*2]=entrants[cursor++];
+        } else {
+          slots[pair*2]=entrants[cursor++];
+          slots[pair*2+1]=entrants[cursor++];
+        }
+      }
+      const rounds=[slots];
+      return { rounds, roundIndex:0, matchIndex:0, complete:false, champion:null };
+    }
+
+    function ensureTournament() {
+      if (!surveyState.tournament || !Array.isArray(surveyState.tournament.rounds)) {
+        surveyState.tournament=makeTournament();
+      }
+      advanceTournamentToPlayable();
+    }
+
+    function advanceTournamentToPlayable() {
+      const t=surveyState.tournament;
+      while (!t.complete) {
+        const round=t.rounds[t.roundIndex];
+        if (!round || round.length===1) {
+          t.complete=true; t.champion=round?.[0]||t.champion; break;
+        }
+        if (!t.rounds[t.roundIndex+1]) t.rounds[t.roundIndex+1]=new Array(round.length/2).fill(null);
+        const matches=round.length/2;
+        if (t.matchIndex>=matches) {
+          t.roundIndex++; t.matchIndex=0; continue;
+        }
+        const a=round[t.matchIndex*2], b=round[t.matchIndex*2+1];
+        if (!a && !b) { t.rounds[t.roundIndex+1][t.matchIndex]=null; t.matchIndex++; continue; }
+        if (a && !b) { t.rounds[t.roundIndex+1][t.matchIndex]=a; t.matchIndex++; continue; }
+        if (!a && b) { t.rounds[t.roundIndex+1][t.matchIndex]=b; t.matchIndex++; continue; }
+        break;
+      }
+      saveSurveyState();
+    }
+
+    function tournamentCompletedMatches() {
+      const t=surveyState.tournament;
+      if (!t) return 0;
+      let n=0;
+      for(let r=1;r<t.rounds.length;r++) n += (t.rounds[r]||[]).filter(Boolean).length;
+      return n;
+    }
+
+    function renderTournament() {
+      ensureTournament();
+      const t=surveyState.tournament;
+      if (t.complete) {
+        return `<div class="text-center py-2">
+          <div class="text-4xl">🏆</div>
+          <div class="text-xs text-gray-400 mt-2">本趟最愛</div>
+          <div class="text-xl font-bold text-[#C66914] mt-1">${esc(t.champion)}</div>
+        </div>${renderBracket()}`;
+      }
+      const round=t.rounds[t.roundIndex];
+      const a=round[t.matchIndex*2], b=round[t.matchIndex*2+1];
+      const done=tournamentCompletedMatches();
+      return `
+        <div class="text-[11px] text-gray-500">目前進度：約 ${Math.min(done,23)} / 23 次晉級選擇</div>
+        <div class="tournament-vs">
+          <button type="button" class="tournament-pick" onclick="chooseTournamentWinner(0)">${esc(a)}</button>
+          <div class="tournament-vs-mark">VS</div>
+          <button type="button" class="tournament-pick" onclick="chooseTournamentWinner(1)">${esc(b)}</button>
+        </div>
+        <div class="text-[10px] text-gray-400 mt-3">選了就晉級；最後會生成完整淘汰樹狀圖。</div>`;
+    }
+
+    window.chooseTournamentWinner=function(side){
+      ensureTournament();
+      const t=surveyState.tournament;
+      if(t.complete) return;
+      const round=t.rounds[t.roundIndex];
+      const winner=round[t.matchIndex*2+(side?1:0)];
+      t.rounds[t.roundIndex+1][t.matchIndex]=winner;
+      t.matchIndex++;
+      advanceTournamentToPlayable();
+      renderSurveyStep();
+    };
+
+    function renderBracket() {
+      const t=surveyState.tournament;
+      const labels=['32 強','16 強','8 強','4 強','冠軍戰','冠軍'];
+      return `<div class="bracket-scroll"><div class="bracket">${
+        t.rounds.map((round,ri)=>`<div class="bracket-round">
+          <div class="bracket-round-title">${labels[ri]||`ROUND ${ri+1}`}</div>
+          ${(round||[]).filter(Boolean).map(name=>`<div class="bracket-node ${ri===t.rounds.length-1?'winner':''}">${esc(name)}</div>`).join('')}
+        </div>`).join('')
+      }</div></div>`;
+    }
+
+    function renderImpressions() {
+      const selected=new Set(surveyState.impressions||[]);
+      return `<div id="sv-impressions">${IMPRESSIONS.map(x=>`
+        <label class="survey-choice ${selected.has(x)?'selected':''}">
+          <input type="checkbox" class="mr-2" value="${esc(x)}" ${selected.has(x)?'checked':''} onchange="limitSurveyImpressions(this)"> ${esc(x)}
+        </label>`).join('')}</div>
+        <label class="survey-label">從你選的項目裡，再選一個「最有感」</label>
+        <select class="survey-select" id="sv-impression-top">${renderImpressionTopOptions()}</select>`;
+    }
+
+    function renderImpressionTopOptions() {
+      const vals=surveyState.impressions||[];
+      return `<option value="">請選擇</option>`+vals.map(x=>`<option ${surveyState.impressionTop===x?'selected':''}>${esc(x)}</option>`).join('');
+    }
+
+    window.limitSurveyImpressions=function(chk){
+      const all=[...document.querySelectorAll('#sv-impressions input[type="checkbox"]')];
+      const checked=all.filter(x=>x.checked);
+      if(checked.length>5){ chk.checked=false; alert('最多選 5 個。'); }
+      all.forEach(x=>x.closest('label')?.classList.toggle('selected',x.checked));
+      surveyState.impressions=all.filter(x=>x.checked).map(x=>x.value);
+      if(!surveyState.impressions.includes(surveyState.impressionTop)) surveyState.impressionTop='';
+      const sel=document.getElementById('sv-impression-top');
+      if(sel) sel.innerHTML=renderImpressionTopOptions();
+      saveSurveyState();
+    };
+
+    function collectImpressions() {
+      surveyState.impressions=[...document.querySelectorAll('#sv-impressions input:checked')].map(x=>x.value);
+      surveyState.impressionTop=document.getElementById('sv-impression-top')?.value||'';
+    }
+
+    const ratingDefs=[
+      ['overall','整體旅行體驗'],['itinerary','行程安排'],['food','美食體驗'],
+      ['stay','住宿體驗'],['transport','交通體驗'],['comfort','舒適程度'],['returnTaiwan','再次來台灣的意願']
+    ];
+    function renderRatings() {
+      return ratingDefs.map(([key,label])=>`
+        <div class="rating-row">
+          <div class="rating-head"><span>${label}</span><span id="rating-${key}-value">${Number(surveyState.ratings?.[key]??8)} / 10</span></div>
+          <input type="range" id="rating-${key}" min="1" max="10" step="1" value="${Number(surveyState.ratings?.[key]??8)}"
+            oninput="document.getElementById('rating-${key}-value').textContent=this.value+' / 10'">
+        </div>`).join('');
+    }
+    function collectRatings() {
+      surveyState.ratings=surveyState.ratings||{};
+      ratingDefs.forEach(([key])=>surveyState.ratings[key]=Number(document.getElementById(`rating-${key}`)?.value||8));
+    }
+
+    function renderSurveyStep() {
+      const q=QUESTIONS[surveyStep];
+      document.getElementById('survey-question-title').textContent=q.title;
+      document.getElementById('survey-question-copy').textContent=q.copy||'';
+      document.getElementById('survey-question-body').innerHTML=q.render();
+      document.getElementById('survey-step-current').textContent=surveyStep+1;
+      document.getElementById('survey-step-total').textContent=QUESTIONS.length;
+      document.getElementById('survey-progress-bar').style.width=`${((surveyStep+1)/QUESTIONS.length)*100}%`;
+      const prev=document.getElementById('survey-prev-btn'), next=document.getElementById('survey-next-btn');
+      prev.disabled=surveyStep===0;
+      next.textContent=surveyStep===QUESTIONS.length-1?'送出問卷 ✨':'後一題 →';
+      if (surveyStep===2) {
+        ensureTournament();
+        next.disabled=!surveyState.tournament.complete;
+      } else next.disabled=false;
+      if (surveyStep===0) setTimeout(attachRankingDrag,0);
+      window.scrollTo({top:0,behavior:'instant'});
+    }
+
+    function collectCurrent() {
+      QUESTIONS[surveyStep]?.collect?.();
+      saveSurveyState();
+    }
+
+    window.surveyPrev=function(){
+      collectCurrent();
+      if(surveyStep>0){surveyStep--;renderSurveyStep();}
+    };
+    window.surveyNext=function(){
+      collectCurrent();
+      if(surveyStep===2 && !surveyState.tournament?.complete){
+        alert('先完成二選一淘汰賽，才能前往下一題。'); return;
+      }
+      if(surveyStep<QUESTIONS.length-1){surveyStep++;renderSurveyStep();return;}
+      submitTripSurveyTest();
+    };
+
+    function submitTripSurveyTest() {
+      if(!window.__TEST_MODE_ACTIVE__) return;
+      saveSurveyState();
+      window.closeTripSurveyTest();
+      setTimeout(()=>{
+        if(typeof showAchievementUnlockModal==='function'){
+          showAchievementUnlockModal({
+            icon:'💌',
+            title:'邵奶奶的台灣心得報告',
+            desc:'旅後問卷完成！這顆是生日密碼的「＋1」：10 個公開成就＋6 個指定隱藏成就＋1 個旅後問卷特典＝17。即使沒有解到「調皮搗蛋鬼」，也不會因此卡住生日密碼。'
+          });
+        }
+      },180);
+    }
+
+    window.openTripSurveyTest=function(){
+      if(!window.__TEST_MODE_ACTIVE__) return;
+      surveyState=loadSurveyState();
+      surveyStep=0;
+      const page=document.getElementById('trip-survey-test-page');
+      page?.classList.remove('hidden');
+      page?.setAttribute('aria-hidden','false');
+      document.body.style.overflow='hidden';
+      renderSurveyStep();
+    };
+    window.closeTripSurveyTest=function(){
+      collectCurrent();
+      const page=document.getElementById('trip-survey-test-page');
+      page?.classList.add('hidden');
+      page?.setAttribute('aria-hidden','true');
+      document.body.style.overflow='';
+    };
+})();
+</script>
+
 <div aria-hidden="true" id="camera-flash-overlay"></div>
 <script>
 window.__TEST_SECRET_MODE = 'actual';
@@ -7988,94 +8415,5 @@ window.addEventListener('DOMContentLoaded', () => {
     }, 250);
 });
 </script>
-
-<script id="posttrip-survey-test-script">
-(() => {
- const items=['西門町','永康商圈','中正紀念堂','故宮','陽明山 / The Top','野柳＋九份＋十分','寧夏夜市','日月潭','九族文化村','高美濕地','宮原眼科','武嶺＋合歡山','Cookinn','四草綠色隧道','聖母廟','漁光島','台南小吃巡禮','東來理髮廳','月世界','墾丁海線','海生館夜宿','高雄港＋85大樓','瑞豐夜市','六合夜市'];
- let st=null, dragged=null;
-
- window.openPostTripSurveyTest=()=>{
-   if(!window.__TEST_MODE_ACTIVE__) return;
-   document.body.classList.add('posttrip-survey-test-visible');
-   document.getElementById('posttrip-survey-test')?.scrollIntoView({behavior:'smooth',block:'start'});
- };
-
- function setupRank(){
-   const list=document.getElementById('survey-day-ranking'); if(!list)return;
-   list.querySelectorAll('.survey-rank-item').forEach(el=>{
-     el.addEventListener('dragstart',()=>{dragged=el;el.classList.add('dragging')});
-     el.addEventListener('dragend',()=>{el.classList.remove('dragging');dragged=null});
-     el.addEventListener('dragover',e=>{e.preventDefault();if(!dragged||dragged===el)return;const r=el.getBoundingClientRect();list.insertBefore(dragged,e.clientY>r.top+r.height/2?el.nextSibling:el)});
-     el.addEventListener('touchstart',()=>{dragged=el;el.classList.add('dragging')},{passive:true});
-     el.addEventListener('touchmove',e=>{const t=document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY)?.closest('.survey-rank-item');if(!t||!dragged||t===dragged||t.parentElement!==list)return;const r=t.getBoundingClientRect();list.insertBefore(dragged,e.touches[0].clientY>r.top+r.height/2?t.nextSibling:t)},{passive:true});
-     el.addEventListener('touchend',()=>{el.classList.remove('dragging');dragged=null});
-   });
- }
-
- function setupLimit(){
-   const box=document.getElementById('sv-impressions'); if(!box)return;
-   box.querySelectorAll('input').forEach(c=>c.addEventListener('change',()=>{if(box.querySelectorAll('input:checked').length>5){c.checked=false;alert('最多選 5 個喔。')}}));
- }
-
- function setupRatings(){
-   const labels=['整體旅行體驗','行程安排','美食體驗','住宿體驗','交通體驗','舒適程度','再次來台灣的意願'];
-   const box=document.getElementById('sv-ratings'); if(!box)return;
-   box.innerHTML=labels.map((x,i)=>`<div class="flex items-center justify-between gap-3"><span class="text-xs font-bold text-[#2C3E35]">${x}</span><select id="sv-rate-${i}" class="survey-select !w-auto !mt-0">${Array.from({length:10},(_,n)=>`<option value="${n+1}" ${n===7?'selected':''}>${n+1}</option>`).join('')}</select></div>`).join('');
- }
-
- function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
- window.startPostTripBracket=()=>{st={round:shuffle(items),w:[],i:0,n:1,history:[]};document.getElementById('survey-bracket-result')?.classList.add('hidden');renderDuel()};
- function renderDuel(){
-   const box=document.getElementById('survey-duel'); if(!box||!st)return;
-   if(st.i>=st.round.length){
-     st.history.push({n:st.n,source:[...st.round],winners:[...st.w]});
-     if(st.w.length===1){showResult(st.w[0]);return}
-     st.round=[...st.w];st.w=[];st.i=0;st.n++;return renderDuel();
-   }
-   const a=st.round[st.i],b=st.round[st.i+1];
-   if(!b){st.w.push(a);st.i++;return renderDuel()}
-   box.innerHTML=`<div class="text-center text-[11px] font-bold text-gray-500 mb-2">第 ${st.n} 輪</div><div class="grid grid-cols-2 gap-3"><button class="survey-duel" onclick='choosePostTripBracket(${JSON.stringify(a)})'>${a}</button><button class="survey-duel" onclick='choosePostTripBracket(${JSON.stringify(b)})'>${b}</button></div>`;
- }
- window.choosePostTripBracket=(v)=>{st.w.push(v);st.i+=2;renderDuel()};
- function showResult(champ){
-   document.getElementById('survey-duel').innerHTML='';
-   document.getElementById('survey-champion').textContent=champ;
-   document.getElementById('survey-bracket-result').classList.remove('hidden');
-   const tree=document.getElementById('survey-bracket-tree');
-   tree.innerHTML='<div class="bracket-wrap">'+st.history.map((r,k)=>`<div class="bracket-col"><div class="text-center text-[10px] font-bold text-gray-400 mb-1">${k===st.history.length-1?'FINAL':'ROUND '+r.n}</div>${r.source.map(x=>`<div class="bracket-node ${r.winners.includes(x)?'win':''}">${x}</div>`).join('')}</div>`).join('')+'</div>';
- }
-
- window.completePostTripSurveyTest=()=>{
-   if(!window.__TEST_MODE_ACTIVE__){alert('目前只在測試模式開放。');return}
-   if(!st||!st.history.length||st.history.at(-1).winners.length!==1){alert('請先完成最愛體驗淘汰賽。');return}
-   const v=id=>document.getElementById(id)?.value?.trim()||'';
-   const data={
-    ranking:[...document.querySelectorAll('#survey-day-ranking .survey-rank-item')].map(x=>x.dataset.v),
-    favoriteSpot:v('sv-fav'),surpriseSpot:v('sv-surprise-spot'),
-    bracket:{champion:st.history.at(-1).winners[0],rounds:st.history},
-    food:{repeat:v('sv-food-repeat'),surprise:v('sv-food-surprise'),fail:v('sv-food-fail'),take:v('sv-food-take')},
-    cover:v('sv-cover'),glad:v('sv-glad'),
-    memories:{happy:v('sv-happy'),surprise:v('sv-wow'),funny:v('sv-funny'),messy:v('sv-messy')},
-    change:v('sv-change'),credit:v('sv-credit'),
-    impressions:[...document.querySelectorAll('#sv-impressions input:checked')].map(x=>x.value),
-    impressionTop:v('sv-impression-top'),
-    ratings:[...document.querySelectorAll('#sv-ratings select')].map(x=>Number(x.value)),
-    words:[v('sv-word1'),v('sv-word2'),v('sv-word3')],
-    finalMessage:v('sv-final'),testOnly:true,completedAt:new Date().toISOString()
-   };
-   localStorage.setItem('posttrip_survey_test_v1',JSON.stringify(data));
-   localStorage.setItem('posttrip_bonus_test_unlocked_v1','true');
-   document.getElementById('sv-complete').classList.remove('hidden');
-   alert('💌 旅後問卷特典已在測試模式解鎖！');
- };
-
- document.addEventListener('DOMContentLoaded',()=>{
-   if(window.__TEST_MODE_ACTIVE__) document.body.classList.add('posttrip-survey-test-visible');
-   setupRank();setupLimit();setupRatings();startPostTripBracket();
-   if(localStorage.getItem('posttrip_bonus_test_unlocked_v1')==='true') document.getElementById('sv-complete')?.classList.remove('hidden');
- });
-})();
-</script>
-
 </body>
 </html>

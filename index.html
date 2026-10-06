@@ -2007,6 +2007,11 @@ html:not(.secret-content-ready) [data-secret-emoji] {
 }
 .survey-textarea { min-height:105px; resize:vertical; }
 .survey-label { display:block; font-size:11px; font-weight:800; color:#59635E; margin:14px 0 6px; }
+.survey-answer-hint {
+    margin:8px 0 10px; padding:9px 11px; border-radius:11px;
+    background:#F7F5F0; color:#9A948C; font-size:10px; line-height:1.65;
+    border:1px dashed #E2DDD5;
+}
 .survey-nav { display:grid; grid-template-columns:1fr 1.4fr; gap:10px; margin-top:16px; }
 .survey-btn { border-radius:14px; padding:13px 14px; font-size:12px; font-weight:800; border:1px solid #E2DDD5; background:#fff; color:#2C3E35; }
 .survey-btn.primary { background:#2C3E35; color:white; border-color:#2C3E35; }
@@ -7222,7 +7227,7 @@ function updateAchievementWall() {
 </div>
 <div class="test-survey-achievement">
 <div class="text-[11px] font-bold text-[#2C3E35]">💌 ＋1｜邵奶奶的台灣心得報告</div>
-<div class="tiny mt-1">目前只在私人測試模式預覽。成就牆本身始終是 10 個公開成就＋7 個隱藏成就；這次因為少解鎖了 1 個隱藏成就，才額外追加旅後問卷作為 Bonus ＋1。完成問卷後，就能把缺的那 1 格補回來。</div>
+<div class="tiny mt-1">目前只在私人測試模式預覽。這次少掉的那一格，就由旅後問卷補上。10＋6＋1＝17，生日密碼照樣完整配對 🎂</div>
 </div>
 <div class="mt-3 text-[11px] font-bold">🧹 測試資料</div>
 <div class="test-row">
@@ -7238,12 +7243,22 @@ function updateAchievementWall() {
     <div class="survey-topbar">
       <div class="flex items-center justify-between gap-3">
         <button type="button" class="survey-btn !py-2 !px-3" onclick="closeTripSurveyTest()">✕ 返回測試台</button>
-        <div class="text-[10px] font-bold text-gray-400"><span id="survey-step-current">1</span> / <span id="survey-step-total">13</span></div>
+        <div class="text-[10px] font-bold text-gray-400 hidden" id="survey-step-counter"><span id="survey-step-current">1</span> / <span id="survey-step-total">14</span></div>
       </div>
-      <div class="survey-progress"><div id="survey-progress-bar" style="width:7.69%"></div></div>
+      <div class="survey-progress hidden" id="survey-progress-wrap"><div id="survey-progress-bar" style="width:7.14%"></div></div>
     </div>
 
-    <div class="survey-card">
+    <div class="survey-card" id="survey-intro-card">
+      <div class="survey-kicker">POST-TRIP QUESTIONNAIRE · TEST PREVIEW</div>
+      <h2 class="survey-title">💌 邵奶奶的台灣心得報告</h2>
+      <p class="survey-copy">十天結束了，來把這趟旅行真正收進回憶裡。沒有標準答案，也不用寫得很正式；想到什麼就寫什麼，慢慢回想就好。</p>
+      <div class="mt-5 rounded-2xl bg-[#F7F2EA] border border-[#E7DDD0] p-4 text-[11px] leading-6 text-[#6E6257]">
+        大概會回顧景點、美食、最難忘的片段，也會排出最想重來的日子和最愛體驗 TOP 3。
+      </div>
+      <button type="button" class="survey-btn primary w-full mt-5" onclick="startTripSurveyTest()">開始填寫 →</button>
+    </div>
+
+    <div class="survey-card hidden" id="survey-question-card">
       <div class="survey-kicker">POST-TRIP QUESTIONNAIRE · TEST PREVIEW</div>
       <h2 class="survey-title" id="survey-question-title">旅後問卷</h2>
       <p class="survey-copy" id="survey-question-copy"></p>
@@ -7323,18 +7338,19 @@ function updateAchievementWall() {
 
     const QUESTIONS = [
       {
-        title:'如果可以完整重玩一次',
-        copy:'請把 Day 1～Day 9 依照「最想完整重來 → 相對沒那麼想重來」排序。可以拖曳，也可以用右側箭頭調整。',
-        render: renderDayRanking, collect: collectDayRanking
+        title:'先用一句話開始',
+        copy:'不用想得太完整，第一直覺就好。',
+        render: () => `<label class="survey-label">如果現在有人問你：「這趟台灣旅行怎麼樣？」你第一句會怎麼回答？</label><textarea class="survey-textarea" id="sv-first-line" placeholder="例如：比我想像中好玩很多／每天都很滿但真的很值得／我現在最想念的是……">${esc(surveyState.firstLine||'')}</textarea>`,
+        collect: () => surveyState.firstLine=document.getElementById('sv-first-line')?.value.trim()||''
       },
       {
         title:'景點與體驗回想',
         copy:'先不要比冠軍，憑第一直覺回答就好。',
         render: () => `
           <label class="survey-label">這趟旅程中，你最喜歡哪一個景點或體驗？</label>
-          <textarea class="survey-textarea" id="sv-favorite-spot" placeholder="寫下第一個想到的答案">${esc(surveyState.favoriteSpot)}</textarea>
+          <textarea class="survey-textarea" id="sv-favorite-spot" placeholder="例如：海生館夜宿、武嶺日出、九份、手作時研室……第一個想到什麼就寫什麼。">${esc(surveyState.favoriteSpot)}</textarea>
           <label class="survey-label">有沒有哪個原本沒有特別期待，實際去過後卻意外喜歡？</label>
-          <textarea class="survey-textarea" id="sv-surprise-spot" placeholder="可以寫景點，也可以寫一段體驗">${esc(surveyState.surpriseSpot)}</textarea>
+          <textarea class="survey-textarea" id="sv-surprise-spot" placeholder="例如：原本只是順路安排，結果意外很喜歡；或某個行程實際體驗比想像中有趣很多。">${esc(surveyState.surpriseSpot)}</textarea>
         `,
         collect: () => {
           surveyState.favoriteSpot = document.getElementById('sv-favorite-spot')?.value.trim() || '';
@@ -7351,10 +7367,10 @@ function updateAchievementWall() {
         title:'台灣胃頒獎典禮',
         copy:'不必每一題都填同一個答案。可以回想：阜杭燒餅／鹹豆漿、小籠包、九份芋圓／草仔粿、日月潭紅茶／山豬肉／飯飯雞翅、春水堂珍奶、台南牛肉湯／鱔魚意麵／蝦捲／棺材板／綠豆沙，以及夜市的鹹酥雞、臭豆腐、蚵仔煎、地瓜球等。',
         render: () => `
-          <label class="survey-label">🏆 最想再吃一次</label><input class="survey-input" id="sv-food-again" value="${esc(surveyState.foodAgain)}">
-          <label class="survey-label">🤯 最意外好吃</label><input class="survey-input" id="sv-food-surprise" value="${esc(surveyState.foodSurprise)}">
-          <label class="survey-label">💀 最踩雷／最不合口味</label><input class="survey-input" id="sv-food-fail" value="${esc(surveyState.foodFail)}">
-          <label class="survey-label">🎁 如果只能帶一樣回去，你會帶什麼？</label><input class="survey-input" id="sv-food-takehome" value="${esc(surveyState.foodTakeHome)}">
+          <label class="survey-label">🏆 最想再吃一次</label><input class="survey-input" id="sv-food-again" placeholder="例如：牛肉湯、鱔魚意麵、鼎泰豐小籠包……" value="${esc(surveyState.foodAgain)}">
+          <label class="survey-label">🤯 最意外好吃</label><input class="survey-input" id="sv-food-surprise" placeholder="原本沒抱期待，結果吃完覺得：欸，居然很好吃。" value="${esc(surveyState.foodSurprise)}">
+          <label class="survey-label">💀 最踩雷／最不合口味</label><input class="survey-input" id="sv-food-fail" placeholder="沒有也可以寫『沒有』；有的話寫最不合你口味的那一道。" value="${esc(surveyState.foodFail)}">
+          <label class="survey-label">🎁 如果只能帶一樣回去，你會帶什麼？</label><input class="survey-input" id="sv-food-takehome" placeholder="可以是伴手禮、飲料、甜點，甚至是想把某間店直接搬回去（笑）。" value="${esc(surveyState.foodTakeHome)}">
         `,
         collect: () => {
           surveyState.foodAgain=document.getElementById('sv-food-again')?.value.trim()||'';
@@ -7366,7 +7382,7 @@ function updateAchievementWall() {
       {
         title:'這趟旅行的封面',
         copy:'如果最後只能留一張照片代表這十天，你會挑哪一張？',
-        render: () => `<label class="survey-label">如果要選一張照片當作這趟旅行的封面，你會選哪一天、哪一段行程的照片？為什麼？</label><textarea class="survey-textarea" id="sv-cover">${esc(surveyState.coverPhoto)}</textarea>`,
+        render: () => `<label class="survey-label">如果要選一張照片當作這趟旅行的封面，你會選哪一天、哪一段行程的照片？為什麼？</label><textarea class="survey-textarea" id="sv-cover" placeholder="例如：Day 6 武嶺日出的合照／海生館夜宿醒來的照片／某張一看就能想起整趟旅程的照片。也可以說說為什麼會選它。">${esc(surveyState.coverPhoto)}</textarea>`,
         collect: () => surveyState.coverPhoto=document.getElementById('sv-cover')?.value.trim()||''
       },
       {
@@ -7380,10 +7396,10 @@ function updateAchievementWall() {
         copy:'各寫一小段就可以。四個答案可以來自完全不同的日子。',
         render: () => `
           <div class="memory-grid">
-            <div><label class="survey-label">😆 最搞笑／有趣的一幕</label><textarea class="survey-textarea" id="sv-happy">${esc(surveyState.happiest)}</textarea></div>
-            <div><label class="survey-label">🤯 最驚喜的一幕</label><textarea class="survey-textarea" id="sv-big-surprise">${esc(surveyState.biggestSurprise)}</textarea></div>
-            <div><label class="survey-label">🧠 最難忘的一幕</label><textarea class="survey-textarea" id="sv-funny">${esc(surveyState.funniest)}</textarea></div>
-            <div><label class="survey-label">🫠 最狼狽的一幕</label><textarea class="survey-textarea" id="sv-messy">${esc(surveyState.messiest)}</textarea></div>
+            <div><label class="survey-label">😆 最搞笑／有趣的一幕</label><textarea class="survey-textarea" id="sv-happy" placeholder="例如：某個笑到不行的對話、突發狀況、拍照失敗，或當下覺得超荒謬但現在很好笑的事。">${esc(surveyState.happiest)}</textarea></div>
+            <div><label class="survey-label">🤯 最驚喜的一幕</label><textarea class="survey-textarea" id="sv-big-surprise" placeholder="例如：原本沒期待卻意外很喜歡的地方、食物、風景，或某個完全超出預期的瞬間。">${esc(surveyState.biggestSurprise)}</textarea></div>
+            <div><label class="survey-label">🧠 最難忘的一幕</label><textarea class="survey-textarea" id="sv-funny" placeholder="例如：如果半年後還會記得一幕，你覺得會是哪一幕？可以是風景、人、對話或某個瞬間。">${esc(surveyState.funniest)}</textarea></div>
+            <div><label class="survey-label">🫠 最狼狽的一幕</label><textarea class="survey-textarea" id="sv-messy" placeholder="例如：趕車、太累、天氣不配合、行程臨時改動，或任何當下有點崩潰現在回想還記得的片段。">${esc(surveyState.messiest)}</textarea></div>
           </div>`,
         collect: () => {
           surveyState.happiest=document.getElementById('sv-happy')?.value.trim()||'';
@@ -7393,15 +7409,20 @@ function updateAchievementWall() {
         }
       },
       {
+        title:'如果可以完整重玩一次',
+        copy:'請把 Day 1～Day 9 依照「最想完整重來 → 相對沒那麼想重來」排序。可以拖曳，也可以用右側箭頭調整。',
+        render: renderDayRanking, collect: collectDayRanking
+      },
+      {
         title:'如果可以重新排一次',
         copy:'可以是順序、時間、交通方式、停留長度，或任何你覺得可以更好的地方。',
-        render: () => `<label class="survey-label">哪一段行程你最想調整？為什麼？</label><textarea class="survey-textarea" id="sv-rearrange">${esc(surveyState.rearrange)}</textarea>`,
+        render: () => `<label class="survey-label">哪一段行程你最想調整？為什麼？</label><textarea class="survey-textarea" id="sv-rearrange" placeholder="例如：某天想晚一點出發、某個景點想多待一小時、交通想換一種方式，或有哪兩段行程想互換。">${esc(surveyState.rearrange)}</textarea>`,
         collect: () => surveyState.rearrange=document.getElementById('sv-rearrange')?.value.trim()||''
       },
       {
         title:'該邀功的還是要邀',
         copy:'這題維持主觀，不接受客套 😌',
-        render: () => `<label class="survey-label">整趟行程裡，哪一個安排最值得我邀功？</label><textarea class="survey-textarea" id="sv-credit">${esc(surveyState.credit)}</textarea>`,
+        render: () => `<label class="survey-label">整趟行程裡，哪一個安排最值得我邀功？</label><textarea class="survey-textarea" id="sv-credit" placeholder="例如：某個很難安排但最後超值得的行程、很順的交通銜接、驚喜安排，或你覺得『這個真的有用心』的地方。">${esc(surveyState.credit)}</textarea>`,
         collect: () => surveyState.credit=document.getElementById('sv-credit')?.value.trim()||''
       },
       {
@@ -7413,7 +7434,7 @@ function updateAchievementWall() {
       {
         title:'用三個詞留下這十天',
         copy:'前面已經回想了一輪，現在只留三個詞。',
-        render: () => `<label class="survey-label">請用三個詞形容這趟旅行</label><input class="survey-input" id="sv-three" placeholder="例如：意外、好吃、很瘋" value="${esc(surveyState.threeWords)}">`,
+        render: () => `<label class="survey-label">請用三個詞形容這趟旅行</label><input class="survey-input" id="sv-three" placeholder="例如：意外、好吃、很瘋。也可以是「充實、荒謬、捨不得」這種完全主觀的三個詞。" value="${esc(surveyState.threeWords)}">`,
         collect: () => surveyState.threeWords=document.getElementById('sv-three')?.value.trim()||''
       },
       {
@@ -7432,10 +7453,10 @@ function updateAchievementWall() {
 
     function renderDayRanking() {
       const items = Array.isArray(surveyState.dayRank) && surveyState.dayRank.length===9 ? surveyState.dayRank : [...DAY_RANK_DEFAULT];
-      return `<div id="survey-rank-list">${items.map((x,i)=>`
+      return `<div class="survey-answer-hint">按住左側 ⠿ 可以拖曳；也可以用右側 ↑ ↓ 調整。越上面代表越想把那一天完整重來一次。</div><div id="survey-rank-list">${items.map((x,i)=>`
         <div class="survey-rank-row" draggable="true" data-rank="${esc(x)}">
           <span class="survey-drag-handle">⠿</span>
-          <span class="survey-rank-label"><b>${i+1}.</b> ${esc(x)}</span>
+          <span class="survey-rank-label">${esc(x)}</span>
           <button type="button" class="survey-rank-move" onclick="moveSurveyRank(this,-1)">↑</button>
           <button type="button" class="survey-rank-move" onclick="moveSurveyRank(this,1)">↓</button>
         </div>`).join('')}</div>`;
@@ -7456,7 +7477,7 @@ function updateAchievementWall() {
     function relabelRanking() {
       document.querySelectorAll('#survey-rank-list .survey-rank-row').forEach((row,i)=>{
         const label=row.querySelector('.survey-rank-label');
-        if (label) label.innerHTML=`<b>${i+1}.</b> ${esc(row.dataset.rank)}`;
+        if (label) label.textContent=row.dataset.rank;
       });
     }
 
@@ -7581,6 +7602,7 @@ function updateAchievementWall() {
       if (t.complete && !t.thirdPlace && (t.bronzeCandidates||[]).length===2) {
         const [a,b]=t.bronzeCandidates;
         return `${renderTournamentPodium(t)}
+          <div class="survey-answer-hint">最後再從兩位四強止步者中選一個：如果只能重玩其中一個體驗，你會選誰？</div>
           <div class="placement-playoff">
             <div class="text-[11px] font-bold text-[#9A6A3D]">🥉 最後一場｜季軍加賽</div>
             <div class="text-[10px] text-gray-500 mt-1">兩位四強止步者再選一次，排出完整前三名。</div>
@@ -7598,6 +7620,7 @@ function updateAchievementWall() {
       const a=round[t.matchIndex*2], b=round[t.matchIndex*2+1];
       const done=Number(t.selectionCount||0);
       return `
+        <div class="survey-answer-hint">不用想哪個「比較厲害」，只要選：如果現在只能重玩其中一個，你會更想選哪個？憑直覺按就好。</div>
         <div class="text-[11px] text-gray-500">目前進度：${Math.min(done,EXPERIENCE_POOL.length)} / ${EXPERIENCE_POOL.length} 次選擇</div>
         <div class="tournament-vs">
           <button type="button" class="tournament-pick" onclick="chooseTournamentWinner(0)">${esc(a)}</button>
@@ -7750,7 +7773,7 @@ function updateAchievementWall() {
     function renderImpressions() {
       const selected=new Set(surveyState.impressions||[]);
       const otherOn=selected.has('其他');
-      return `<div id="sv-impressions">${IMPRESSIONS.map(x=>`
+      return `<div class="survey-answer-hint">先勾最多 5 個最符合你這趟感受的印象；如果現成選項都不準，可以選「其他」自己寫。</div><div id="sv-impressions">${IMPRESSIONS.map(x=>`
         <label class="survey-choice ${selected.has(x)?'selected':''}">
           <input type="checkbox" class="mr-2" value="${esc(x)}" ${selected.has(x)?'checked':''} onchange="limitSurveyImpressions(this)"> ${esc(x)}
         </label>`).join('')}</div>
@@ -7759,6 +7782,7 @@ function updateAchievementWall() {
           <input class="survey-input" id="sv-impression-other" placeholder="直接寫下來，例如：早餐店文化、路邊機車很多…" value="${esc(surveyState.impressionOther||'')}" oninput="surveyState.impressionOther=this.value; saveSurveyState(); refreshImpressionTopOptions()">
         </div>
         <label class="survey-label">從你選的項目裡，再選一個「最有感」</label>
+        <div class="survey-answer-hint">想像只能留下其中一個印象給半年後的自己，你會保留哪一個？</div>
         <select class="survey-select" id="sv-impression-top">${renderImpressionTopOptions()}</select>`;
     }
 
@@ -7804,7 +7828,7 @@ function updateAchievementWall() {
       ['stay','住宿體驗'],['transport','交通體驗'],['comfort','舒適程度'],['returnTaiwan','再次來台灣的意願']
     ];
     function renderRatings() {
-      return ratingDefs.map(([key,label])=>`
+      return `<div class="survey-answer-hint">1 分＝很不滿意／完全不想再來，10 分＝非常滿意／非常願意。每一項可以給不同分，不用客氣，也不用都打高分。</div>` + ratingDefs.map(([key,label])=>`
         <div class="rating-row">
           <div class="rating-head"><span>${label}</span><span id="rating-${key}-value">${Number(surveyState.ratings?.[key]??8)} / 10</span></div>
           <input type="range" id="rating-${key}" min="1" max="10" step="1" value="${Number(surveyState.ratings?.[key]??8)}"
@@ -7831,7 +7855,7 @@ function updateAchievementWall() {
         ensureTournament();
         next.disabled=!tournamentPlacementsComplete();
       } else next.disabled=false;
-      if (surveyStep===0) setTimeout(attachRankingDrag,0);
+      if (QUESTIONS[surveyStep]?.title==='如果可以完整重玩一次') setTimeout(attachRankingDrag,0);
       window.scrollTo({top:0,behavior:'instant'});
     }
 
@@ -7863,7 +7887,7 @@ function updateAchievementWall() {
           showAchievementUnlockModal({
             icon:'💌',
             title:'邵奶奶的台灣心得報告',
-            desc:'Bonus ＋1 💌｜成就牆本身仍然是 10 個公開成就＋7 個隱藏成就。這次少解鎖的那一格，現在由旅後問卷補回來了；「調皮搗蛋鬼」雖然沒有成功抓到你，生日密碼還是可以完整配對 🎂'
+            desc:'Bonus ＋1 💌｜「調皮搗蛋鬼」沒抓到沒關係，旅後問卷幫你把最後一格補回來了。10＋6＋1＝17，生日密碼配對完成 🎂'
           });
         }
       },180);
@@ -7877,6 +7901,19 @@ function updateAchievementWall() {
       page?.classList.remove('hidden');
       page?.setAttribute('aria-hidden','false');
       document.body.style.overflow='hidden';
+      document.getElementById('survey-intro-card')?.classList.remove('hidden');
+      document.getElementById('survey-question-card')?.classList.add('hidden');
+      document.getElementById('survey-step-counter')?.classList.add('hidden');
+      document.getElementById('survey-progress-wrap')?.classList.add('hidden');
+      window.scrollTo({top:0,behavior:'instant'});
+    };
+
+    window.startTripSurveyTest=function(){
+      surveyStep=0;
+      document.getElementById('survey-intro-card')?.classList.add('hidden');
+      document.getElementById('survey-question-card')?.classList.remove('hidden');
+      document.getElementById('survey-step-counter')?.classList.remove('hidden');
+      document.getElementById('survey-progress-wrap')?.classList.remove('hidden');
       renderSurveyStep();
     };
     window.closeTripSurveyTest=function(){

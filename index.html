@@ -4106,6 +4106,19 @@ body.dark-mode .survey-rank-row, body.dark-mode .survey-choice, body.dark-mode .
 <div class="achievement-card md:col-span-2" id="ach-hidden-final"><div class="ach-icon">🔒</div><div><div class="ach-title">？？？</div><div class="ach-desc">隱藏成就</div></div><div class="achievement-lock">🔒</div></div>
 </div>
 </div>
+<div>
+<h3 class="font-bold text-base text-[#2C3E35] mb-3">Bonus 加分成就</h3>
+<div class="grid grid-cols-1 gap-3">
+<div class="achievement-card cursor-pointer" id="ach-bonus-survey" onclick="openTripSurveyTest()">
+  <div class="ach-icon">💌</div>
+  <div>
+    <div class="ach-title">邵奶奶的台灣心得報告</div>
+    <div class="ach-desc">完成旅後問卷後解鎖｜加分題</div>
+  </div>
+  <div class="achievement-lock">🔒</div>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="tab-content hidden fade-in space-y-6" id="tab-budget">
@@ -6566,6 +6579,14 @@ function updateAchievementWall() {
             hiddenMetaById[id] = meta;
             setAchievementState(id,on,meta);
         });
+        const surveyBonusDone = localStorage.getItem('posttrip_survey_submitted_v1') === 'true';
+        setAchievementState('ach-bonus-survey', surveyBonusDone, {
+            icon:'💌',
+            title:'邵奶奶的台灣心得報告',
+            desc: surveyBonusDone
+                ? '旅後問卷完成｜Bonus ＋1｜10＋6＋1＝17 🎂'
+                : '完成旅後問卷後解鎖｜加分題'
+        });
 
         // 成就頁只顯示進度條，不公開總數
         const allState = { ...pub, ...hiddenState };
@@ -7232,7 +7253,7 @@ function updateAchievementWall() {
 </div>
 <div class="test-survey-achievement">
 <div class="text-[11px] font-bold text-[#2C3E35]">💌 ＋1｜邵奶奶的台灣心得報告</div>
-<div class="tiny mt-1">目前只在私人測試模式預覽。這次少掉的那一格，就由旅後問卷補上。10＋6＋1＝17，生日密碼照樣完整配對 🎂</div>
+<div class="tiny mt-1">目前只在私人測試模式預覽。這是一題額外的 Bonus ＋1；10＋6＋1＝17，生日密碼依然完整配對 🎂</div>
 </div>
 <div class="mt-3 text-[11px] font-bold">🧹 測試資料</div>
 <div class="test-row">
@@ -7271,6 +7292,19 @@ function updateAchievementWall() {
         <button type="button" class="survey-btn primary" id="survey-next-btn" onclick="surveyNext()">後一題 →</button>
       </div>
     </div>
+
+    <div class="survey-card hidden" id="survey-submitted-card">
+      <div class="survey-kicker">POST-TRIP QUESTIONNAIRE · COMPLETED</div>
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <h2 class="survey-title">💌 已提交的旅後問卷</h2>
+          <p class="survey-copy">這份回答已經封存，只能查看，不能再次修改。</p>
+        </div>
+        <div class="text-[10px] font-bold text-[#C66914] whitespace-nowrap">已提交 ✓</div>
+      </div>
+      <div id="survey-readonly-body" class="mt-5"></div>
+      <button type="button" class="survey-btn w-full mt-5" onclick="closeTripSurveyTest()">關閉</button>
+    </div>
   </div>
 </div>
 
@@ -7303,6 +7337,7 @@ function updateAchievementWall() {
     ];
 
     const POSTTRIP_BONUS_KEY = 'posttrip_bonus_unlocked_v2';
+    const POSTTRIP_SUBMITTED_KEY = 'posttrip_survey_submitted_v1';
     let surveyStep = 0;
     let surveyState = loadSurveyState();
     let draggedRankEl = null;
@@ -7314,7 +7349,7 @@ function updateAchievementWall() {
         favoriteSpot:'', surpriseSpot:'', firstImage:'',
         tournament:null,
         foodAgain:'', foodSurprise:'', foodFail:'', foodTakeHome:'',
-        coverPhoto:'', gladCame:'',
+        coverPhoto:'', coverTitle:'', gladCame:'',
         happiest:'', emotional:'', funniest:'', messiest:'',
         rearrange:'', credit:'',
         impressions:[], impressionTop:'', impressionOther:'',
@@ -7333,6 +7368,7 @@ function updateAchievementWall() {
 
     function saveSurveyState() {
       if (!window.__TEST_MODE_ACTIVE__) return;
+      if (localStorage.getItem(POSTTRIP_SUBMITTED_KEY) === 'true') return;
       localStorage.setItem(TEST_SURVEY_KEY, JSON.stringify(surveyState));
     }
 
@@ -7363,7 +7399,7 @@ function updateAchievementWall() {
       },
       {
         title:'這趟旅程的最愛體驗 TOP',
-        copy:`${EXPERIENCE_POOL.length} 個實際去過的地方／體驗，一次只選兩個。一路二選一，直到排出冠、亞、季軍；完成後會顯示淘汰樹狀圖。`,
+        copy:'',
         render: renderTournament,
         collect: () => {}
       },
@@ -7388,7 +7424,8 @@ function updateAchievementWall() {
         copy:'選一張最能代表這趟旅行的照片，做成一張可以長按保存的旅行封面卡。',
         render: () => `
           <label class="survey-label">如果只能留一張照片代表這十天，你會挑哪一張？</label>
-          <textarea class="survey-textarea" id="sv-cover" placeholder="可以先寫：這是哪一天、哪個地方，或為什麼會選這張。">${esc(surveyState.coverPhoto)}</textarea>
+          <input class="survey-input" id="sv-cover-title" placeholder="給這張封面取個名字（選填），例如：十天西台灣大冒險" value="${esc(surveyState.coverTitle||'')}">
+          <textarea class="survey-textarea" id="sv-cover" placeholder="寫一句封面註解：這是哪一天、哪個地方，或為什麼會選這張。">${esc(surveyState.coverPhoto)}</textarea>
           <div class="survey-cover-upload">
             <input type="file" id="sv-cover-file" accept="image/*" class="hidden" onchange="handleSurveyCoverUpload(this)">
             <label for="sv-cover-file" class="survey-file-label">📷 選一張照片</label>
@@ -7398,7 +7435,10 @@ function updateAchievementWall() {
             <canvas id="survey-cover-canvas" class="survey-cover-canvas"></canvas>
             <div class="text-[10px] text-gray-400 text-center mt-2">產生後可以直接長按圖片儲存。</div>
           </div>`,
-        collect: () => surveyState.coverPhoto=document.getElementById('sv-cover')?.value.trim()||''
+        collect: () => {
+          surveyState.coverTitle=document.getElementById('sv-cover-title')?.value.trim()||'';
+          surveyState.coverPhoto=document.getElementById('sv-cover')?.value.trim()||'';
+        }
       },
       {
         title:'「還好這次有來」',
@@ -7640,7 +7680,7 @@ function updateAchievementWall() {
           <div class="tournament-vs-mark">VS</div>
           <button type="button" class="tournament-pick" onclick="chooseTournamentWinner(1)">${esc(b)}</button>
         </div>
-        <div class="text-[10px] text-gray-400 mt-3">一路選到冠軍後，會再進行一場季軍加賽，最後排出完整前三名。</div>`;
+        <div class="text-[10px] text-gray-400 mt-3"></div>`;
     }
 
     window.chooseTournamentWinner=function(side){
@@ -7786,7 +7826,7 @@ function updateAchievementWall() {
     function renderImpressions() {
       const selected=new Set(surveyState.impressions||[]);
       const otherOn=selected.has('其他');
-      return `<div class="survey-answer-hint">先勾最多 5 個最符合你這趟感受的印象；如果現成選項都不準，可以選「其他」自己寫。</div><div id="sv-impressions">${IMPRESSIONS.map(x=>`
+      return `<div class="survey-answer-hint">先勾最多 3 個最符合你這趟感受的印象；如果現成選項都不準，可以選「其他」自己寫。</div><div id="sv-impressions">${IMPRESSIONS.map(x=>`
         <label class="survey-choice ${selected.has(x)?'selected':''}">
           <input type="checkbox" class="mr-2" value="${esc(x)}" ${selected.has(x)?'checked':''} onchange="limitSurveyImpressions(this)"> ${esc(x)}
         </label>`).join('')}</div>
@@ -7817,7 +7857,7 @@ function updateAchievementWall() {
     window.limitSurveyImpressions=function(chk){
       const all=[...document.querySelectorAll('#sv-impressions input[type="checkbox"]')];
       const checked=all.filter(x=>x.checked);
-      if(checked.length>5){ chk.checked=false; alert('最多選 3 個。'); }
+      if(checked.length>3){ chk.checked=false; alert('最多選 3 個。'); }
       all.forEach(x=>x.closest('label')?.classList.toggle('selected',x.checked));
       surveyState.impressions=all.filter(x=>x.checked).map(x=>x.value);
       if(!surveyState.impressions.includes(surveyState.impressionTop)) surveyState.impressionTop='';
@@ -7841,7 +7881,7 @@ function updateAchievementWall() {
       ['stay','住宿體驗'],['transport','交通體驗'],['comfort','舒適程度'],['returnTaiwan','再次來台灣的意願']
     ];
     function renderRatings() {
-      return `<div class="survey-answer-hint">0 分＝完全不滿意／完全不想再來，10 分＝非常滿意／非常願意。每一項可以給不同分，不用客氣，也不用都打高分。</div>` + ratingDefs.map(([key,label])=>`
+      return `<div class="survey-answer-hint">0 分＝完全不滿意／完全不想再來，10 分＝非常滿意／非常願意。每一項可以給不同分，不用客氣，也不用都打高分。<br><span style="opacity:.72">起始位置不是隨機的 👀</span></div>` + ratingDefs.map(([key,label])=>`
         <div class="rating-row">
           <div class="rating-head"><span>${label}</span><span id="rating-${key}-value">${Number(surveyState.ratings?.[key]??0)} / 10</span></div>
           <input type="range" id="rating-${key}" min="0" max="10" step="1" value="${Number(surveyState.ratings?.[key]??0)}"
@@ -7866,11 +7906,18 @@ function updateAchievementWall() {
         const g=ctx.createLinearGradient(0,H*.45,0,H);
         g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,.78)');
         ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-        ctx.fillStyle='rgba(255,255,255,.92)'; ctx.font='700 42px sans-serif'; ctx.fillText('TAIWAN · 2026',76,H-300);
-        ctx.fillStyle='#fff'; ctx.font='700 78px sans-serif'; ctx.fillText('十天的台灣旅行',76,H-210);
-        ctx.font='400 34px sans-serif'; ctx.fillStyle='rgba(255,255,255,.9)'; ctx.fillText('2026.09.27 — 2026.10.06',76,H-145);
+        ctx.fillStyle='rgba(255,255,255,.92)'; ctx.font='700 36px sans-serif'; ctx.fillText('TAIWAN · 2026',76,H-360);
+        ctx.fillStyle='#fff'; ctx.font='700 72px sans-serif';
+        const coverTitle=(surveyState.coverTitle||'').trim() || '十天的台灣旅行';
+        ctx.fillText(coverTitle.slice(0,18),76,H-275);
+        ctx.font='400 30px sans-serif'; ctx.fillStyle='rgba(255,255,255,.9)'; ctx.fillText('2026.09.27 — 2026.10.06',76,H-218);
+        const champ=surveyState.tournament?.champion;
+        if(champ){
+          ctx.font='650 25px sans-serif'; ctx.fillStyle='rgba(255,255,255,.84)';
+          ctx.fillText('MY TOP 1  ·  '+champ,76,H-166);
+        }
         const note=(surveyState.coverPhoto||'').trim();
-        if(note){ctx.font='400 28px sans-serif';ctx.fillStyle='rgba(255,255,255,.86)';let line='',y=H-88;
+        if(note){ctx.font='400 28px sans-serif';ctx.fillStyle='rgba(255,255,255,.86)';let line='',y=H-112;
           for(const ch of note){const test=line+ch;if(ctx.measureText(test).width>1040){ctx.fillText(line,76,y);line=ch;y+=38}else line=test}
           if(line)ctx.fillText(line,76,y);
         }
@@ -7927,38 +7974,113 @@ function updateAchievementWall() {
       submitTripSurveyTest();
     };
 
+
+    function readonlyBlock(title, body) {
+      const safe = body ? body : '—';
+      return `<div class="rounded-2xl border border-[#E2DDD5] bg-white/70 p-4">
+        <div class="text-[10px] font-bold tracking-wide text-[#C66914] mb-2">${esc(title)}</div>
+        <div class="text-sm leading-7 text-[#2C3E35] whitespace-pre-wrap">${safe}</div>
+      </div>`;
+    }
+
+    function getSurveyTop3() {
+      const t=surveyState.tournament||{};
+      return [t.champion,t.runnerUp,t.thirdPlace].filter(Boolean);
+    }
+
+    function renderSubmittedSurveySummary() {
+      const host=document.getElementById('survey-readonly-body');
+      if(!host) return;
+      const top3=getSurveyTop3();
+      const impressions=(surveyState.impressions||[]).map(impressionDisplay);
+      const r=surveyState.ratings||{};
+      const ratingText=ratingDefs.map(([key,label])=>`${label}：${Number(r[key]??0)} / 10`).join('\n');
+      const memory=[
+        `😆 最搞笑／有趣：${surveyState.happiest||'—'}`,
+        `💗 最感動／最有感：${surveyState.emotional||'—'}`,
+        `🧠 最難忘：${surveyState.funniest||'—'}`,
+        `🫠 最狼狽：${surveyState.messiest||'—'}`
+      ].join('\n\n');
+      const food=[
+        `🏆 最想再吃一次：${surveyState.foodAgain||'—'}`,
+        `🤯 最意外好吃：${surveyState.foodSurprise||'—'}`,
+        `💀 最不合口味：${surveyState.foodFail||'—'}`,
+        `🎁 最想帶回去：${surveyState.foodTakeHome||'—'}`
+      ].join('\n');
+      const topText=top3.length
+        ? `🥇 ${top3[0]||'—'}\n🥈 ${top3[1]||'—'}\n🥉 ${top3[2]||'—'}`
+        : '—';
+
+      host.innerHTML = `<div class="space-y-3">
+        ${readonlyBlock('第一個浮現的畫面', esc(surveyState.firstImage||''))}
+        ${readonlyBlock('景點與體驗回想', `最喜歡：${esc(surveyState.favoriteSpot||'—')}<br>意外喜歡：${esc(surveyState.surpriseSpot||'—')}`)}
+        ${readonlyBlock('最愛體驗 TOP 3', esc(topText))}
+        ${readonlyBlock('台灣胃頒獎典禮', esc(food))}
+        ${readonlyBlock('旅行封面', `${surveyState.coverTitle?`封面標題：${esc(surveyState.coverTitle)}<br>`:''}${esc(surveyState.coverPhoto||'—')}`)}
+        ${readonlyBlock('「還好這次有來」', esc(surveyState.gladCame||''))}
+        ${readonlyBlock('旅行記憶四格', esc(memory))}
+        ${readonlyBlock('Day 1～Day 9 重玩排序', esc((surveyState.dayRank||[]).join('\n')))}
+        ${readonlyBlock('如果可以重新排一次', esc(surveyState.rearrange||''))}
+        ${readonlyBlock('該邀功的還是要邀', esc(surveyState.credit||''))}
+        ${readonlyBlock('台灣印象', `${esc(impressions.join('、')||'—')}<br><span class="text-xs text-gray-500">最有感：${esc(impressionDisplay(surveyState.impressionTop||'')||'—')}</span>`)}
+        ${readonlyBlock('三個詞', esc(surveyState.threeWords||''))}
+        ${readonlyBlock('整體評分', esc(ratingText))}
+        ${readonlyBlock('總結', esc(surveyState.finalMessage||''))}
+      </div>`;
+    }
+
+    function showSubmittedSurvey() {
+      document.getElementById('survey-intro-card')?.classList.add('hidden');
+      document.getElementById('survey-question-card')?.classList.add('hidden');
+      document.getElementById('survey-step-counter')?.classList.add('hidden');
+      document.getElementById('survey-progress-wrap')?.classList.add('hidden');
+      document.getElementById('survey-submitted-card')?.classList.remove('hidden');
+      renderSubmittedSurveySummary();
+    }
+
     function submitTripSurveyTest() {
       if(!window.__TEST_MODE_ACTIVE__) return;
-      saveSurveyState();
+      if(localStorage.getItem(POSTTRIP_SUBMITTED_KEY)==='true') { showSubmittedSurvey(); return; }
+      QUESTIONS[surveyStep]?.collect?.();
+      localStorage.setItem(TEST_SURVEY_KEY, JSON.stringify(surveyState));
+      localStorage.setItem(POSTTRIP_SUBMITTED_KEY,'true');
       localStorage.setItem(POSTTRIP_BONUS_KEY,'true');
+      if(typeof updateAchievementWall==='function') updateAchievementWall();
       window.closeTripSurveyTest();
       setTimeout(()=>{
         if(typeof showAchievementUnlockModal==='function'){
           showAchievementUnlockModal({
             icon:'💌',
             title:'邵奶奶的台灣心得報告',
-            desc:'Bonus ＋1 💌｜「調皮搗蛋鬼」沒抓到沒關係，旅後問卷幫你把最後一格補回來了。10＋6＋1＝17，生日密碼配對完成 🎂'
+            desc:'Bonus ＋1 💌｜這是一題額外加分題。10＋6＋1＝17，生日密碼依然完整配對 🎂'
           });
         }
       },180);
     }
 
     window.openTripSurveyTest=function(){
-      if(!window.__TEST_MODE_ACTIVE__) return;
+      const submitted=localStorage.getItem(POSTTRIP_SUBMITTED_KEY)==='true';
+      if(!window.__TEST_MODE_ACTIVE__ && !submitted) return;
       surveyState=loadSurveyState();
       surveyStep=0;
       const page=document.getElementById('trip-survey-test-page');
       page?.classList.remove('hidden');
       page?.setAttribute('aria-hidden','false');
       document.body.style.overflow='hidden';
-      document.getElementById('survey-intro-card')?.classList.remove('hidden');
-      document.getElementById('survey-question-card')?.classList.add('hidden');
-      document.getElementById('survey-step-counter')?.classList.add('hidden');
-      document.getElementById('survey-progress-wrap')?.classList.add('hidden');
+      document.getElementById('survey-submitted-card')?.classList.add('hidden');
+      if(submitted){
+        showSubmittedSurvey();
+      }else{
+        document.getElementById('survey-intro-card')?.classList.remove('hidden');
+        document.getElementById('survey-question-card')?.classList.add('hidden');
+        document.getElementById('survey-step-counter')?.classList.add('hidden');
+        document.getElementById('survey-progress-wrap')?.classList.add('hidden');
+      }
       window.scrollTo({top:0,behavior:'instant'});
     };
 
     window.startTripSurveyTest=function(){
+      if(localStorage.getItem(POSTTRIP_SUBMITTED_KEY)==='true'){ showSubmittedSurvey(); return; }
       surveyStep=0;
       document.getElementById('survey-intro-card')?.classList.add('hidden');
       document.getElementById('survey-question-card')?.classList.remove('hidden');
@@ -7969,6 +8091,7 @@ function updateAchievementWall() {
     window.closeTripSurveyTest=function(){
       collectCurrent();
       const page=document.getElementById('trip-survey-test-page');
+      document.getElementById('survey-submitted-card')?.classList.add('hidden');
       page?.classList.add('hidden');
       page?.setAttribute('aria-hidden','true');
       document.body.style.overflow='';
@@ -8125,9 +8248,17 @@ function initPrivateTestAccess() {
     const toggle = document.getElementById('test-console-toggle');
     const trigger = document.getElementById('secret-test-trigger');
 
+    const surveySubmitted = localStorage.getItem('posttrip_survey_submitted_v1') === 'true';
+    const surveyNavBtn = document.getElementById('btn-trip-survey');
+    if (surveyNavBtn && surveySubmitted) {
+        surveyNavBtn.classList.remove('hidden');
+        surveyNavBtn.textContent = '💌 查看旅後問卷';
+    }
+
     if (window.__TEST_MODE_ACTIVE__) {
         toggle?.classList.remove('hidden');
-        document.getElementById('btn-trip-survey')?.classList.remove('hidden');
+        surveyNavBtn?.classList.remove('hidden');
+        if (!surveySubmitted && surveyNavBtn) surveyNavBtn.textContent = '📝 問卷調查';
 
         const actualBtn = Array.from(document.querySelectorAll('#test-console .test-btn'))
             .find(b => b.textContent.trim() === '實際時間');
@@ -8146,7 +8277,7 @@ function initPrivateTestAccess() {
     }
 
     toggle?.classList.add('hidden');
-    document.getElementById('btn-trip-survey')?.classList.add('hidden');
+    if (!surveySubmitted) surveyNavBtn?.classList.add('hidden');
     document.getElementById('test-console')?.classList.add('hidden');
 
     if (!trigger) return;

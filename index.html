@@ -2126,7 +2126,7 @@ body.dark-mode .survey-rank-row, body.dark-mode .survey-choice, body.dark-mode .
 <button class="day-main-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-white text-[#2C3E35] hover:bg-[#E2DDD5] border border-[#E2DDD5]" id="main-btn-9" onclick="changeDay(9)">📍 Day 9 高雄</button>
 <button class="day-main-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-white text-[#2C3E35] hover:bg-[#E2DDD5] border border-[#E2DDD5]" id="main-btn-10" onclick="changeDay(10)">📍 Day 10 賦歸</button>
 <button class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-[#C66914] text-white shadow-md" id="btn-tips" onclick="switchTab('tips')">📌 全程提醒</button>
-<button class="tab-btn hidden px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-white text-[#C66914] border border-[#C66914]/40 hover:bg-[#C66914]/10" id="btn-trip-survey" onclick="openTripSurveyTest()">📝 問卷調查</button>
+<button class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-white text-[#2C3E35] hover:bg-[#E2DDD5] border border-[#E2DDD5] hidden" id="btn-trip-survey" onclick="openTripSurveyTest()">📝 問卷調查</button>
 </div>
 </nav>
 <!-- 子選單導覽列（只在 Day 畫面顯示） -->
@@ -7900,7 +7900,7 @@ function updateAchievementWall() {
       ['stay','住宿體驗'],['transport','交通體驗'],['comfort','舒適程度'],['returnTaiwan','再次來台灣的意願']
     ];
     function renderRatings() {
-      return `<div class="survey-answer-hint">0 分＝完全不滿意／完全不想再來，10 分＝非常滿意／非常願意。每一項可以給不同分，不用客氣，也不用都打高分。<br><span style="opacity:.72">預設值可以拉動👀</span></div>` + ratingDefs.map(([key,label])=>`
+      return `<div class="survey-answer-hint">0 分＝完全不滿意／完全不想再來，10 分＝非常滿意／非常願意。每一項可以給不同分，不用客氣，也不用都打高分。<br><span style="opacity:.72">注意預設值✨</span></div>` + ratingDefs.map(([key,label])=>`
         <div class="rating-row">
           <div class="rating-head"><span>${label}</span><span id="rating-${key}-value">${Number(surveyState.ratings?.[key]??0)} / 10</span></div>
           <input type="range" id="rating-${key}" min="0" max="10" step="1" value="${Number(surveyState.ratings?.[key]??0)}"
@@ -8081,41 +8081,86 @@ function updateAchievementWall() {
 
     function makeItineraryPage(){
       const c=bookletCanvas(),ctx=c.getContext('2d'),W=c.width,H=c.height;
-      pageBase(ctx,W,H,'九天行程回顧','DAY 1 — DAY 9');
+      pageBase(ctx,W,H,'十天行程回顧','DAY 1 — DAY 10');
       const days=surveyState.dayRank?.length ? DAY_RANK_DEFAULT : DAY_RANK_DEFAULT;
       ctx.font='600 25px sans-serif';ctx.fillStyle='#2C3E35';
       let y=215;
-      DAY_RANK_DEFAULT.forEach((d,i)=>{
-        ctx.fillStyle=i%2===0?'#EEE8DF':'#F3EEE7';ctx.fillRect(62,y-30,W-124,92);
-        ctx.fillStyle='#C66914';ctx.font='700 22px sans-serif';ctx.fillText(`DAY ${i+1}`,84,y);
-        ctx.fillStyle='#2C3E35';ctx.font='600 22px sans-serif';
-        wrapCanvasText(ctx,d.replace(/^Day \d+｜/,''),180,y,W-260,28,2);
-        y+=108;
+      const bookletDays=[
+        ...DAY_RANK_DEFAULT,
+        'Day 10｜高雄機場・賦歸'
+      ];
+      bookletDays.forEach((d,i)=>{
+        ctx.fillStyle=i%2===0?'#EEE8DF':'#F3EEE7';ctx.fillRect(62,y-30,W-124,86);
+        ctx.fillStyle='#C66914';ctx.font='700 21px sans-serif';ctx.fillText(`DAY ${i+1}`,84,y);
+        ctx.fillStyle='#2C3E35';ctx.font='600 21px sans-serif';
+        wrapCanvasText(ctx,d.replace(/^Day \d+｜/,''),180,y,W-260,27,2);
+        y+=94;
       });
       return c.toDataURL('image/png');
     }
 
+
+    function getBookletAchievementItems(){
+      const expenseItems = (()=>{ try{return JSON.parse(localStorage.getItem('tripExpenses')||'[]')}catch(e){return[]} })();
+      const expenseTotal = Array.isArray(expenseItems) ? expenseItems.reduce((s,x)=>s+Number(x?.amount||0),0) : 0;
+      const expenseCount = Array.isArray(expenseItems) ? expenseItems.length : 0;
+      const foodCount = typeof getFoodCheckedCount==='function' ? getFoodCheckedCount() : 0;
+
+      const items = [
+        ['🍜','台灣胃初體驗', foodCount>=5],
+        ['😋','台灣胃進階中', foodCount>=15],
+        ['🤤','台灣胃認證', foodCount>=20],
+        ['👑','台灣胃永久居民', foodCount>=25],
+        ['💸','台灣經濟熱身中', expenseTotal>=5000],
+        ['💸','台灣經濟推進器', expenseTotal>=15000],
+        ['🧾','邵奶奶的流水帳', expenseCount>=15],
+        ['🧾','每一塊錢都有紀錄', expenseCount>=25],
+        ['🧳','獨旅模式通關', localStorage.getItem(ACH_KEYS?.solo||'')==='true'],
+        ['🗺️','台灣一周目達成', localStorage.getItem(ACH_KEYS?.week||'')==='true'],
+        ['🍰','甜的有另一個胃', localStorage.getItem(ACH_KEYS?.dessert||'')==='true'],
+        ['🔐','真的很想去', localStorage.getItem(ACH_KEYS?.east||'')==='true'],
+        ['🎧','想見你的人', localStorage.getItem(ACH_KEYS?.music||'')==='true'],
+        ['😎','我還年輕，我還年輕！', localStorage.getItem(ACH_KEYS?.night||'')==='true'],
+        ['📸','出片率100%', localStorage.getItem(ACH_KEYS?.photo||'')==='true'],
+        ['👻','調皮搗蛋鬼', localStorage.getItem(ACH_KEYS?.prank||'')==='true'],
+        ['👵🏻🏝️','西台灣制霸證書', localStorage.getItem(ACH_KEYS?.final||'')==='true'],
+        ['💌','邵奶奶的台灣心得報告', localStorage.getItem(POSTTRIP_SUBMITTED_KEY)==='true']
+      ];
+      return items;
+    }
+
+    function drawAchievementGrid(ctx,items,startY,W){
+      const colW=(W-160)/2, rowH=76;
+      let y=startY;
+      items.forEach((it,i)=>{
+        const col=i%2, row=Math.floor(i/2);
+        const x=70+col*(colW+20);
+        const yy=y+row*rowH;
+        ctx.fillStyle=it[2]?'#EEF4EF':'#F1EEE9';
+        ctx.fillRect(x,yy,colW,rowH-10);
+        ctx.fillStyle=it[2]?'#2C3E35':'#9A948C';
+        ctx.font='700 20px sans-serif';
+        ctx.fillText(`${it[0]} ${it[1]}`,x+14,yy+28);
+        ctx.font='500 16px sans-serif';
+        ctx.fillText(it[2]?'已解鎖 ✓':'未解鎖',x+14,yy+52);
+      });
+      return y+Math.ceil(items.length/2)*rowH;
+    }
+
     function makeHighlightsPage(){
       const c=bookletCanvas(),ctx=c.getContext('2d'),W=c.width,H=c.height;
-      pageBase(ctx,W,H,'這趟旅行的 TOP 3','最愛體驗與成就');
+      pageBase(ctx,W,H,'TOP 3 ＋成就收藏','最愛體驗與完整成就紀錄');
       const t=surveyState.tournament||{};
       const top=[t.champion,t.runnerUp,t.thirdPlace];
       const medals=['🥇','🥈','🥉'];
-      let y=240;
+      const boxY=[215,335,455], boxFill=['#FFF3C8','#EEF1F4','#F5DDC8'];
       top.forEach((name,i)=>{
-        ctx.fillStyle=['#FFF3C8','#EDEFF2','#F5DDC8'][i];ctx.fillRect(70,y-46,W-140,100);
-        ctx.fillStyle='#2C3E35';ctx.font='700 34px sans-serif';ctx.fillText(`${medals[i]} ${name||'—'}`,94,y+10);
-        y+=130;
+        ctx.fillStyle=boxFill[i];ctx.fillRect(70,boxY[i],W-140,92);
+        ctx.fillStyle='#2C3E35';ctx.font='700 30px sans-serif';ctx.fillText(`${medals[i]} ${name||'—'}`,94,boxY[i]+56);
       });
-      ctx.fillStyle='#C66914';ctx.font='700 28px sans-serif';ctx.fillText('成就紀錄',70,y+30);
-      ctx.fillStyle='#2C3E35';ctx.font='500 24px sans-serif';
-      const achievements=[
-        '西台灣制霸證書',
-        '旅後問卷 Bonus ＋1',
-        '10＋6＋1＝17｜生日密碼配對完成'
-      ];
-      y+=82;
-      achievements.forEach(a=>{ctx.fillText('• '+a,82,y);y+=52;});
+      ctx.fillStyle='#C66914';ctx.font='700 26px sans-serif';ctx.fillText('完整成就紀錄',70,590);
+      const items=getBookletAchievementItems();
+      drawAchievementGrid(ctx,items,625,W);
       return c.toDataURL('image/png');
     }
 
@@ -8142,6 +8187,36 @@ function updateAchievementWall() {
       return c.toDataURL('image/png');
     }
 
+
+    function makeImpressionsPage(){
+      const c=bookletCanvas(),ctx=c.getContext('2d'),W=c.width,H=c.height;
+      pageBase(ctx,W,H,'台灣印象與評分','這趟旅行留下的感受');
+      let y=220;
+      ctx.fillStyle='#C66914';ctx.font='700 26px sans-serif';ctx.fillText('最有感的台灣印象',70,y);
+      y+=52; ctx.fillStyle='#2C3E35';ctx.font='600 28px sans-serif';
+      const impressions=(surveyState.impressions||[]).map(impressionDisplay).filter(Boolean);
+      if(impressions.length){
+        impressions.forEach((v,i)=>{
+          ctx.fillStyle='#F0E9DF';ctx.fillRect(70,y-28,W-140,58);
+          ctx.fillStyle='#2C3E35';ctx.fillText(`${i+1}. ${v}`,90,y+8);y+=72;
+        });
+      }else{ctx.fillText('—',80,y);y+=70;}
+      y+=20;ctx.fillStyle='#C66914';ctx.font='700 26px sans-serif';ctx.fillText('整體評分',70,y);y+=52;
+      const defs=[
+        ['overall','整體旅行體驗'],['itinerary','行程安排'],['food','美食體驗'],
+        ['stay','住宿體驗'],['transport','交通體驗'],['comfort','舒適程度'],['returnTaiwan','再次來台灣意願']
+      ];
+      defs.forEach(([k,label])=>{
+        const val=Number(surveyState.ratings?.[k]??0);
+        ctx.fillStyle='#2C3E35';ctx.font='600 21px sans-serif';ctx.fillText(label,80,y);
+        ctx.fillStyle='#C66914';ctx.font='700 21px sans-serif';ctx.fillText(`${val}/10`,W-150,y);
+        ctx.fillStyle='#E7E0D7';ctx.fillRect(80,y+16,W-210,10);
+        ctx.fillStyle='#C66914';ctx.fillRect(80,y+16,(W-210)*(val/10),10);
+        y+=78;
+      });
+      return c.toDataURL('image/png');
+    }
+
     function makeFinalPage(){
       const c=bookletCanvas(),ctx=c.getContext('2d'),W=c.width,H=c.height;
       pageBase(ctx,W,H,'最後留下來的話','TRIP NOTES');
@@ -8159,9 +8234,10 @@ function updateAchievementWall() {
       host.innerHTML='<div class="text-xs text-gray-400 p-4">正在整理旅行小書…</div>';
       const pages=[
         ['封面',await makeBookCover()],
-        ['行程',makeItineraryPage()],
-        ['TOP 3 ＋成就',makeHighlightsPage()],
+        ['十天行程',makeItineraryPage()],
+        ['TOP 3 ＋完整成就',makeHighlightsPage()],
         ['台灣胃＋回憶',makeFoodMemoryPage()],
+        ['台灣印象＋評分',makeImpressionsPage()],
         ['總結',makeFinalPage()]
       ];
       host.innerHTML=pages.map(([label,src],i)=>`<div class="travel-booklet-page"><img src="${src}" alt="旅行小書第 ${i+1} 頁"><div class="travel-booklet-caption">${i+1} / ${pages.length} · ${label}</div></div>`).join('');

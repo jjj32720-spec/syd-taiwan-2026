@@ -1982,6 +1982,24 @@ html:not(.secret-content-ready) [data-secret-emoji] {
     display: none !important;
 }
 </style>
+
+<style id="posttrip-survey-test-style">
+#posttrip-survey-test{display:none}
+body.posttrip-survey-test-visible #posttrip-survey-test{display:block}
+.survey-card{background:#FFFDF9;border:1px solid #E2DDD5;border-radius:18px;padding:16px}
+.survey-title{font-size:14px;font-weight:800;color:#2C3E35;line-height:1.55}
+.survey-hint{font-size:11px;color:#8B8B86;margin-top:4px}
+.survey-input,.survey-textarea,.survey-select{width:100%;margin-top:6px;background:#F0EDEA;border:1px solid #E2DDD5;border-radius:12px;padding:10px 12px;font-size:12px;outline:none}
+.survey-rank-item{display:flex;justify-content:space-between;gap:10px;background:#F7F5F0;border:1px solid #E2DDD5;border-radius:12px;padding:11px 13px;font-size:12px;font-weight:700;color:#2C3E35;touch-action:none}
+.survey-rank-item.dragging{opacity:.5}
+.survey-check{display:flex;align-items:center;gap:7px;background:#F7F5F0;border:1px solid #E2DDD5;border-radius:12px;padding:10px;font-size:11px}
+.survey-duel{width:100%;min-height:84px;border:1px solid #E2DDD5;background:white;border-radius:14px;padding:12px;font-size:13px;font-weight:800;color:#2C3E35}
+.bracket-wrap{display:flex;gap:12px;min-width:max-content}
+.bracket-col{min-width:145px;display:flex;flex-direction:column;gap:7px}
+.bracket-node{border:1px solid #E2DDD5;background:#F7F5F0;border-radius:10px;padding:7px 8px;font-size:10px;color:#2C3E35}
+.bracket-node.win{border-color:#E89344;background:#FFF6EA;font-weight:800}
+</style>
+
 </head>
 <body class="min-h-screen flex flex-col justify-between selection:bg-[#E89344] selection:text-white">
 <!-- 頂部 Header -->
@@ -3433,6 +3451,7 @@ html:not(.secret-content-ready) [data-secret-emoji] {
 </div>
 <div class="certificate-meta">
 <p>完成日期｜2026.10.06</p>
+<p>美食紀錄｜<span id="certificate-food-count">0</span> 樣</p>
 </div>
 <div class="certificate-signing">
 <div class="certificate-signing-label">
@@ -4299,6 +4318,113 @@ class="w-full bg-white border border-[#E2DDD5] text-[#2C3E35] rounded-xl px-4 py
 <!-- 隱藏音樂元素：《想見你》Last Dance -->
 <audio id="bgm-audio" preload="auto" src="China_Blue_-_Last_Dance_(mp3.pm).mp3"></audio>
 <!-- 頁尾 Footer -->
+
+<section id="posttrip-survey-test" class="max-w-3xl mx-auto px-4 mt-8 mb-28">
+<div class="bg-white border border-[#E2DDD5] rounded-3xl p-5 shadow-sm space-y-4">
+  <div>
+    <div class="text-[10px] tracking-[0.18em] font-bold text-[#C66914]">PRIVATE TEST · POST-TRIP BONUS</div>
+    <h2 class="text-xl font-bold text-[#2C3E35] mt-1">💌 旅後問卷特典</h2>
+    <p class="text-xs text-gray-500 mt-2">目前只在你的秘密測試模式看得到；正式頁面完全不顯示，測試答案也不會寫入 Firebase。</p>
+    <div class="mt-3 p-3 rounded-2xl bg-[#F7F5F0] border border-[#E2DDD5] text-xs leading-relaxed">
+      生日密碼正式條件預覽：<b>10 公開＋6 指定隱藏＋1 問卷特典＝17</b><br>
+      👻 調皮搗蛋鬼保留為額外彩蛋，不再影響生日密碼。
+    </div>
+  </div>
+
+  <div class="survey-card">
+    <div class="survey-title">01｜Day 2～Day 9 重玩排行</div>
+    <p class="survey-hint">請依「最想完整重玩 → 相對沒那麼想重玩」拖曳排序。</p>
+    <div id="survey-day-ranking" class="space-y-2 mt-3">
+      <div class="survey-rank-item" draggable="true" data-v="Day 2｜台北文化與故宮"><span>Day 2｜台北文化與故宮</span><span>≡</span></div>
+      <div class="survey-rank-item" draggable="true" data-v="Day 3｜野柳＋九份＋十分"><span>Day 3｜野柳＋九份＋十分</span><span>≡</span></div>
+      <div class="survey-rank-item" draggable="true" data-v="Day 4｜日月潭"><span>Day 4｜日月潭</span><span>≡</span></div>
+      <div class="survey-rank-item" draggable="true" data-v="Day 5｜九族＋高美濕地"><span>Day 5｜九族＋高美濕地</span><span>≡</span></div>
+      <div class="survey-rank-item" draggable="true" data-v="Day 6｜武嶺＋合歡山・台南"><span>Day 6｜武嶺＋合歡山・台南</span><span>≡</span></div>
+      <div class="survey-rank-item" draggable="true" data-v="Day 7｜台南・月世界・高雄"><span>Day 7｜台南・月世界・高雄</span><span>≡</span></div>
+      <div class="survey-rank-item" draggable="true" data-v="Day 8｜墾丁海線＋海生館夜宿"><span>Day 8｜墾丁海線＋海生館夜宿</span><span>≡</span></div>
+      <div class="survey-rank-item" draggable="true" data-v="Day 9｜海生館＋高雄"><span>Day 9｜海生館＋高雄</span><span>≡</span></div>
+    </div>
+  </div>
+
+  <div class="survey-card">
+    <div class="survey-title">02｜這趟旅程中，你最喜歡哪一個景點或體驗？</div>
+    <textarea id="sv-fav" class="survey-textarea" rows="3" placeholder="最喜歡的是…為什麼？"></textarea>
+    <div class="survey-title mt-3">有沒有哪個原本沒特別期待，實際去過後卻意外喜歡？</div>
+    <textarea id="sv-surprise-spot" class="survey-textarea" rows="3"></textarea>
+  </div>
+
+  <div class="survey-card">
+    <div class="survey-title">03｜這趟旅程的最愛體驗 TOP</div>
+    <p class="survey-hint">每次二選一，一路選到最後冠軍；完成後會顯示淘汰樹狀圖。</p>
+    <div id="survey-duel" class="mt-3"></div>
+    <button type="button" class="test-btn mt-3" onclick="startPostTripBracket()">重新開始淘汰賽</button>
+    <div id="survey-bracket-result" class="hidden mt-4">
+      <div class="font-bold text-[#2C3E35]">🏆 冠軍：<span id="survey-champion" class="text-[#C66914]"></span></div>
+      <div id="survey-bracket-tree" class="overflow-x-auto mt-3 pb-2"></div>
+    </div>
+  </div>
+
+  <div class="survey-card">
+    <div class="survey-title">04｜台灣胃頒獎典禮</div>
+    <input id="sv-food-repeat" class="survey-input" placeholder="🏆 最想再吃一次">
+    <input id="sv-food-surprise" class="survey-input" placeholder="🤯 最意外好吃">
+    <input id="sv-food-fail" class="survey-input" placeholder="💀 最踩雷／最不合口味">
+    <input id="sv-food-take" class="survey-input" placeholder="🎁 如果只能帶一樣回去">
+  </div>
+
+  <div class="survey-card"><div class="survey-title">05｜如果要選一張照片當作這趟旅行的封面，你會選哪一天、哪一段行程的照片？</div><textarea id="sv-cover" class="survey-textarea" rows="3" placeholder="Day 幾／哪一段／為什麼？"></textarea></div>
+  <div class="survey-card"><div class="survey-title">06｜這十天裡，有沒有哪一刻讓你覺得「還好這次有來」？</div><textarea id="sv-glad" class="survey-textarea" rows="3"></textarea></div>
+
+  <div class="survey-card">
+    <div class="survey-title">07｜旅行記憶四格</div>
+    <textarea id="sv-happy" class="survey-textarea" rows="2" placeholder="😆 最開心"></textarea>
+    <textarea id="sv-wow" class="survey-textarea" rows="2" placeholder="🤯 最驚喜"></textarea>
+    <textarea id="sv-funny" class="survey-textarea" rows="2" placeholder="😂 最好笑"></textarea>
+    <textarea id="sv-messy" class="survey-textarea" rows="2" placeholder="🫠 最狼狽"></textarea>
+  </div>
+
+  <div class="survey-card"><div class="survey-title">08｜如果可以重新安排一次，哪一段行程你最想調整？為什麼？</div><textarea id="sv-change" class="survey-textarea" rows="3"></textarea></div>
+  <div class="survey-card"><div class="survey-title">09｜整趟行程裡，哪一個安排最值得我邀功？</div><textarea id="sv-credit" class="survey-textarea" rows="3" placeholder="請開始誇 😌"></textarea></div>
+
+  <div class="survey-card">
+    <div class="survey-title">10｜這趟旅行結束後，哪些是你對台灣留下最深印象、或最喜歡的部分？</div>
+    <p class="survey-hint">最多選 5 個。</p>
+    <div id="sv-impressions" class="grid grid-cols-2 gap-2 mt-3">
+      <label class="survey-check"><input type="checkbox" value="小吃與美食">小吃與美食</label>
+      <label class="survey-check"><input type="checkbox" value="自然風景">自然風景</label>
+      <label class="survey-check"><input type="checkbox" value="城市氛圍">城市氛圍</label>
+      <label class="survey-check"><input type="checkbox" value="人情味">人情味</label>
+      <label class="survey-check"><input type="checkbox" value="夜市文化">夜市文化</label>
+      <label class="survey-check"><input type="checkbox" value="便利商店">便利商店</label>
+      <label class="survey-check"><input type="checkbox" value="交通便利">交通便利</label>
+      <label class="survey-check"><input type="checkbox" value="傳統文化與廟宇">傳統文化與廟宇</label>
+      <label class="survey-check"><input type="checkbox" value="山景">山景</label>
+      <label class="survey-check"><input type="checkbox" value="海景">海景</label>
+      <label class="survey-check"><input type="checkbox" value="咖啡店／文青氛圍">咖啡店／文青氛圍</label>
+      <label class="survey-check"><input type="checkbox" value="生活便利">生活便利</label>
+      <label class="survey-check"><input type="checkbox" value="城市與自然距離很近">城市與自然距離很近</label>
+      <label class="survey-check"><input type="checkbox" value="其他">其他</label>
+    </div>
+    <input id="sv-impression-top" class="survey-input" placeholder="如果只能留一個，你會選？">
+  </div>
+
+  <div class="survey-card">
+    <div class="survey-title">11｜整體評分（1～10）</div>
+    <div id="sv-ratings" class="space-y-2 mt-3"></div>
+  </div>
+
+  <div class="survey-card">
+    <div class="survey-title">12｜請用三個詞形容這趟旅行。</div>
+    <div class="grid grid-cols-3 gap-2 mt-2"><input id="sv-word1" class="survey-input text-center" placeholder="詞 1"><input id="sv-word2" class="survey-input text-center" placeholder="詞 2"><input id="sv-word3" class="survey-input text-center" placeholder="詞 3"></div>
+  </div>
+
+  <div class="survey-card"><div class="survey-title">13｜最後，有沒有一句話想留給規劃這趟旅程的人？</div><textarea id="sv-final" class="survey-textarea" rows="4"></textarea></div>
+
+  <button type="button" onclick="completePostTripSurveyTest()" class="w-full bg-[#2C3E35] text-white rounded-2xl py-4 text-sm font-bold">完成問卷・測試解鎖 +1 特典</button>
+  <div id="sv-complete" class="hidden p-4 rounded-2xl bg-[#FFF6EA] border border-[#E89344]/35 text-center"><div class="text-3xl">💌</div><div class="font-bold mt-2">旅後問卷特典已解鎖（測試）</div><div class="text-xs text-gray-500 mt-1">只存在本機測試資料，不會同步到 Firebase。</div></div>
+</div>
+</section>
+
 <footer class="bg-[#2C3E35] text-[#D1D8D2] text-center py-8 mt-12 text-sm">
 <p>SYD’s Taiwan Grand Traverse App 2026</p>
 <p class="text-xs mt-1 text-gray-400">Designed by Chechen Wu 🚀</p>
@@ -4776,7 +4902,7 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
             const badge = document.getElementById('overview-day-badge');
             const title = document.getElementById('overview-day-title');
             const highlights = document.getElementById('overview-day-highlights');
-            const btn = document.querySelector('#tab-overview .overview-open-btn');
+            const btn = document.querySelector('#tab-overview .overview-today-open');
             const food = document.getElementById('overview-food-value');
             const budget = document.getElementById('overview-budget-value');
             const ach = document.getElementById('overview-ach-value');
@@ -4833,7 +4959,7 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
         }
 
         function openOverviewDay() {
-            const btn = document.querySelector('#tab-overview .overview-open-btn');
+            const btn = document.querySelector('#tab-overview .overview-today-open');
             const day = Number(btn?.dataset?.day || 1);
             changeDay(Math.min(10, Math.max(1, day)));
         }
@@ -5861,15 +5987,53 @@ ${from} → ${to} ${formatMoney(amount)}`);
             const modal = document.getElementById('imageModal');
             const img = document.getElementById('modalImg');
             const stage = document.getElementById('mapViewerStage');
+            const foodCount = (typeof getFoodCheckedCount === 'function')
+                ? getFoodCheckedCount()
+                : [...document.querySelectorAll('#food-checklist input[type="checkbox"]')].filter(chk => chk.checked).length;
+
+            // 每次打開證書都重新讀取「目前」美食勾選數。
+            const finalFoodCountEl = document.getElementById('final-food-count');
+            const certificateFoodCountEl = document.getElementById('certificate-food-count');
+            if (finalFoodCountEl) finalFoodCountEl.textContent = foodCount;
+            if (certificateFoodCountEl) certificateFoodCountEl.textContent = foodCount;
 
             document.getElementById('modalTitle').textContent = '西台灣制霸證書';
             resetMapViewer(false);
-            img.src = CERTIFICATE_IMAGE_DATA;
             img.dataset.saveable = 'true';
             img.style.webkitTouchCallout = 'default';
             img.style.webkitUserSelect = 'auto';
             img.style.webkitUserDrag = 'auto';
             stage?.classList.add('saveable-viewer');
+
+            const base = new Image();
+            base.onload = () => {
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = base.naturalWidth || base.width;
+                    canvas.height = base.naturalHeight || base.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(base, 0, 0, canvas.width, canvas.height);
+
+                    // 在完成日期下方加入最新美食紀錄，不改動原證書其他內容。
+                    const scale = canvas.width / 1400;
+                    ctx.save();
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = '#E7E3D5';
+                    ctx.font = `${Math.round(28 * scale)}px -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif`;
+                    ctx.fillText(`美食紀錄｜${foodCount} 樣`, canvas.width / 2, Math.round(1015 * scale));
+                    ctx.restore();
+
+                    img.src = canvas.toDataURL('image/png');
+                } catch (e) {
+                    console.warn('Dynamic certificate rendering failed; using base image.', e);
+                    img.src = CERTIFICATE_IMAGE_DATA;
+                }
+            };
+            base.onerror = () => {
+                img.src = CERTIFICATE_IMAGE_DATA;
+            };
+            base.src = CERTIFICATE_IMAGE_DATA;
 
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
@@ -6038,22 +6202,6 @@ function addLastDanceEasterEgg() {
 
 const ACHIEVEMENT_RESET_SEED = 'formal-reset-v19';
 
-    // 2026-09-30：撤回 21:48 前誤觸造成的單人副本解鎖；只執行一次，不影響其他成就。
-    (function revokePrematureSoloUnlockOnce() {
-        try {
-            const markerKey = 'solo_unlock_2148_fix_v1';
-            if (localStorage.getItem(markerKey) === 'done') return;
-            const t = getTaiwanTimeParts();
-            const before2148 = t.date === '2026-09-30' && (t.hour < 21 || (t.hour === 21 && t.minute < 48));
-            if (before2148) {
-                localStorage.removeItem(ACH_KEYS.solo);
-                localStorage.setItem(markerKey, 'done');
-            }
-        } catch (e) {
-            console.warn('Solo unlock correction skipped:', e);
-        }
-    })();
-
     function resetAchievementProgressOnce() {
         try {
             const markerKey = 'achievement_reset_seed';
@@ -6113,9 +6261,9 @@ const ACHIEVEMENT_RESET_SEED = 'formal-reset-v19';
         }
 
         if (dayNum === 4 && t.date === '2026-09-30') {
-            const after2148 = t.hour > 21 || (t.hour === 21 && t.minute >= 48);
+            const after1530 = t.hour > 15 || (t.hour === 15 && t.minute >= 30);
             const visited = getVisitedDays();
-            if (after2148 && [1,2,3].every(d => visited.includes(d))) {
+            if (after1530 && [1,2,3].every(d => visited.includes(d))) {
                 unlockHiddenAchievement(ACH_KEYS.solo);
             }
         }
@@ -6816,6 +6964,11 @@ function updateAchievementWall() {
         const total = checkboxes.length;
         const checked = [...checkboxes].filter(chk => chk.checked).length;
 
+        const finalFoodCountEl = document.getElementById('final-food-count');
+        const certificateFoodCountEl = document.getElementById('certificate-food-count');
+        if (finalFoodCountEl) finalFoodCountEl.textContent = checked;
+        if (certificateFoodCountEl) certificateFoodCountEl.textContent = checked;
+
         const countEl = document.getElementById('food-achievement-count');
         const barEl = document.getElementById('food-achievement-bar');
         const titleEl = document.getElementById('food-achievement-title');
@@ -7082,6 +7235,7 @@ function updateAchievementWall() {
 <button class="test-btn" onclick="triggerCameraFlash()">📸 截圖效果</button>
 <button class="test-btn" onclick="testAchievementModal()">🏆 成就彈窗</button>
 <button class="test-btn" onclick="finishTaiwanTrip(true)">完成旅程</button>
+<button class="test-btn" onclick="openPostTripSurveyTest()">💌 旅後問卷</button>
 </div>
 <div class="mt-3 text-[11px] font-bold">🧹 測試資料</div>
 <div class="test-row">
@@ -7834,5 +7988,94 @@ window.addEventListener('DOMContentLoaded', () => {
     }, 250);
 });
 </script>
+
+<script id="posttrip-survey-test-script">
+(() => {
+ const items=['西門町','永康商圈','中正紀念堂','故宮','陽明山 / The Top','野柳＋九份＋十分','寧夏夜市','日月潭','九族文化村','高美濕地','宮原眼科','武嶺＋合歡山','Cookinn','四草綠色隧道','聖母廟','漁光島','台南小吃巡禮','東來理髮廳','月世界','墾丁海線','海生館夜宿','高雄港＋85大樓','瑞豐夜市','六合夜市'];
+ let st=null, dragged=null;
+
+ window.openPostTripSurveyTest=()=>{
+   if(!window.__TEST_MODE_ACTIVE__) return;
+   document.body.classList.add('posttrip-survey-test-visible');
+   document.getElementById('posttrip-survey-test')?.scrollIntoView({behavior:'smooth',block:'start'});
+ };
+
+ function setupRank(){
+   const list=document.getElementById('survey-day-ranking'); if(!list)return;
+   list.querySelectorAll('.survey-rank-item').forEach(el=>{
+     el.addEventListener('dragstart',()=>{dragged=el;el.classList.add('dragging')});
+     el.addEventListener('dragend',()=>{el.classList.remove('dragging');dragged=null});
+     el.addEventListener('dragover',e=>{e.preventDefault();if(!dragged||dragged===el)return;const r=el.getBoundingClientRect();list.insertBefore(dragged,e.clientY>r.top+r.height/2?el.nextSibling:el)});
+     el.addEventListener('touchstart',()=>{dragged=el;el.classList.add('dragging')},{passive:true});
+     el.addEventListener('touchmove',e=>{const t=document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY)?.closest('.survey-rank-item');if(!t||!dragged||t===dragged||t.parentElement!==list)return;const r=t.getBoundingClientRect();list.insertBefore(dragged,e.touches[0].clientY>r.top+r.height/2?t.nextSibling:t)},{passive:true});
+     el.addEventListener('touchend',()=>{el.classList.remove('dragging');dragged=null});
+   });
+ }
+
+ function setupLimit(){
+   const box=document.getElementById('sv-impressions'); if(!box)return;
+   box.querySelectorAll('input').forEach(c=>c.addEventListener('change',()=>{if(box.querySelectorAll('input:checked').length>5){c.checked=false;alert('最多選 5 個喔。')}}));
+ }
+
+ function setupRatings(){
+   const labels=['整體旅行體驗','行程安排','美食體驗','住宿體驗','交通體驗','舒適程度','再次來台灣的意願'];
+   const box=document.getElementById('sv-ratings'); if(!box)return;
+   box.innerHTML=labels.map((x,i)=>`<div class="flex items-center justify-between gap-3"><span class="text-xs font-bold text-[#2C3E35]">${x}</span><select id="sv-rate-${i}" class="survey-select !w-auto !mt-0">${Array.from({length:10},(_,n)=>`<option value="${n+1}" ${n===7?'selected':''}>${n+1}</option>`).join('')}</select></div>`).join('');
+ }
+
+ function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+ window.startPostTripBracket=()=>{st={round:shuffle(items),w:[],i:0,n:1,history:[]};document.getElementById('survey-bracket-result')?.classList.add('hidden');renderDuel()};
+ function renderDuel(){
+   const box=document.getElementById('survey-duel'); if(!box||!st)return;
+   if(st.i>=st.round.length){
+     st.history.push({n:st.n,source:[...st.round],winners:[...st.w]});
+     if(st.w.length===1){showResult(st.w[0]);return}
+     st.round=[...st.w];st.w=[];st.i=0;st.n++;return renderDuel();
+   }
+   const a=st.round[st.i],b=st.round[st.i+1];
+   if(!b){st.w.push(a);st.i++;return renderDuel()}
+   box.innerHTML=`<div class="text-center text-[11px] font-bold text-gray-500 mb-2">第 ${st.n} 輪</div><div class="grid grid-cols-2 gap-3"><button class="survey-duel" onclick='choosePostTripBracket(${JSON.stringify(a)})'>${a}</button><button class="survey-duel" onclick='choosePostTripBracket(${JSON.stringify(b)})'>${b}</button></div>`;
+ }
+ window.choosePostTripBracket=(v)=>{st.w.push(v);st.i+=2;renderDuel()};
+ function showResult(champ){
+   document.getElementById('survey-duel').innerHTML='';
+   document.getElementById('survey-champion').textContent=champ;
+   document.getElementById('survey-bracket-result').classList.remove('hidden');
+   const tree=document.getElementById('survey-bracket-tree');
+   tree.innerHTML='<div class="bracket-wrap">'+st.history.map((r,k)=>`<div class="bracket-col"><div class="text-center text-[10px] font-bold text-gray-400 mb-1">${k===st.history.length-1?'FINAL':'ROUND '+r.n}</div>${r.source.map(x=>`<div class="bracket-node ${r.winners.includes(x)?'win':''}">${x}</div>`).join('')}</div>`).join('')+'</div>';
+ }
+
+ window.completePostTripSurveyTest=()=>{
+   if(!window.__TEST_MODE_ACTIVE__){alert('目前只在測試模式開放。');return}
+   if(!st||!st.history.length||st.history.at(-1).winners.length!==1){alert('請先完成最愛體驗淘汰賽。');return}
+   const v=id=>document.getElementById(id)?.value?.trim()||'';
+   const data={
+    ranking:[...document.querySelectorAll('#survey-day-ranking .survey-rank-item')].map(x=>x.dataset.v),
+    favoriteSpot:v('sv-fav'),surpriseSpot:v('sv-surprise-spot'),
+    bracket:{champion:st.history.at(-1).winners[0],rounds:st.history},
+    food:{repeat:v('sv-food-repeat'),surprise:v('sv-food-surprise'),fail:v('sv-food-fail'),take:v('sv-food-take')},
+    cover:v('sv-cover'),glad:v('sv-glad'),
+    memories:{happy:v('sv-happy'),surprise:v('sv-wow'),funny:v('sv-funny'),messy:v('sv-messy')},
+    change:v('sv-change'),credit:v('sv-credit'),
+    impressions:[...document.querySelectorAll('#sv-impressions input:checked')].map(x=>x.value),
+    impressionTop:v('sv-impression-top'),
+    ratings:[...document.querySelectorAll('#sv-ratings select')].map(x=>Number(x.value)),
+    words:[v('sv-word1'),v('sv-word2'),v('sv-word3')],
+    finalMessage:v('sv-final'),testOnly:true,completedAt:new Date().toISOString()
+   };
+   localStorage.setItem('posttrip_survey_test_v1',JSON.stringify(data));
+   localStorage.setItem('posttrip_bonus_test_unlocked_v1','true');
+   document.getElementById('sv-complete').classList.remove('hidden');
+   alert('💌 旅後問卷特典已在測試模式解鎖！');
+ };
+
+ document.addEventListener('DOMContentLoaded',()=>{
+   if(window.__TEST_MODE_ACTIVE__) document.body.classList.add('posttrip-survey-test-visible');
+   setupRank();setupLimit();setupRatings();startPostTripBracket();
+   if(localStorage.getItem('posttrip_bonus_test_unlocked_v1')==='true') document.getElementById('sv-complete')?.classList.remove('hidden');
+ });
+})();
+</script>
+
 </body>
 </html>

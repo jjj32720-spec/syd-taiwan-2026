@@ -1940,6 +1940,13 @@ to { width: 150vw; height: 150vw; opacity: 0; }
 .survey-cover-preview{margin-top:12px;display:none}.survey-cover-preview.active{display:block}
 .survey-cover-canvas{width:100%;max-width:520px;border-radius:18px;box-shadow:0 12px 30px rgba(0,0,0,.12);display:block;margin:0 auto}
 .survey-file-label{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 13px;border-radius:10px;background:#2C3E35;color:#fff;font-size:11px;font-weight:800;cursor:pointer}
+
+.travel-booklet-wrap{margin-top:18px;padding:16px;border-radius:18px;background:#F7F3ED;border:1px solid #E2DDD5}
+.travel-booklet-pages{display:flex;gap:14px;overflow-x:auto;padding:4px 2px 10px;scroll-snap-type:x mandatory}
+.travel-booklet-page{flex:0 0 min(88vw,420px);scroll-snap-align:center}
+.travel-booklet-page img{width:100%;display:block;border-radius:16px;box-shadow:0 12px 28px rgba(0,0,0,.12)}
+.travel-booklet-caption{text-align:center;font-size:10px;color:#91897F;margin-top:7px}
+
 </style>
 <link rel="preload" as="image" href="header_travel_frame.webp" type="image/webp" fetchpriority="high"/>
 <!-- Add to Home Screen / PWA -->
@@ -7303,6 +7310,18 @@ function updateAchievementWall() {
         <div class="text-[10px] font-bold text-[#C66914] whitespace-nowrap">已提交 ✓</div>
       </div>
       <div id="survey-readonly-body" class="mt-5"></div>
+
+      <div class="travel-booklet-wrap">
+        <div class="flex items-center justify-between gap-3 mb-2">
+          <div>
+            <div class="text-xs font-bold text-[#2C3E35]">📖 十天的台灣旅行小書</div>
+            <div class="text-[10px] text-gray-500 mt-1">左右滑動翻頁；每一頁都可以長按儲存。</div>
+          </div>
+          <button type="button" class="survey-btn !py-2 !px-3" onclick="generateTravelBooklet()">重新生成</button>
+        </div>
+        <div id="travel-booklet-pages" class="travel-booklet-pages"></div>
+      </div>
+
       <button type="button" class="survey-btn w-full mt-5" onclick="closeTripSurveyTest()">關閉</button>
     </div>
   </div>
@@ -7421,7 +7440,7 @@ function updateAchievementWall() {
       },
       {
         title:'這趟旅行的封面',
-        copy:'選一張最能代表這趟旅行的照片，做成一張可以長按保存的旅行封面卡。',
+        copy:'選一張最能代表這趟旅行的照片，作為旅遊小書封面。完成問卷後，會自動整理成一本可回顧的小旅行書。',
         render: () => `
           <label class="survey-label">如果只能留一張照片代表這十天，你會挑哪一張？</label>
           <input class="survey-input" id="sv-cover-title" placeholder="給這張封面取個名字（選填），例如：十天西台灣大冒險" value="${esc(surveyState.coverTitle||'')}">
@@ -7433,7 +7452,7 @@ function updateAchievementWall() {
           </div>
           <div class="survey-cover-preview ${surveyCoverPhotoData?'active':''}" id="survey-cover-preview">
             <canvas id="survey-cover-canvas" class="survey-cover-canvas"></canvas>
-            <div class="text-[10px] text-gray-400 text-center mt-2">產生後可以直接長按圖片儲存。</div>
+            <div class="text-[10px] text-gray-400 text-center mt-2">這張照片會成為旅遊小書封面。</div>
           </div>`,
         collect: () => {
           surveyState.coverTitle=document.getElementById('sv-cover-title')?.value.trim()||'';
@@ -7881,7 +7900,7 @@ function updateAchievementWall() {
       ['stay','住宿體驗'],['transport','交通體驗'],['comfort','舒適程度'],['returnTaiwan','再次來台灣的意願']
     ];
     function renderRatings() {
-      return `<div class="survey-answer-hint">0 分＝完全不滿意／完全不想再來，10 分＝非常滿意／非常願意。每一項可以給不同分，不用客氣，也不用都打高分。<br><span style="opacity:.72">起始位置不是隨機的 👀</span></div>` + ratingDefs.map(([key,label])=>`
+      return `<div class="survey-answer-hint">0 分＝完全不滿意／完全不想再來，10 分＝非常滿意／非常願意。每一項可以給不同分，不用客氣，也不用都打高分。<br><span style="opacity:.72">預設值可以拉動👀</span></div>` + ratingDefs.map(([key,label])=>`
         <div class="rating-row">
           <div class="rating-head"><span>${label}</span><span id="rating-${key}-value">${Number(surveyState.ratings?.[key]??0)} / 10</span></div>
           <input type="range" id="rating-${key}" min="0" max="10" step="1" value="${Number(surveyState.ratings?.[key]??0)}"
@@ -7932,7 +7951,7 @@ function updateAchievementWall() {
       const file=input?.files?.[0]; if(!file)return;
       if(!file.type.startsWith('image/')){alert('請選擇圖片檔。');return}
       const reader=new FileReader();
-      reader.onload=()=>{surveyCoverPhotoData=reader.result;drawSurveyCoverCard()};
+      reader.onload=()=>{surveyCoverPhotoData=reader.result;saveSurveyCoverPhoto(reader.result);drawSurveyCoverCard()};
       reader.readAsDataURL(file);
     };
 
@@ -7974,6 +7993,179 @@ function updateAchievementWall() {
       submitTripSurveyTest();
     };
 
+
+
+    const SURVEY_MEDIA_DB='taiwan_trip_survey_media_v1';
+    const SURVEY_MEDIA_STORE='media';
+
+    function openSurveyMediaDb(){
+      return new Promise((resolve,reject)=>{
+        const req=indexedDB.open(SURVEY_MEDIA_DB,1);
+        req.onupgradeneeded=()=>{ if(!req.result.objectStoreNames.contains(SURVEY_MEDIA_STORE)) req.result.createObjectStore(SURVEY_MEDIA_STORE); };
+        req.onsuccess=()=>resolve(req.result);
+        req.onerror=()=>reject(req.error);
+      });
+    }
+    async function saveSurveyCoverPhoto(dataUrl){
+      try{
+        const db=await openSurveyMediaDb();
+        await new Promise((resolve,reject)=>{
+          const tx=db.transaction(SURVEY_MEDIA_STORE,'readwrite');
+          tx.objectStore(SURVEY_MEDIA_STORE).put(dataUrl,'cover');
+          tx.oncomplete=resolve; tx.onerror=()=>reject(tx.error);
+        });
+        db.close();
+      }catch(e){}
+    }
+    async function loadSurveyCoverPhoto(){
+      try{
+        const db=await openSurveyMediaDb();
+        const value=await new Promise((resolve,reject)=>{
+          const tx=db.transaction(SURVEY_MEDIA_STORE,'readonly');
+          const req=tx.objectStore(SURVEY_MEDIA_STORE).get('cover');
+          req.onsuccess=()=>resolve(req.result||''); req.onerror=()=>reject(req.error);
+        });
+        db.close(); return value||'';
+      }catch(e){ return ''; }
+    }
+
+    function wrapCanvasText(ctx,text,x,y,maxWidth,lineHeight,maxLines=99){
+      const chars=String(text||'').split('');
+      let line='', lines=[];
+      for(const ch of chars){
+        const test=line+ch;
+        if(ctx.measureText(test).width>maxWidth && line){ lines.push(line); line=ch; }
+        else line=test;
+      }
+      if(line) lines.push(line);
+      lines=lines.slice(0,maxLines);
+      lines.forEach((ln,i)=>ctx.fillText(ln,x,y+i*lineHeight));
+      return y+lines.length*lineHeight;
+    }
+
+    function pageBase(ctx,W,H,title,subtitle=''){
+      ctx.fillStyle='#F7F3ED'; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='#2C3E35'; ctx.font='700 48px sans-serif'; ctx.fillText(title,70,92);
+      if(subtitle){ctx.fillStyle='#8B8278';ctx.font='400 24px sans-serif';ctx.fillText(subtitle,70,132);}
+      ctx.strokeStyle='#D9D0C4';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(70,158);ctx.lineTo(W-70,158);ctx.stroke();
+    }
+
+    function bookletCanvas(){
+      const c=document.createElement('canvas'); c.width=1000; c.height=1400; return c;
+    }
+
+    async function makeBookCover(){
+      const c=bookletCanvas(),ctx=c.getContext('2d'),W=c.width,H=c.height;
+      const photo=await loadSurveyCoverPhoto();
+      if(photo){
+        await new Promise(resolve=>{
+          const img=new Image();
+          img.onload=()=>{
+            const s=Math.max(W/img.width,H/img.height),dw=img.width*s,dh=img.height*s;
+            ctx.drawImage(img,(W-dw)/2,(H-dh)/2,dw,dh);
+            resolve();
+          };
+          img.onerror=resolve; img.src=photo;
+        });
+      } else {
+        const g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,'#D9E2DA');g.addColorStop(1,'#CBB8A5');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+      }
+      const grad=ctx.createLinearGradient(0,H*.4,0,H);grad.addColorStop(0,'rgba(0,0,0,0)');grad.addColorStop(1,'rgba(0,0,0,.78)');ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='rgba(255,255,255,.9)';ctx.font='700 30px sans-serif';ctx.fillText('TAIWAN · 2026',65,H-300);
+      ctx.fillStyle='#fff';ctx.font='700 64px sans-serif';
+      const title=(surveyState.coverTitle||'十天的台灣旅行').slice(0,16);ctx.fillText(title,65,H-220);
+      ctx.font='400 26px sans-serif';ctx.fillStyle='rgba(255,255,255,.88)';ctx.fillText('2026.09.27 — 2026.10.06',65,H-166);
+      if(surveyState.coverPhoto){ctx.font='400 22px sans-serif';ctx.fillStyle='rgba(255,255,255,.82)';wrapCanvasText(ctx,surveyState.coverPhoto,65,H-110,W-130,30,2);}
+      return c.toDataURL('image/png');
+    }
+
+    function makeItineraryPage(){
+      const c=bookletCanvas(),ctx=c.getContext('2d'),W=c.width,H=c.height;
+      pageBase(ctx,W,H,'九天行程回顧','DAY 1 — DAY 9');
+      const days=surveyState.dayRank?.length ? DAY_RANK_DEFAULT : DAY_RANK_DEFAULT;
+      ctx.font='600 25px sans-serif';ctx.fillStyle='#2C3E35';
+      let y=215;
+      DAY_RANK_DEFAULT.forEach((d,i)=>{
+        ctx.fillStyle=i%2===0?'#EEE8DF':'#F3EEE7';ctx.fillRect(62,y-30,W-124,92);
+        ctx.fillStyle='#C66914';ctx.font='700 22px sans-serif';ctx.fillText(`DAY ${i+1}`,84,y);
+        ctx.fillStyle='#2C3E35';ctx.font='600 22px sans-serif';
+        wrapCanvasText(ctx,d.replace(/^Day \d+｜/,''),180,y,W-260,28,2);
+        y+=108;
+      });
+      return c.toDataURL('image/png');
+    }
+
+    function makeHighlightsPage(){
+      const c=bookletCanvas(),ctx=c.getContext('2d'),W=c.width,H=c.height;
+      pageBase(ctx,W,H,'這趟旅行的 TOP 3','最愛體驗與成就');
+      const t=surveyState.tournament||{};
+      const top=[t.champion,t.runnerUp,t.thirdPlace];
+      const medals=['🥇','🥈','🥉'];
+      let y=240;
+      top.forEach((name,i)=>{
+        ctx.fillStyle=['#FFF3C8','#EDEFF2','#F5DDC8'][i];ctx.fillRect(70,y-46,W-140,100);
+        ctx.fillStyle='#2C3E35';ctx.font='700 34px sans-serif';ctx.fillText(`${medals[i]} ${name||'—'}`,94,y+10);
+        y+=130;
+      });
+      ctx.fillStyle='#C66914';ctx.font='700 28px sans-serif';ctx.fillText('成就紀錄',70,y+30);
+      ctx.fillStyle='#2C3E35';ctx.font='500 24px sans-serif';
+      const achievements=[
+        '西台灣制霸證書',
+        '旅後問卷 Bonus ＋1',
+        '10＋6＋1＝17｜生日密碼配對完成'
+      ];
+      y+=82;
+      achievements.forEach(a=>{ctx.fillText('• '+a,82,y);y+=52;});
+      return c.toDataURL('image/png');
+    }
+
+    function makeFoodMemoryPage(){
+      const c=bookletCanvas(),ctx=c.getContext('2d'),W=c.width,H=c.height;
+      pageBase(ctx,W,H,'台灣胃與旅行片段','吃過的、笑過的、記住的');
+      let y=225;
+      ctx.fillStyle='#C66914';ctx.font='700 27px sans-serif';ctx.fillText('台灣胃頒獎',70,y);
+      ctx.fillStyle='#2C3E35';ctx.font='500 23px sans-serif';y+=48;
+      [
+        `最想再吃：${surveyState.foodAgain||'—'}`,
+        `最意外好吃：${surveyState.foodSurprise||'—'}`,
+        `最不合口味：${surveyState.foodFail||'—'}`,
+        `最想帶回去：${surveyState.foodTakeHome||'—'}`
+      ].forEach(s=>{y=wrapCanvasText(ctx,s,78,y,W-150,32,2)+22;});
+      y+=22;ctx.fillStyle='#C66914';ctx.font='700 27px sans-serif';ctx.fillText('旅行記憶',70,y);y+=48;
+      ctx.fillStyle='#2C3E35';ctx.font='500 22px sans-serif';
+      [
+        `😆 ${surveyState.happiest||'—'}`,
+        `💗 ${surveyState.emotional||'—'}`,
+        `🧠 ${surveyState.funniest||'—'}`,
+        `🫠 ${surveyState.messiest||'—'}`
+      ].forEach(s=>{y=wrapCanvasText(ctx,s,78,y,W-150,30,3)+24;});
+      return c.toDataURL('image/png');
+    }
+
+    function makeFinalPage(){
+      const c=bookletCanvas(),ctx=c.getContext('2d'),W=c.width,H=c.height;
+      pageBase(ctx,W,H,'最後留下來的話','TRIP NOTES');
+      let y=225;
+      ctx.fillStyle='#C66914';ctx.font='700 26px sans-serif';ctx.fillText('三個詞',70,y);
+      ctx.fillStyle='#2C3E35';ctx.font='700 36px sans-serif';y+=56;wrapCanvasText(ctx,surveyState.threeWords||'—',70,y,W-140,46,2);
+      y+=130;ctx.fillStyle='#C66914';ctx.font='700 26px sans-serif';ctx.fillText('總結',70,y);
+      ctx.fillStyle='#2C3E35';ctx.font='500 23px sans-serif';y+=52;wrapCanvasText(ctx,surveyState.finalMessage||'—',70,y,W-140,34,20);
+      ctx.fillStyle='#8B8278';ctx.font='400 20px sans-serif';ctx.fillText('2026 · Taiwan Birthday Trip',70,H-70);
+      return c.toDataURL('image/png');
+    }
+
+    window.generateTravelBooklet=async function(){
+      const host=document.getElementById('travel-booklet-pages'); if(!host)return;
+      host.innerHTML='<div class="text-xs text-gray-400 p-4">正在整理旅行小書…</div>';
+      const pages=[
+        ['封面',await makeBookCover()],
+        ['行程',makeItineraryPage()],
+        ['TOP 3 ＋成就',makeHighlightsPage()],
+        ['台灣胃＋回憶',makeFoodMemoryPage()],
+        ['總結',makeFinalPage()]
+      ];
+      host.innerHTML=pages.map(([label,src],i)=>`<div class="travel-booklet-page"><img src="${src}" alt="旅行小書第 ${i+1} 頁"><div class="travel-booklet-caption">${i+1} / ${pages.length} · ${label}</div></div>`).join('');
+    };
 
     function readonlyBlock(title, body) {
       const safe = body ? body : '—';
@@ -8036,6 +8228,7 @@ function updateAchievementWall() {
       document.getElementById('survey-progress-wrap')?.classList.add('hidden');
       document.getElementById('survey-submitted-card')?.classList.remove('hidden');
       renderSubmittedSurveySummary();
+      setTimeout(()=>generateTravelBooklet(),0);
     }
 
     function submitTripSurveyTest() {

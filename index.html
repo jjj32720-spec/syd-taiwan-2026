@@ -2109,6 +2109,7 @@ body.dark-mode .survey-rank-row, body.dark-mode .survey-choice, body.dark-mode .
 <button class="day-main-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-white text-[#2C3E35] hover:bg-[#E2DDD5] border border-[#E2DDD5]" id="main-btn-9" onclick="changeDay(9)">📍 Day 9 高雄</button>
 <button class="day-main-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-white text-[#2C3E35] hover:bg-[#E2DDD5] border border-[#E2DDD5]" id="main-btn-10" onclick="changeDay(10)">📍 Day 10 賦歸</button>
 <button class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-[#C66914] text-white shadow-md" id="btn-tips" onclick="switchTab('tips')">📌 全程提醒</button>
+<button class="tab-btn hidden px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-white text-[#C66914] border border-[#C66914]/40 hover:bg-[#C66914]/10" id="btn-trip-survey" onclick="openTripSurveyTest()">📝 問卷調查</button>
 </div>
 </nav>
 <!-- 子選單導覽列（只在 Day 畫面顯示） -->
@@ -7261,7 +7262,7 @@ function updateAchievementWall() {
 (() => {
     const TEST_SURVEY_KEY = 'test_trip_survey_v1';
     const EXPERIENCE_POOL = [
-      '西門町','永康商圈','中正紀念堂','故宮','陽明山 / The Top','野柳＋九份＋十分',
+      '西門町','SDFJ 手作時研室','永康商圈','中正紀念堂','故宮','陽明山 / The Top','野柳＋九份＋十分',
       '寧夏夜市','日月潭','九族文化村','高美濕地','宮原眼科','武嶺＋合歡山',
       'Cookinn','四草綠色隧道','聖母廟','漁光島','台南小吃巡禮','東來理髮廳',
       '月世界','墾丁海線','海生館夜宿','高雄港＋85大樓','瑞豐夜市','六合夜市'
@@ -7323,7 +7324,7 @@ function updateAchievementWall() {
     const QUESTIONS = [
       {
         title:'如果可以完整重玩一次',
-        copy:'請把 Day 2～Day 9 依照「最想完整重來 → 相對沒那麼想重來」排序。可以拖曳，也可以用右側箭頭調整。',
+        copy:'請把 Day 1～Day 9 依照「最想完整重來 → 相對沒那麼想重來」排序。可以拖曳，也可以用右側箭頭調整。',
         render: renderDayRanking, collect: collectDayRanking
       },
       {
@@ -7342,13 +7343,13 @@ function updateAchievementWall() {
       },
       {
         title:'這趟旅程的最愛體驗 TOP',
-        copy:'24 個實際去過的地方／體驗，一次只選兩個。一路二選一，直到選出最後冠軍；完成後會顯示淘汰樹狀圖。',
+        copy:`${EXPERIENCE_POOL.length} 個實際去過的地方／體驗，一次只選兩個。一路二選一，直到排出冠、亞、季軍；完成後會顯示淘汰樹狀圖。`,
         render: renderTournament,
         collect: () => {}
       },
       {
         title:'台灣胃頒獎典禮',
-        copy:'不必每一題都填同一個答案，想想看它們各自代表哪一種記憶。',
+        copy:'不必每一題都填同一個答案。可以回想：阜杭燒餅／鹹豆漿、小籠包、九份芋圓／草仔粿、日月潭紅茶／山豬肉／飯飯雞翅、春水堂珍奶、台南牛肉湯／鱔魚意麵／蝦捲／棺材板／綠豆沙，以及夜市的鹹酥雞、臭豆腐、蚵仔煎、地瓜球等。',
         render: () => `
           <label class="survey-label">🏆 最想再吃一次</label><input class="survey-input" id="sv-food-again" value="${esc(surveyState.foodAgain)}">
           <label class="survey-label">🤯 最意外好吃</label><input class="survey-input" id="sv-food-surprise" value="${esc(surveyState.foodSurprise)}">
@@ -7371,7 +7372,7 @@ function updateAchievementWall() {
       {
         title:'「還好這次有來」',
         copy:'不是問最好玩，而是回頭看時最慶幸自己有經歷到的那一刻。',
-        render: () => `<label class="survey-label">這十天裡，有沒有哪一刻讓你覺得「還好這次有來」？</label><textarea class="survey-textarea" id="sv-glad">${esc(surveyState.gladCame)}</textarea>`,
+        render: () => `<label class="survey-label">這十天裡，有沒有哪一刻讓你覺得「還好這次有來」？</label><textarea class="survey-textarea" id="sv-glad" placeholder="例如：某個原本差點取消的行程、武嶺看到日出、在海生館醒來，或某個當下突然覺得這趟真的值得的瞬間……">${esc(surveyState.gladCame)}</textarea>`,
         collect: () => surveyState.gladCame=document.getElementById('sv-glad')?.value.trim()||''
       },
       {
@@ -7381,7 +7382,7 @@ function updateAchievementWall() {
           <div class="memory-grid">
             <div><label class="survey-label">😆 最搞笑／有趣的一幕</label><textarea class="survey-textarea" id="sv-happy">${esc(surveyState.happiest)}</textarea></div>
             <div><label class="survey-label">🤯 最驚喜的一幕</label><textarea class="survey-textarea" id="sv-big-surprise">${esc(surveyState.biggestSurprise)}</textarea></div>
-            <div><label class="survey-label">🧠 最有記憶點、最忘不掉的一幕</label><textarea class="survey-textarea" id="sv-funny">${esc(surveyState.funniest)}</textarea></div>
+            <div><label class="survey-label">🧠 最難忘的一幕</label><textarea class="survey-textarea" id="sv-funny">${esc(surveyState.funniest)}</textarea></div>
             <div><label class="survey-label">🫠 最狼狽的一幕</label><textarea class="survey-textarea" id="sv-messy">${esc(surveyState.messiest)}</textarea></div>
           </div>`,
         collect: () => {
@@ -7422,9 +7423,9 @@ function updateAchievementWall() {
         collect: collectRatings
       },
       {
-        title:'最後一句',
-        copy:'這是送出前的最後一題。',
-        render: () => `<label class="survey-label">最後，有沒有一句話想留給規劃這趟旅程的人？</label><textarea class="survey-textarea" id="sv-final" style="min-height:150px">${esc(surveyState.finalMessage)}</textarea>`,
+        title:'總結',
+        copy:'這裡沒有固定格式。可以把它當成一小段旅行日記、替這十天做總結、回顧某些片段、寫感謝，或留下任何現在最想說的話。想寫多少、寫什麼都可以。',
+        render: () => `<label class="survey-label">最後，把任何你想留下來的話寫在這裡。</label><textarea class="survey-textarea" id="sv-final" style="min-height:180px" placeholder="可以寫成旅行日記、總結這十天、回顧最喜歡的片段、感謝某個安排，或只是隨便寫下現在的心情……">${esc(surveyState.finalMessage)}</textarea>`,
         collect: () => surveyState.finalMessage=document.getElementById('sv-final')?.value.trim()||''
       }
     ];
@@ -7486,26 +7487,28 @@ function updateAchievementWall() {
 
     function makeTournament() {
       const entrants=[...EXPERIENCE_POOL];
-      // 32 格淘汰表：24 個參賽者＋8 個 bye。固定順序，方便回看整棵樹。
+      // 固定使用 32 格；依參賽數自動計算首輪輪空，確保每個體驗都真的進入淘汰賽。
       const slots=new Array(32).fill(null);
+      const byePairs=Math.max(0,32-entrants.length);
       let cursor=0;
       for (let pair=0; pair<16; pair++) {
-        if (pair<8) {
-          slots[pair*2]=entrants[cursor++];
+        if (pair<byePairs) {
+          slots[pair*2]=entrants[cursor++] || null;
         } else {
-          slots[pair*2]=entrants[cursor++];
-          slots[pair*2+1]=entrants[cursor++];
+          slots[pair*2]=entrants[cursor++] || null;
+          slots[pair*2+1]=entrants[cursor++] || null;
         }
       }
       const rounds=[slots];
       return {
+        poolSize:entrants.length, selectionCount:0,
         rounds, roundIndex:0, matchIndex:0, complete:false, champion:null,
         runnerUp:null, thirdPlace:null, bronzeCandidates:[]
       };
     }
 
     function ensureTournament() {
-      if (!surveyState.tournament || !Array.isArray(surveyState.tournament.rounds)) {
+      if (!surveyState.tournament || !Array.isArray(surveyState.tournament.rounds) || surveyState.tournament.poolSize !== EXPERIENCE_POOL.length) {
         surveyState.tournament=makeTournament();
       }
       advanceTournamentToPlayable();
@@ -7593,9 +7596,9 @@ function updateAchievementWall() {
       }
       const round=t.rounds[t.roundIndex];
       const a=round[t.matchIndex*2], b=round[t.matchIndex*2+1];
-      const done=tournamentCompletedMatches();
+      const done=Number(t.selectionCount||0);
       return `
-        <div class="text-[11px] text-gray-500">目前進度：約 ${Math.min(done,23)} / 23 次晉級選擇</div>
+        <div class="text-[11px] text-gray-500">目前進度：${Math.min(done,EXPERIENCE_POOL.length)} / ${EXPERIENCE_POOL.length} 次選擇</div>
         <div class="tournament-vs">
           <button type="button" class="tournament-pick" onclick="chooseTournamentWinner(0)">${esc(a)}</button>
           <div class="tournament-vs-mark">VS</div>
@@ -7611,6 +7614,7 @@ function updateAchievementWall() {
       const round=t.rounds[t.roundIndex];
       const winner=round[t.matchIndex*2+(side?1:0)];
       t.rounds[t.roundIndex+1][t.matchIndex]=winner;
+      t.selectionCount=Number(t.selectionCount||0)+1;
       t.matchIndex++;
       advanceTournamentToPlayable();
       renderSurveyStep();
@@ -7621,6 +7625,7 @@ function updateAchievementWall() {
       const t=surveyState.tournament;
       if(!t?.complete || t.thirdPlace || !Array.isArray(t.bronzeCandidates)) return;
       t.thirdPlace=t.bronzeCandidates[side?1:0]||null;
+      t.selectionCount=Number(t.selectionCount||0)+1;
       saveSurveyState();
       renderSurveyStep();
     };
@@ -8035,6 +8040,7 @@ function initPrivateTestAccess() {
 
     if (window.__TEST_MODE_ACTIVE__) {
         toggle?.classList.remove('hidden');
+        document.getElementById('btn-trip-survey')?.classList.remove('hidden');
 
         const actualBtn = Array.from(document.querySelectorAll('#test-console .test-btn'))
             .find(b => b.textContent.trim() === '實際時間');
@@ -8053,6 +8059,7 @@ function initPrivateTestAccess() {
     }
 
     toggle?.classList.add('hidden');
+    document.getElementById('btn-trip-survey')?.classList.add('hidden');
     document.getElementById('test-console')?.classList.add('hidden');
 
     if (!trigger) return;

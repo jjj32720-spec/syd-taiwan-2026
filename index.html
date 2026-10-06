@@ -1935,6 +1935,11 @@ to { width: 150vw; height: 150vw; opacity: 0; }
                 font-weight: 800;
             }
         }
+
+.survey-cover-upload{margin-top:10px;padding:14px;border:1px dashed #D9D0C4;border-radius:14px;background:#FAF8F4}
+.survey-cover-preview{margin-top:12px;display:none}.survey-cover-preview.active{display:block}
+.survey-cover-canvas{width:100%;max-width:520px;border-radius:18px;box-shadow:0 12px 30px rgba(0,0,0,.12);display:block;margin:0 auto}
+.survey-file-label{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 13px;border-radius:10px;background:#2C3E35;color:#fff;font-size:11px;font-weight:800;cursor:pointer}
 </style>
 <link rel="preload" as="image" href="header_travel_frame.webp" type="image/webp" fetchpriority="high"/>
 <!-- Add to Home Screen / PWA -->
@@ -7252,9 +7257,6 @@ function updateAchievementWall() {
       <div class="survey-kicker">POST-TRIP QUESTIONNAIRE · TEST PREVIEW</div>
       <h2 class="survey-title">💌 邵奶奶的台灣心得報告</h2>
       <p class="survey-copy">十天結束了，來把這趟旅行真正收進回憶裡。沒有標準答案，也不用寫得很正式；想到什麼就寫什麼，慢慢回想就好。</p>
-      <div class="mt-5 rounded-2xl bg-[#F7F2EA] border border-[#E7DDD0] p-4 text-[11px] leading-6 text-[#6E6257]">
-        大概會回顧景點、美食、最難忘的片段，也會排出最想重來的日子和最愛體驗 TOP 3。
-      </div>
       <button type="button" class="survey-btn primary w-full mt-5" onclick="startTripSurveyTest()">開始填寫 →</button>
     </div>
 
@@ -7277,10 +7279,11 @@ function updateAchievementWall() {
 (() => {
     const TEST_SURVEY_KEY = 'test_trip_survey_v1';
     const EXPERIENCE_POOL = [
-      '西門町','SDFJ 手作時研室','永康商圈','中正紀念堂','故宮','陽明山 / The Top','野柳＋九份＋十分',
-      '寧夏夜市','日月潭','九族文化村','高美濕地','宮原眼科','武嶺＋合歡山',
-      'Cookinn','四草綠色隧道','聖母廟','漁光島','台南小吃巡禮','東來理髮廳',
-      '月世界','墾丁海線','海生館夜宿','高雄港＋85大樓','瑞豐夜市','六合夜市'
+      '武嶺＋合歡山','西門町商圈','海生館與夜宿','宮原眼科','故宮博物院',
+      '墾丁海線','SDFJ 手作時研室','高美濕地','四草綠色隧道','The Top＋陽明山夜景',
+      '六合夜市','日月潭','東來理髮廳','野柳＋九份＋十分','九族文化村',
+      '台南小吃巡禮','寧夏夜市','聖母廟','Cookinn','高雄港＋85大樓',
+      '漁光島','永康商圈','月世界','瑞豐夜市','中正紀念堂'
     ];
     const DAY_RANK_DEFAULT = [
       'Day 1｜西門町・手作時研室',
@@ -7294,28 +7297,29 @@ function updateAchievementWall() {
       'Day 9｜海生館・高雄港夜景・六合夜市'
     ];
     const IMPRESSIONS = [
-      '小吃與美食','自然風景','城市氛圍','人情味','夜市文化','便利商店',
-      '交通便利','傳統文化與廟宇','山景','海景','咖啡店／文青氛圍',
-      '生活便利','城市與自然距離很近','其他'
+      '台灣美食','山海與自然風景','城市氛圍','傳統文化與廟宇','人情味',
+      '逛街與生活感','咖啡店／文青氛圍','交通與生活便利','夜生活與夜市',
+      '城市與自然離得很近','其他'
     ];
 
     const POSTTRIP_BONUS_KEY = 'posttrip_bonus_unlocked_v2';
     let surveyStep = 0;
     let surveyState = loadSurveyState();
     let draggedRankEl = null;
+    let surveyCoverPhotoData = '';
 
     function blankSurveyState() {
       return {
         dayRank:[...DAY_RANK_DEFAULT],
-        favoriteSpot:'', surpriseSpot:'',
+        favoriteSpot:'', surpriseSpot:'', firstImage:'',
         tournament:null,
         foodAgain:'', foodSurprise:'', foodFail:'', foodTakeHome:'',
         coverPhoto:'', gladCame:'',
-        happiest:'', biggestSurprise:'', funniest:'', messiest:'',
+        happiest:'', emotional:'', funniest:'', messiest:'',
         rearrange:'', credit:'',
         impressions:[], impressionTop:'', impressionOther:'',
         threeWords:'',
-        ratings:{ overall:8, itinerary:8, food:8, stay:8, transport:8, comfort:8, returnTaiwan:8 },
+        ratings:{ overall:2, itinerary:0, food:0, stay:1, transport:1, comfort:0, returnTaiwan:7 },
         finalMessage:''
       };
     }
@@ -7338,10 +7342,10 @@ function updateAchievementWall() {
 
     const QUESTIONS = [
       {
-        title:'先用一句話開始',
-        copy:'不用想得太完整，第一直覺就好。',
-        render: () => `<label class="survey-label">如果現在有人問你：「這趟台灣旅行怎麼樣？」你第一句會怎麼回答？</label><textarea class="survey-textarea" id="sv-first-line" placeholder="例如：比我想像中好玩很多／每天都很滿但真的很值得／我現在最想念的是……">${esc(surveyState.firstLine||'')}</textarea>`,
-        collect: () => surveyState.firstLine=document.getElementById('sv-first-line')?.value.trim()||''
+        title:'第一個浮現的畫面',
+        copy:'先不要分析，回到旅程本身。',
+        render: () => `<label class="survey-label">如果現在閉上眼睛回想這趟旅行，第一個浮現在你腦中的畫面是什麼？</label><textarea class="survey-textarea" id="sv-first-image" placeholder="例如：某個風景、某張照片、某段路、某個表情，甚至只是一個很小的瞬間。">${esc(surveyState.firstImage||'')}</textarea>`,
+        collect: () => surveyState.firstImage=document.getElementById('sv-first-image')?.value.trim()||''
       },
       {
         title:'景點與體驗回想',
@@ -7365,12 +7369,12 @@ function updateAchievementWall() {
       },
       {
         title:'台灣胃頒獎典禮',
-        copy:'不必每一題都填同一個答案。可以回想：阜杭燒餅／鹹豆漿、小籠包、九份芋圓／草仔粿、日月潭紅茶／山豬肉／飯飯雞翅、春水堂珍奶、台南牛肉湯／鱔魚意麵／蝦捲／棺材板／綠豆沙，以及夜市的鹹酥雞、臭豆腐、蚵仔煎、地瓜球等。',
+        copy:'想不起來可以回想：鼎泰豐、日月潭小吃、春水堂、牛肉湯、虱目魚肚、丹丹漢堡、雞排、四神湯、刈包、米血糕、太陽餅……',
         render: () => `
-          <label class="survey-label">🏆 最想再吃一次</label><input class="survey-input" id="sv-food-again" placeholder="例如：牛肉湯、鱔魚意麵、鼎泰豐小籠包……" value="${esc(surveyState.foodAgain)}">
-          <label class="survey-label">🤯 最意外好吃</label><input class="survey-input" id="sv-food-surprise" placeholder="原本沒抱期待，結果吃完覺得：欸，居然很好吃。" value="${esc(surveyState.foodSurprise)}">
-          <label class="survey-label">💀 最踩雷／最不合口味</label><input class="survey-input" id="sv-food-fail" placeholder="沒有也可以寫『沒有』；有的話寫最不合你口味的那一道。" value="${esc(surveyState.foodFail)}">
-          <label class="survey-label">🎁 如果只能帶一樣回去，你會帶什麼？</label><input class="survey-input" id="sv-food-takehome" placeholder="可以是伴手禮、飲料、甜點，甚至是想把某間店直接搬回去（笑）。" value="${esc(surveyState.foodTakeHome)}">
+          <label class="survey-label">🏆 最想再吃一次</label><input class="survey-input" id="sv-food-again" placeholder="例如：牛肉湯、鼎泰豐、丹丹漢堡" value="${esc(surveyState.foodAgain)}">
+          <label class="survey-label">🤯 最意外好吃</label><input class="survey-input" id="sv-food-surprise" placeholder="例如：四神湯、米血糕、虱目魚肚" value="${esc(surveyState.foodSurprise)}">
+          <label class="survey-label">💀 最踩雷／最不合口味</label><input class="survey-input" id="sv-food-fail" placeholder="沒有也可以直接寫：沒有" value="${esc(surveyState.foodFail)}">
+          <label class="survey-label">🎁 如果只能帶一樣回去，你會帶什麼？</label><input class="survey-input" id="sv-food-takehome" placeholder="例如：太陽餅、珍奶、某間店的味道" value="${esc(surveyState.foodTakeHome)}">
         `,
         collect: () => {
           surveyState.foodAgain=document.getElementById('sv-food-again')?.value.trim()||'';
@@ -7381,8 +7385,19 @@ function updateAchievementWall() {
       },
       {
         title:'這趟旅行的封面',
-        copy:'如果最後只能留一張照片代表這十天，你會挑哪一張？',
-        render: () => `<label class="survey-label">如果要選一張照片當作這趟旅行的封面，你會選哪一天、哪一段行程的照片？為什麼？</label><textarea class="survey-textarea" id="sv-cover" placeholder="例如：Day 6 武嶺日出的合照／海生館夜宿醒來的照片／某張一看就能想起整趟旅程的照片。也可以說說為什麼會選它。">${esc(surveyState.coverPhoto)}</textarea>`,
+        copy:'選一張最能代表這趟旅行的照片，做成一張可以長按保存的旅行封面卡。',
+        render: () => `
+          <label class="survey-label">如果只能留一張照片代表這十天，你會挑哪一張？</label>
+          <textarea class="survey-textarea" id="sv-cover" placeholder="可以先寫：這是哪一天、哪個地方，或為什麼會選這張。">${esc(surveyState.coverPhoto)}</textarea>
+          <div class="survey-cover-upload">
+            <input type="file" id="sv-cover-file" accept="image/*" class="hidden" onchange="handleSurveyCoverUpload(this)">
+            <label for="sv-cover-file" class="survey-file-label">📷 選一張照片</label>
+            <div class="text-[10px] text-gray-400 mt-2">照片只在這次頁面中使用，不會上傳或永久保存。</div>
+          </div>
+          <div class="survey-cover-preview ${surveyCoverPhotoData?'active':''}" id="survey-cover-preview">
+            <canvas id="survey-cover-canvas" class="survey-cover-canvas"></canvas>
+            <div class="text-[10px] text-gray-400 text-center mt-2">產生後可以直接長按圖片儲存。</div>
+          </div>`,
         collect: () => surveyState.coverPhoto=document.getElementById('sv-cover')?.value.trim()||''
       },
       {
@@ -7397,13 +7412,13 @@ function updateAchievementWall() {
         render: () => `
           <div class="memory-grid">
             <div><label class="survey-label">😆 最搞笑／有趣的一幕</label><textarea class="survey-textarea" id="sv-happy" placeholder="例如：某個笑到不行的對話、突發狀況、拍照失敗，或當下覺得超荒謬但現在很好笑的事。">${esc(surveyState.happiest)}</textarea></div>
-            <div><label class="survey-label">🤯 最驚喜的一幕</label><textarea class="survey-textarea" id="sv-big-surprise" placeholder="例如：原本沒期待卻意外很喜歡的地方、食物、風景，或某個完全超出預期的瞬間。">${esc(surveyState.biggestSurprise)}</textarea></div>
-            <div><label class="survey-label">🧠 最難忘的一幕</label><textarea class="survey-textarea" id="sv-funny" placeholder="例如：如果半年後還會記得一幕，你覺得會是哪一幕？可以是風景、人、對話或某個瞬間。">${esc(surveyState.funniest)}</textarea></div>
+            <div><label class="survey-label">💗 最感動／最有感</label><textarea class="survey-textarea" id="sv-emotional" placeholder="例如：某句話、某個陪伴、某個風景，或當下突然覺得很值得、很捨不得的一刻。">${esc(surveyState.emotional)}</textarea></div>
+            <div><label class="survey-label">🧠 最難忘</label><textarea class="survey-textarea" id="sv-funny" placeholder="例如：如果半年後還會記得一幕，你覺得會是哪一幕？可以是風景、人、對話或某個瞬間。">${esc(surveyState.funniest)}</textarea></div>
             <div><label class="survey-label">🫠 最狼狽的一幕</label><textarea class="survey-textarea" id="sv-messy" placeholder="例如：趕車、太累、天氣不配合、行程臨時改動，或任何當下有點崩潰現在回想還記得的片段。">${esc(surveyState.messiest)}</textarea></div>
           </div>`,
         collect: () => {
           surveyState.happiest=document.getElementById('sv-happy')?.value.trim()||'';
-          surveyState.biggestSurprise=document.getElementById('sv-big-surprise')?.value.trim()||'';
+          surveyState.emotional=document.getElementById('sv-emotional')?.value.trim()||'';
           surveyState.funniest=document.getElementById('sv-funny')?.value.trim()||'';
           surveyState.messiest=document.getElementById('sv-messy')?.value.trim()||'';
         }
@@ -7427,7 +7442,7 @@ function updateAchievementWall() {
       },
       {
         title:'旅行結束後的台灣印象',
-        copy:'最多選 5 個「印象最深或最喜歡」的部分，再從裡面選出最有感的一個。',
+        copy:'最多選 3 個最符合你這趟感受的台灣印象，再從裡面選一個最有感。',
         render: renderImpressions,
         collect: collectImpressions
       },
@@ -7620,8 +7635,6 @@ function updateAchievementWall() {
       const a=round[t.matchIndex*2], b=round[t.matchIndex*2+1];
       const done=Number(t.selectionCount||0);
       return `
-        <div class="survey-answer-hint">不用想哪個「比較厲害」，只要選：如果現在只能重玩其中一個，你會更想選哪個？憑直覺按就好。</div>
-        <div class="text-[11px] text-gray-500">目前進度：${Math.min(done,EXPERIENCE_POOL.length)} / ${EXPERIENCE_POOL.length} 次選擇</div>
         <div class="tournament-vs">
           <button type="button" class="tournament-pick" onclick="chooseTournamentWinner(0)">${esc(a)}</button>
           <div class="tournament-vs-mark">VS</div>
@@ -7804,7 +7817,7 @@ function updateAchievementWall() {
     window.limitSurveyImpressions=function(chk){
       const all=[...document.querySelectorAll('#sv-impressions input[type="checkbox"]')];
       const checked=all.filter(x=>x.checked);
-      if(checked.length>5){ chk.checked=false; alert('最多選 5 個。'); }
+      if(checked.length>5){ chk.checked=false; alert('最多選 3 個。'); }
       all.forEach(x=>x.closest('label')?.classList.toggle('selected',x.checked));
       surveyState.impressions=all.filter(x=>x.checked).map(x=>x.value);
       if(!surveyState.impressions.includes(surveyState.impressionTop)) surveyState.impressionTop='';
@@ -7828,17 +7841,53 @@ function updateAchievementWall() {
       ['stay','住宿體驗'],['transport','交通體驗'],['comfort','舒適程度'],['returnTaiwan','再次來台灣的意願']
     ];
     function renderRatings() {
-      return `<div class="survey-answer-hint">1 分＝很不滿意／完全不想再來，10 分＝非常滿意／非常願意。每一項可以給不同分，不用客氣，也不用都打高分。</div>` + ratingDefs.map(([key,label])=>`
+      return `<div class="survey-answer-hint">0 分＝完全不滿意／完全不想再來，10 分＝非常滿意／非常願意。每一項可以給不同分，不用客氣，也不用都打高分。</div>` + ratingDefs.map(([key,label])=>`
         <div class="rating-row">
-          <div class="rating-head"><span>${label}</span><span id="rating-${key}-value">${Number(surveyState.ratings?.[key]??8)} / 10</span></div>
-          <input type="range" id="rating-${key}" min="1" max="10" step="1" value="${Number(surveyState.ratings?.[key]??8)}"
+          <div class="rating-head"><span>${label}</span><span id="rating-${key}-value">${Number(surveyState.ratings?.[key]??0)} / 10</span></div>
+          <input type="range" id="rating-${key}" min="0" max="10" step="1" value="${Number(surveyState.ratings?.[key]??0)}"
             oninput="document.getElementById('rating-${key}-value').textContent=this.value+' / 10'">
         </div>`).join('');
     }
     function collectRatings() {
       surveyState.ratings=surveyState.ratings||{};
-      ratingDefs.forEach(([key])=>surveyState.ratings[key]=Number(document.getElementById(`rating-${key}`)?.value||8));
+      ratingDefs.forEach(([key])=>surveyState.ratings[key]=Number(document.getElementById(`rating-${key}`)?.value||0));
     }
+
+
+    function drawSurveyCoverCard(){
+      const canvas=document.getElementById('survey-cover-canvas');
+      if(!canvas||!surveyCoverPhotoData)return;
+      const img=new Image();
+      img.onload=()=>{
+        const W=1200,H=1500; canvas.width=W; canvas.height=H;
+        const ctx=canvas.getContext('2d');
+        const s=Math.max(W/img.width,H/img.height),dw=img.width*s,dh=img.height*s;
+        ctx.drawImage(img,(W-dw)/2,(H-dh)/2,dw,dh);
+        const g=ctx.createLinearGradient(0,H*.45,0,H);
+        g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,.78)');
+        ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+        ctx.fillStyle='rgba(255,255,255,.92)'; ctx.font='700 42px sans-serif'; ctx.fillText('TAIWAN · 2026',76,H-300);
+        ctx.fillStyle='#fff'; ctx.font='700 78px sans-serif'; ctx.fillText('十天的台灣旅行',76,H-210);
+        ctx.font='400 34px sans-serif'; ctx.fillStyle='rgba(255,255,255,.9)'; ctx.fillText('2026.09.27 — 2026.10.06',76,H-145);
+        const note=(surveyState.coverPhoto||'').trim();
+        if(note){ctx.font='400 28px sans-serif';ctx.fillStyle='rgba(255,255,255,.86)';let line='',y=H-88;
+          for(const ch of note){const test=line+ch;if(ctx.measureText(test).width>1040){ctx.fillText(line,76,y);line=ch;y+=38}else line=test}
+          if(line)ctx.fillText(line,76,y);
+        }
+        const data=canvas.toDataURL('image/png');
+        document.getElementById('survey-cover-preview')?.classList.add('active');
+        let out=document.getElementById('survey-cover-output-image');
+        if(!out){out=document.createElement('img');out.id='survey-cover-output-image';out.className='survey-cover-canvas mt-3';out.alt='旅行封面卡';canvas.insertAdjacentElement('afterend',out)}
+        out.src=data;
+      }; img.src=surveyCoverPhotoData;
+    }
+    window.handleSurveyCoverUpload=function(input){
+      const file=input?.files?.[0]; if(!file)return;
+      if(!file.type.startsWith('image/')){alert('請選擇圖片檔。');return}
+      const reader=new FileReader();
+      reader.onload=()=>{surveyCoverPhotoData=reader.result;drawSurveyCoverCard()};
+      reader.readAsDataURL(file);
+    };
 
     function renderSurveyStep() {
       const q=QUESTIONS[surveyStep];
@@ -7856,6 +7905,7 @@ function updateAchievementWall() {
         next.disabled=!tournamentPlacementsComplete();
       } else next.disabled=false;
       if (QUESTIONS[surveyStep]?.title==='如果可以完整重玩一次') setTimeout(attachRankingDrag,0);
+      if (QUESTIONS[surveyStep]?.title==='這趟旅行的封面') setTimeout(drawSurveyCoverCard,0);
       window.scrollTo({top:0,behavior:'instant'});
     }
 

@@ -2044,6 +2044,27 @@ html:not(.secret-content-ready) [data-secret-emoji] {
 .bracket-save-title { font-size:11px; font-weight:800; color:#2C3E35; text-align:center; margin-bottom:8px; }
 .bracket-save-image { display:block; width:100%; height:auto; border-radius:12px; background:#F7F5F0; -webkit-touch-callout:default; user-select:auto; }
 .bracket-save-hint { margin-top:8px; font-size:10px; line-height:1.6; color:#8A8178; text-align:center; }
+.tournament-podium { display:grid; grid-template-columns:1fr 1.12fr 1fr; gap:8px; align-items:end; margin:14px 0 18px; }
+.podium-card { text-align:center; border:1px solid #E2DDD5; border-radius:16px; padding:12px 8px; background:#F7F5F0; box-shadow:0 5px 18px rgba(44,62,53,.04); }
+.podium-card.first { padding-top:18px; padding-bottom:18px; border-color:#E7B37D; background:linear-gradient(180deg,#FFF7ED,#FFF1E3); box-shadow:0 8px 22px rgba(198,105,20,.10); }
+.podium-card.second { background:linear-gradient(180deg,#FAFAF9,#F2F0ED); }
+.podium-card.third { background:linear-gradient(180deg,#FBF5EF,#F3E9E0); }
+.podium-medal { font-size:24px; line-height:1; }
+.podium-rank { margin-top:7px; font-size:9px; letter-spacing:.12em; font-weight:900; color:#8A8178; }
+.podium-name { margin-top:5px; font-size:11px; line-height:1.35; font-weight:850; color:#2C3E35; word-break:break-word; }
+.placement-playoff { border:1px dashed #D9C5B2; background:#FFF9F3; border-radius:16px; padding:14px; }
+.bracket-summary-bar { display:flex; flex-wrap:wrap; gap:7px; margin:10px 0 4px; }
+.bracket-summary-bar span { flex:1 1 120px; padding:8px 10px; border:1px solid #E2DDD5; border-radius:999px; background:#fff; text-align:center; font-size:9px; font-weight:800; color:#59635E; }
+.bracket-round { position:relative; padding:9px; border:1px solid rgba(226,221,213,.85); border-radius:14px; background:rgba(255,255,255,.62); }
+.bracket-round-title { text-align:center; }
+.bracket-node.champion-path { border-color:#E6A76A; box-shadow:0 0 0 1px rgba(198,105,20,.06); }
+body.dark-mode .podium-card, body.dark-mode .bracket-round, body.dark-mode .bracket-summary-bar span { background:#26332D; border-color:#3B4B43; }
+body.dark-mode .podium-card.first { background:#3B342C; border-color:#9A6133; }
+body.dark-mode .podium-card.third { background:#332E29; }
+body.dark-mode .podium-name { color:#E8ECE9; }
+body.dark-mode .placement-playoff { background:#302B26; border-color:#6D5643; }
+@media (max-width:520px){ .tournament-podium{gap:5px}.podium-card{padding-left:5px;padding-right:5px}.podium-name{font-size:9.5px}.podium-rank{font-size:8px} }
+
 body.dark-mode .bracket-save-card { background:#202B26; border-color:#3A4A42; }
 body.dark-mode .bracket-save-title { color:#F2EEE8; }
 .test-survey-achievement {
@@ -7246,14 +7267,15 @@ function updateAchievementWall() {
       '月世界','墾丁海線','海生館夜宿','高雄港＋85大樓','瑞豐夜市','六合夜市'
     ];
     const DAY_RANK_DEFAULT = [
-      'Day 2｜台北經典文化與故宮',
-      'Day 3｜野柳＋九份＋十分',
-      'Day 4｜日月潭',
-      'Day 5｜九族＋高美＋台中',
-      'Day 6｜武嶺＋合歡山＋台南',
-      'Day 7｜台南＋月世界＋高雄',
-      'Day 8｜墾丁海線＋海生館夜宿',
-      'Day 9｜海生館＋高雄'
+      'Day 1｜西門町・手作時研室',
+      'Day 2｜中正紀念堂・永康・故宮・陽明山',
+      'Day 3｜跳石海岸・野柳・九份・十分・陰陽海',
+      'Day 4｜Cookinn 手作・日月潭湖景・伊達邵',
+      'Day 5｜九族文化村・鼎泰豐・高美濕地夕陽',
+      'Day 6｜武嶺・春水堂・宮原眼科・自駕遊・聖母廟・牛肉湯',
+      'Day 7｜台南小吃巡禮・四草・台式洗頭・熱氣球・瑞豐夜市',
+      'Day 8｜墾丁海線・夜宿海生館',
+      'Day 9｜海生館・高雄港夜景・六合夜市'
     ];
     const IMPRESSIONS = [
       '小吃與美食','自然風景','城市氛圍','人情味','夜市文化','便利商店',
@@ -7275,7 +7297,7 @@ function updateAchievementWall() {
         coverPhoto:'', gladCame:'',
         happiest:'', biggestSurprise:'', funniest:'', messiest:'',
         rearrange:'', credit:'',
-        impressions:[], impressionTop:'',
+        impressions:[], impressionTop:'', impressionOther:'',
         threeWords:'',
         ratings:{ overall:8, itinerary:8, food:8, stay:8, transport:8, comfort:8, returnTaiwan:8 },
         finalMessage:''
@@ -7357,9 +7379,9 @@ function updateAchievementWall() {
         copy:'各寫一小段就可以。四個答案可以來自完全不同的日子。',
         render: () => `
           <div class="memory-grid">
-            <div><label class="survey-label">😆 最開心的一幕</label><textarea class="survey-textarea" id="sv-happy">${esc(surveyState.happiest)}</textarea></div>
+            <div><label class="survey-label">😆 最搞笑／有趣的一幕</label><textarea class="survey-textarea" id="sv-happy">${esc(surveyState.happiest)}</textarea></div>
             <div><label class="survey-label">🤯 最驚喜的一幕</label><textarea class="survey-textarea" id="sv-big-surprise">${esc(surveyState.biggestSurprise)}</textarea></div>
-            <div><label class="survey-label">😂 現在想起來最好笑的一幕</label><textarea class="survey-textarea" id="sv-funny">${esc(surveyState.funniest)}</textarea></div>
+            <div><label class="survey-label">🧠 最有記憶點、最忘不掉的一幕</label><textarea class="survey-textarea" id="sv-funny">${esc(surveyState.funniest)}</textarea></div>
             <div><label class="survey-label">🫠 最狼狽的一幕</label><textarea class="survey-textarea" id="sv-messy">${esc(surveyState.messiest)}</textarea></div>
           </div>`,
         collect: () => {
@@ -7408,7 +7430,7 @@ function updateAchievementWall() {
     ];
 
     function renderDayRanking() {
-      const items = Array.isArray(surveyState.dayRank) && surveyState.dayRank.length===8 ? surveyState.dayRank : [...DAY_RANK_DEFAULT];
+      const items = Array.isArray(surveyState.dayRank) && surveyState.dayRank.length===9 ? surveyState.dayRank : [...DAY_RANK_DEFAULT];
       return `<div id="survey-rank-list">${items.map((x,i)=>`
         <div class="survey-rank-row" draggable="true" data-rank="${esc(x)}">
           <span class="survey-drag-handle">⠿</span>
@@ -7464,7 +7486,7 @@ function updateAchievementWall() {
 
     function makeTournament() {
       const entrants=[...EXPERIENCE_POOL];
-      // 32 格淘汰表：24 個參賽者＋8 個 bye。測試時固定順序，方便重現結果。
+      // 32 格淘汰表：24 個參賽者＋8 個 bye。固定順序，方便回看整棵樹。
       const slots=new Array(32).fill(null);
       let cursor=0;
       for (let pair=0; pair<16; pair++) {
@@ -7476,7 +7498,10 @@ function updateAchievementWall() {
         }
       }
       const rounds=[slots];
-      return { rounds, roundIndex:0, matchIndex:0, complete:false, champion:null };
+      return {
+        rounds, roundIndex:0, matchIndex:0, complete:false, champion:null,
+        runnerUp:null, thirdPlace:null, bronzeCandidates:[]
+      };
     }
 
     function ensureTournament() {
@@ -7484,6 +7509,24 @@ function updateAchievementWall() {
         surveyState.tournament=makeTournament();
       }
       advanceTournamentToPlayable();
+      ensureTournamentPlacements();
+    }
+
+    function ensureTournamentPlacements() {
+      const t=surveyState.tournament;
+      if (!t?.complete || !Array.isArray(t.rounds)) return;
+      const finalRound=t.rounds[t.rounds.length-2]||[];
+      const championRound=t.rounds[t.rounds.length-1]||[];
+      t.champion=t.champion || championRound[0] || null;
+      if (!t.runnerUp && finalRound.length>=2) {
+        t.runnerUp=finalRound.find(x=>x && x!==t.champion) || null;
+      }
+      if (!Array.isArray(t.bronzeCandidates) || t.bronzeCandidates.length!==2) {
+        const semiRound=t.rounds[t.rounds.length-3]||[];
+        const finalists=new Set(finalRound.filter(Boolean));
+        t.bronzeCandidates=semiRound.filter(x=>x && !finalists.has(x)).slice(0,2);
+      }
+      saveSurveyState();
     }
 
     function advanceTournamentToPlayable() {
@@ -7504,6 +7547,7 @@ function updateAchievementWall() {
         if (!a && b) { t.rounds[t.roundIndex+1][t.matchIndex]=b; t.matchIndex++; continue; }
         break;
       }
+      ensureTournamentPlacements();
       saveSurveyState();
     }
 
@@ -7515,15 +7559,37 @@ function updateAchievementWall() {
       return n;
     }
 
+    function tournamentPlacementsComplete() {
+      const t=surveyState.tournament;
+      return !!(t?.complete && t?.champion && t?.runnerUp && t?.thirdPlace);
+    }
+
+    function renderTournamentPodium(t) {
+      return `<div class="tournament-podium">
+        <div class="podium-card second"><div class="podium-medal">🥈</div><div class="podium-rank">亞軍</div><div class="podium-name">${esc(t.runnerUp||'待揭曉')}</div></div>
+        <div class="podium-card first"><div class="podium-medal">🥇</div><div class="podium-rank">冠軍</div><div class="podium-name">${esc(t.champion||'待揭曉')}</div></div>
+        <div class="podium-card third"><div class="podium-medal">🥉</div><div class="podium-rank">季軍</div><div class="podium-name">${esc(t.thirdPlace||'待加賽')}</div></div>
+      </div>`;
+    }
+
     function renderTournament() {
       ensureTournament();
       const t=surveyState.tournament;
+      if (t.complete && !t.thirdPlace && (t.bronzeCandidates||[]).length===2) {
+        const [a,b]=t.bronzeCandidates;
+        return `${renderTournamentPodium(t)}
+          <div class="placement-playoff">
+            <div class="text-[11px] font-bold text-[#9A6A3D]">🥉 最後一場｜季軍加賽</div>
+            <div class="text-[10px] text-gray-500 mt-1">兩位四強止步者再選一次，排出完整前三名。</div>
+            <div class="tournament-vs">
+              <button type="button" class="tournament-pick" onclick="chooseTournamentThird(0)">${esc(a)}</button>
+              <div class="tournament-vs-mark">VS</div>
+              <button type="button" class="tournament-pick" onclick="chooseTournamentThird(1)">${esc(b)}</button>
+            </div>
+          </div>`;
+      }
       if (t.complete) {
-        return `<div class="text-center py-2">
-          <div class="text-4xl">🏆</div>
-          <div class="text-xs text-gray-400 mt-2">本趟最愛</div>
-          <div class="text-xl font-bold text-[#C66914] mt-1">${esc(t.champion)}</div>
-        </div>${renderBracket()}`;
+        return `${renderTournamentPodium(t)}${renderBracket()}`;
       }
       const round=t.rounds[t.roundIndex];
       const a=round[t.matchIndex*2], b=round[t.matchIndex*2+1];
@@ -7535,7 +7601,7 @@ function updateAchievementWall() {
           <div class="tournament-vs-mark">VS</div>
           <button type="button" class="tournament-pick" onclick="chooseTournamentWinner(1)">${esc(b)}</button>
         </div>
-        <div class="text-[10px] text-gray-400 mt-3">選了就晉級；最後會生成完整淘汰樹狀圖。</div>`;
+        <div class="text-[10px] text-gray-400 mt-3">一路選到冠軍後，會再進行一場季軍加賽，最後排出完整前三名。</div>`;
     }
 
     window.chooseTournamentWinner=function(side){
@@ -7550,107 +7616,161 @@ function updateAchievementWall() {
       renderSurveyStep();
     };
 
+    window.chooseTournamentThird=function(side){
+      ensureTournamentPlacements();
+      const t=surveyState.tournament;
+      if(!t?.complete || t.thirdPlace || !Array.isArray(t.bronzeCandidates)) return;
+      t.thirdPlace=t.bronzeCandidates[side?1:0]||null;
+      saveSurveyState();
+      renderSurveyStep();
+    };
+
     function renderBracket() {
       const t=surveyState.tournament;
       const labels=['32 強','16 強','8 強','4 強','冠軍戰','冠軍'];
       setTimeout(renderBracketSaveImage, 0);
-      return `<div class="bracket-scroll"><div class="bracket">${
-        t.rounds.map((round,ri)=>`<div class="bracket-round">
+      return `<div class="bracket-summary-bar">
+          <span>🏆 ${esc(t.champion||'')}</span><span>🥈 ${esc(t.runnerUp||'')}</span><span>🥉 ${esc(t.thirdPlace||'')}</span>
+        </div>
+        <div class="bracket-scroll"><div class="bracket">${
+        t.rounds.map((round,ri)=>`<div class="bracket-round bracket-round-${ri}">
           <div class="bracket-round-title">${labels[ri]||`ROUND ${ri+1}`}</div>
-          ${(round||[]).filter(Boolean).map(name=>`<div class="bracket-node ${ri===t.rounds.length-1?'winner':''}">${esc(name)}</div>`).join('')}
+          ${(round||[]).filter(Boolean).map(name=>`<div class="bracket-node ${ri===t.rounds.length-1?'winner':''} ${name===t.champion?'champion-path':''}">${esc(name)}</div>`).join('')}
         </div>`).join('')
       }</div></div>
       <div class="bracket-save-card">
-        <div class="bracket-save-title">🏆 我的台灣旅行淘汰賽</div>
-        <img id="bracket-save-image" class="bracket-save-image" alt="旅程最愛體驗淘汰樹狀圖，可長按儲存">
-        <div class="bracket-save-hint">圖片版已自動整理完成｜手機可直接長按圖片儲存</div>
+        <div class="bracket-save-title">🏆 我的台灣旅行 TOP 3 ＆ 淘汰樹</div>
+        <img id="bracket-save-image" class="bracket-save-image" alt="旅程最愛體驗前三名與淘汰樹狀圖，可長按儲存">
+        <div class="bracket-save-hint">圖片版已自動排版完成｜手機可直接長按圖片儲存</div>
       </div>`;
+    }
+
+    function canvasRoundRect(ctx,x,y,w,h,r,fill,stroke){
+      ctx.beginPath();
+      ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+      ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+      ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+      ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+      if(fill){ctx.fillStyle=fill;ctx.fill();} if(stroke){ctx.strokeStyle=stroke;ctx.stroke();}
     }
 
     function renderBracketSaveImage() {
       const img=document.getElementById('bracket-save-image');
       const t=surveyState.tournament;
-      if(!img || !t?.complete || !Array.isArray(t.rounds)) return;
+      if(!img || !t?.complete || !t?.thirdPlace || !Array.isArray(t.rounds)) return;
 
       const labels=['32 強','16 強','8 強','4 強','冠軍戰','冠軍'];
       const rounds=t.rounds.map(r=>(r||[]).filter(Boolean));
       const scale=2;
-      const colW=190, gap=22, pad=30, headerH=92, nodeH=34, nodeGap=9;
-      const maxNodes=Math.max(...rounds.map(r=>r.length),1);
+      const pad=42, colW=174, gap=28, headerH=230, nodeH=34, minGap=10;
       const width=pad*2 + rounds.length*colW + Math.max(0,rounds.length-1)*gap;
-      const height=Math.max(620, headerH + pad + maxNodes*(nodeH+nodeGap) + 45);
+      const firstCount=Math.max(rounds[0]?.length||1,1);
+      const bracketH=Math.max(760, firstCount*(nodeH+minGap)+80);
+      const height=headerH+bracketH+54;
       const canvas=document.createElement('canvas');
       canvas.width=width*scale; canvas.height=height*scale;
       const ctx=canvas.getContext('2d');
       ctx.scale(scale,scale);
+      ctx.lineWidth=1;
 
-      ctx.fillStyle='#F7F5F0'; ctx.fillRect(0,0,width,height);
+      // 背景與標題
+      const grad=ctx.createLinearGradient(0,0,width,height);
+      grad.addColorStop(0,'#FBF8F2'); grad.addColorStop(1,'#F1ECE3');
+      ctx.fillStyle=grad; ctx.fillRect(0,0,width,height);
       ctx.fillStyle='#2C3E35'; ctx.textAlign='center';
-      ctx.font='800 24px system-ui, -apple-system, sans-serif';
-      ctx.fillText('邵奶奶台灣旅行・最愛體驗淘汰賽',width/2,36);
-      ctx.fillStyle='#8A8178'; ctx.font='600 12px system-ui, -apple-system, sans-serif';
-      ctx.fillText('2026 TAIWAN GRAND TRAVERSE',width/2,58);
-      ctx.fillStyle='#C66914'; ctx.font='800 16px system-ui, -apple-system, sans-serif';
-      ctx.fillText('🏆 冠軍：'+(t.champion||''),width/2,82);
+      ctx.font='900 25px system-ui, -apple-system, sans-serif';
+      ctx.fillText('邵奶奶台灣旅行・最愛體驗 TOP 3',width/2,38);
+      ctx.fillStyle='#8A8178'; ctx.font='650 11px system-ui, -apple-system, sans-serif';
+      ctx.fillText('2026 TAIWAN GRAND TRAVERSE · TOURNAMENT RESULT',width/2,60);
 
-      const roundYs=[];
+      // 頒獎台
+      const podiumY=88, cardW=230, cardH=92, pg=18;
+      const podium=[
+        {rank:'🥈 亞軍',name:t.runnerUp,fill:'#F3F1EE',stroke:'#C9C4BD',y:podiumY+16},
+        {rank:'🥇 冠軍',name:t.champion,fill:'#FFF1E3',stroke:'#C66914',y:podiumY},
+        {rank:'🥉 季軍',name:t.thirdPlace,fill:'#F7EFE8',stroke:'#B88967',y:podiumY+16}
+      ];
+      const total=cardW*3+pg*2, start=(width-total)/2;
+      podium.forEach((p,i)=>{
+        const x=start+i*(cardW+pg), y=p.y;
+        ctx.lineWidth=i===1?2:1;
+        canvasRoundRect(ctx,x,y,cardW,cardH,16,p.fill,p.stroke);
+        ctx.fillStyle=i===1?'#C66914':'#756C64'; ctx.font='850 13px system-ui, -apple-system, sans-serif'; ctx.textAlign='center';
+        ctx.fillText(p.rank,x+cardW/2,y+28);
+        ctx.fillStyle='#2C3E35'; ctx.font=(i===1?'900 ':'800 ')+'14px system-ui, -apple-system, sans-serif';
+        let nm=String(p.name||''); if(nm.length>16) nm=nm.slice(0,15)+'…';
+        ctx.fillText(nm,x+cardW/2,y+57);
+      });
+
+      // 輪次節點：保留原始比賽結果，但用等高欄位和柔和連線整理視覺。
+      const yTop=headerH+34, usableH=bracketH-80;
+      const roundCenters=[];
       rounds.forEach((round,ri)=>{
-        const x=pad + ri*(colW+gap);
-        ctx.textAlign='left';
-        ctx.fillStyle='#9A6A3D'; ctx.font='800 11px system-ui, -apple-system, sans-serif';
-        ctx.fillText(labels[ri]||('ROUND '+(ri+1)),x,headerH);
-        const total=round.length*(nodeH+nodeGap)-nodeGap;
-        const startY=headerH+18 + Math.max(0,(height-headerH-50-total)/2);
-        roundYs[ri]=[];
+        const x=pad+ri*(colW+gap);
+        ctx.textAlign='center'; ctx.fillStyle='#9A6A3D'; ctx.font='850 11px system-ui, -apple-system, sans-serif';
+        ctx.fillText(labels[ri]||('ROUND '+(ri+1)),x+colW/2,headerH+8);
+        const n=Math.max(round.length,1);
+        const step=usableH/n;
+        roundCenters[ri]=[];
         round.forEach((name,i)=>{
-          const y=startY+i*(nodeH+nodeGap); roundYs[ri].push(y+nodeH/2);
-          ctx.fillStyle=ri===rounds.length-1?'#FFF1E3':'#FFFFFF';
-          ctx.strokeStyle=ri===rounds.length-1?'#C66914':'#D9D3CA';
-          ctx.lineWidth=1;
-          const r=10; const w=colW;
-          ctx.beginPath();
-          ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
-          ctx.lineTo(x+w,y+nodeH-r); ctx.quadraticCurveTo(x+w,y+nodeH,x+w-r,y+nodeH);
-          ctx.lineTo(x+r,y+nodeH); ctx.quadraticCurveTo(x,y+nodeH,x,y+nodeH-r);
-          ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath(); ctx.fill(); ctx.stroke();
-          ctx.fillStyle='#2C3E35'; ctx.textAlign='center'; ctx.font=(ri===rounds.length-1?'800 ':'650 ')+'10px system-ui, -apple-system, sans-serif';
-          let text=String(name); if(text.length>13) text=text.slice(0,12)+'…';
-          ctx.fillText(text,x+w/2,y+21);
+          const cy=yTop+step*(i+.5), y=cy-nodeH/2;
+          roundCenters[ri].push(cy);
+          const champ=name===t.champion;
+          canvasRoundRect(ctx,x,y,colW,nodeH,10,champ?'#FFF1E3':'#FFFFFF',champ?'#C66914':'#D8D1C8');
+          ctx.fillStyle=champ?'#A94F09':'#2C3E35'; ctx.font=(champ?'850 ':'650 ')+'10px system-ui, -apple-system, sans-serif';
+          let nm=String(name); if(nm.length>13) nm=nm.slice(0,12)+'…';
+          ctx.fillText(nm,x+colW/2,cy+3.5);
         });
       });
 
-      // 以淡線提示各輪次向右晉級，保留乾淨可讀性。
-      ctx.strokeStyle='#D6CFC5'; ctx.lineWidth=1;
+      // 連線放在節點之間，越接近決賽越深；避免舊版密集交叉。
       for(let ri=0;ri<rounds.length-1;ri++){
         const x1=pad+ri*(colW+gap)+colW, x2=pad+(ri+1)*(colW+gap);
-        const a=roundYs[ri]||[], b=roundYs[ri+1]||[];
+        const a=roundCenters[ri]||[], b=roundCenters[ri+1]||[];
+        ctx.strokeStyle=ri>=rounds.length-3?'#C9A27B':'#D9D3CA'; ctx.lineWidth=ri>=rounds.length-3?1.5:1;
         b.forEach((y2,j)=>{
-          const candidates=a.slice(j*2,j*2+2);
-          candidates.forEach(y1=>{
-            ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x1+gap/2,y1); ctx.lineTo(x1+gap/2,y2); ctx.lineTo(x2,y2); ctx.stroke();
+          const from=a.slice(j*2,j*2+2);
+          from.forEach(y1=>{
+            ctx.beginPath();
+            ctx.moveTo(x1,y1); ctx.lineTo(x1+gap*.45,y1); ctx.lineTo(x1+gap*.45,y2); ctx.lineTo(x2,y2); ctx.stroke();
           });
         });
       }
 
-      ctx.fillStyle='#A49A90'; ctx.textAlign='center'; ctx.font='500 10px system-ui, -apple-system, sans-serif';
-      ctx.fillText('長按圖片即可儲存',width/2,height-18);
+      ctx.fillStyle='#A49A90'; ctx.textAlign='center'; ctx.font='550 10px system-ui, -apple-system, sans-serif';
+      ctx.fillText('長按圖片即可儲存 · 冠亞季軍由實際對戰結果產生',width/2,height-20);
       img.src=canvas.toDataURL('image/png');
     }
 
     function renderImpressions() {
       const selected=new Set(surveyState.impressions||[]);
+      const otherOn=selected.has('其他');
       return `<div id="sv-impressions">${IMPRESSIONS.map(x=>`
         <label class="survey-choice ${selected.has(x)?'selected':''}">
           <input type="checkbox" class="mr-2" value="${esc(x)}" ${selected.has(x)?'checked':''} onchange="limitSurveyImpressions(this)"> ${esc(x)}
         </label>`).join('')}</div>
+        <div id="sv-impression-other-wrap" style="display:${otherOn?'block':'none'}">
+          <label class="survey-label">你說的「其他」是什麼？</label>
+          <input class="survey-input" id="sv-impression-other" placeholder="直接寫下來，例如：早餐店文化、路邊機車很多…" value="${esc(surveyState.impressionOther||'')}" oninput="surveyState.impressionOther=this.value; saveSurveyState(); refreshImpressionTopOptions()">
+        </div>
         <label class="survey-label">從你選的項目裡，再選一個「最有感」</label>
         <select class="survey-select" id="sv-impression-top">${renderImpressionTopOptions()}</select>`;
     }
 
+    function impressionDisplay(x) {
+      if (x==='其他' && (surveyState.impressionOther||'').trim()) return `其他：${surveyState.impressionOther.trim()}`;
+      return x;
+    }
+
     function renderImpressionTopOptions() {
       const vals=surveyState.impressions||[];
-      return `<option value="">請選擇</option>`+vals.map(x=>`<option ${surveyState.impressionTop===x?'selected':''}>${esc(x)}</option>`).join('');
+      return `<option value="">請選擇</option>`+vals.map(x=>`<option value="${esc(x)}" ${surveyState.impressionTop===x?'selected':''}>${esc(impressionDisplay(x))}</option>`).join('');
     }
+
+    window.refreshImpressionTopOptions=function(){
+      const sel=document.getElementById('sv-impression-top');
+      if(sel) sel.innerHTML=renderImpressionTopOptions();
+    };
 
     window.limitSurveyImpressions=function(chk){
       const all=[...document.querySelectorAll('#sv-impressions input[type="checkbox"]')];
@@ -7659,14 +7779,19 @@ function updateAchievementWall() {
       all.forEach(x=>x.closest('label')?.classList.toggle('selected',x.checked));
       surveyState.impressions=all.filter(x=>x.checked).map(x=>x.value);
       if(!surveyState.impressions.includes(surveyState.impressionTop)) surveyState.impressionTop='';
-      const sel=document.getElementById('sv-impression-top');
-      if(sel) sel.innerHTML=renderImpressionTopOptions();
+      const otherWrap=document.getElementById('sv-impression-other-wrap');
+      const otherChecked=surveyState.impressions.includes('其他');
+      if(otherWrap) otherWrap.style.display=otherChecked?'block':'none';
+      if(!otherChecked) surveyState.impressionOther='';
+      refreshImpressionTopOptions();
       saveSurveyState();
     };
 
     function collectImpressions() {
       surveyState.impressions=[...document.querySelectorAll('#sv-impressions input:checked')].map(x=>x.value);
       surveyState.impressionTop=document.getElementById('sv-impression-top')?.value||'';
+      surveyState.impressionOther=document.getElementById('sv-impression-other')?.value.trim()||surveyState.impressionOther||'';
+      if(!surveyState.impressions.includes('其他')) surveyState.impressionOther='';
     }
 
     const ratingDefs=[
@@ -7699,7 +7824,7 @@ function updateAchievementWall() {
       next.textContent=surveyStep===QUESTIONS.length-1?'送出問卷 ✨':'後一題 →';
       if (surveyStep===2) {
         ensureTournament();
-        next.disabled=!surveyState.tournament.complete;
+        next.disabled=!tournamentPlacementsComplete();
       } else next.disabled=false;
       if (surveyStep===0) setTimeout(attachRankingDrag,0);
       window.scrollTo({top:0,behavior:'instant'});
@@ -7716,8 +7841,8 @@ function updateAchievementWall() {
     };
     window.surveyNext=function(){
       collectCurrent();
-      if(surveyStep===2 && !surveyState.tournament?.complete){
-        alert('先完成二選一淘汰賽，才能前往下一題。'); return;
+      if(surveyStep===2 && !tournamentPlacementsComplete()){
+        alert('先完成冠軍賽與季軍加賽，排出完整前三名後才能前往下一題。'); return;
       }
       if(surveyStep<QUESTIONS.length-1){surveyStep++;renderSurveyStep();return;}
       submitTripSurveyTest();

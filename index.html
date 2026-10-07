@@ -6806,6 +6806,13 @@ function updateAchievementWall() {
         }
         if (resetBtn) resetBtn.classList.remove('hidden');
         updateAchievementWall();
+        const surveyNavBtn=document.getElementById('btn-trip-survey');
+        if (surveyNavBtn) {
+            surveyNavBtn.classList.remove('hidden');
+            surveyNavBtn.textContent = localStorage.getItem(POSTTRIP_SUBMITTED_KEY)==='true'
+                ? '💌 查看旅後問卷'
+                : '📝 問卷調查';
+        }
     }
 
     function resetTaiwanTripCompletion() {
@@ -8439,11 +8446,8 @@ function updateAchievementWall() {
       await new Promise(resolve=>{
         img.onload=()=>{
           const targetH=Math.round(H*0.59);
-        const naturalW=Math.round(targetH*(img.width/img.height));
-        const boxW=Math.min(naturalW,W-54);
-        // Slightly lengthen the collage vertically; the entire source image remains visible.
-        const naturalH=Math.round(boxW*(img.height/img.width));
-        const boxH=Math.min(targetH,Math.round(naturalH*1.12));
+        const boxW=W-54;
+        const boxH=targetH;
         const x=(W-boxW)/2, y=H-72-boxH;
           // Draw the whole collage without cropping.
           ctx.save();
@@ -8451,22 +8455,30 @@ function updateAchievementWall() {
           if(ctx.roundRect) ctx.roundRect(x,y,boxW,boxH,16); else ctx.rect(x,y,boxW,boxH);
           ctx.clip();
 
+          // Natural-proportion centre crop: fill the photo area without stretching.
+          const scale=Math.max(boxW/img.width,boxH/img.height);
+          const dw=img.width*scale, dh=img.height*scale;
+          const dx=x+(boxW-dw)/2, dy=y+(boxH-dh)/2;
+
           // Soft faded base.
           ctx.globalAlpha=.34;
-          ctx.drawImage(img,x,y,boxW,boxH);
+          ctx.drawImage(img,dx,dy,dw,dh);
           ctx.globalAlpha=1;
 
-          // Original-colour photo appears only through the three characters "下次見".
+          // Original-colour photo appears only through the brush-style farewell lettering.
           const mask=document.createElement('canvas');
           mask.width=W; mask.height=H;
           const mctx=mask.getContext('2d');
-          mctx.drawImage(img,x,y,boxW,boxH);
+          mctx.drawImage(img,dx,dy,dw,dh);
           mctx.globalCompositeOperation='destination-in';
           mctx.fillStyle='#000';
           mctx.textAlign='center';
           mctx.textBaseline='middle';
-          mctx.font='900 112px sans-serif';
-          mctx.fillText('下次見',W/2,y+boxH*.56);
+          // Prefer calligraphic / brush-like CJK fonts available on the device.
+          mctx.font='900 142px "DFKai-SB","BiauKai","STKaiti","KaiTi","Kaiti TC","Noto Serif TC",serif';
+          mctx.fillText('臺灣，',W/2,y+boxH*.44);
+          mctx.font='900 166px "DFKai-SB","BiauKai","STKaiti","KaiTi","Kaiti TC","Noto Serif TC",serif';
+          mctx.fillText('下次見！',W/2,y+boxH*.65);
           mctx.globalCompositeOperation='source-over';
           ctx.drawImage(mask,0,0);
           ctx.restore();
@@ -8630,14 +8642,6 @@ function updateAchievementWall() {
       </div>`;
     }
 
-    function showSurveyResultsAndBooklet() {
-      openTripSurvey();
-      setTimeout(()=>{
-        showSubmittedSurvey();
-        document.getElementById('survey-submitted-card')?.scrollIntoView({behavior:'smooth',block:'start'});
-      },60);
-    }
-
     function showSubmittedSurvey() {
       document.getElementById('survey-intro-card')?.classList.add('hidden');
       document.getElementById('survey-question-card')?.classList.add('hidden');
@@ -8646,26 +8650,6 @@ function updateAchievementWall() {
       document.getElementById('survey-submitted-card')?.classList.remove('hidden');
       renderSubmittedSurveySummary();
       setTimeout(()=>generateTravelBooklet(),0);
-    }
-
-    function showSurveyFinishPrompt() {
-      document.getElementById('survey-finish-toast')?.remove();
-      const wrap=document.createElement('div');
-      wrap.id='survey-finish-toast';
-      wrap.style.cssText='position:fixed;inset:0;z-index:10050;background:rgba(25,35,31,.48);display:flex;align-items:center;justify-content:center;padding:22px;';
-      wrap.innerHTML=`<div style="width:min(92vw,420px);background:#fffaf4;border-radius:26px;padding:28px 24px;box-shadow:0 20px 60px rgba(0,0,0,.22);text-align:center">
-        <div style="font-size:38px;margin-bottom:10px">💌</div>
-        <div style="font-size:22px;font-weight:800;color:#2C3E35;margin-bottom:8px">問卷完成！</div>
-        <div style="font-size:14px;line-height:1.7;color:#746d66;margin-bottom:20px">回答已保存，旅遊小書也生成好了。</div>
-        <button id="survey-finish-view-btn" type="button" style="width:100%;border:0;border-radius:16px;padding:14px 18px;background:#C66914;color:white;font-size:16px;font-weight:800;cursor:pointer">查看問卷＆旅遊小書 →</button>
-        <button id="survey-finish-later-btn" type="button" style="margin-top:12px;border:0;background:transparent;color:#928980;font-size:13px;cursor:pointer">晚點再看</button>
-      </div>`;
-      document.body.appendChild(wrap);
-      document.getElementById('survey-finish-view-btn')?.addEventListener('click',()=>{
-        wrap.remove();
-        window.openTripSurveyTest();
-      });
-      document.getElementById('survey-finish-later-btn')?.addEventListener('click',()=>wrap.remove());
     }
 
     function submitTripSurveyTest() {
@@ -8721,7 +8705,8 @@ function updateAchievementWall() {
 
     window.openTripSurveyTest=function(){
       const submitted=localStorage.getItem(POSTTRIP_SUBMITTED_KEY)==='true';
-      if(!window.__TEST_MODE_ACTIVE__ && !submitted) return;
+      const tripCompleted=localStorage.getItem(ACH_KEYS.final)==='true';
+      if(!window.__TEST_MODE_ACTIVE__ && !submitted && !tripCompleted) return;
       surveyState=loadSurveyState();
       surveyStep=0;
       const page=document.getElementById('trip-survey-test-page');
@@ -8908,9 +8893,10 @@ function initPrivateTestAccess() {
 
     const surveySubmitted = localStorage.getItem('posttrip_survey_submitted_v1') === 'true';
     const surveyNavBtn = document.getElementById('btn-trip-survey');
-    if (surveyNavBtn && surveySubmitted) {
+    const tripCompletedForSurvey = localStorage.getItem(ACH_KEYS.final) === 'true';
+    if (surveyNavBtn && (surveySubmitted || tripCompletedForSurvey)) {
         surveyNavBtn.classList.remove('hidden');
-        surveyNavBtn.textContent = '💌 查看旅後問卷';
+        surveyNavBtn.textContent = surveySubmitted ? '💌 查看旅後問卷' : '📝 問卷調查';
     }
 
     if (window.__TEST_MODE_ACTIVE__) {
@@ -8935,7 +8921,7 @@ function initPrivateTestAccess() {
     }
 
     toggle?.classList.add('hidden');
-    if (!surveySubmitted) surveyNavBtn?.classList.add('hidden');
+    if (!surveySubmitted && !tripCompletedForSurvey) surveyNavBtn?.classList.add('hidden');
     document.getElementById('test-console')?.classList.add('hidden');
 
     if (!trigger) return;

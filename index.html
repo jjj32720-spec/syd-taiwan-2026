@@ -7458,13 +7458,21 @@ window.__SURVEY_FIREBASE_READY__=(async()=>{
       try{
         const ref=await cloudSurveyDoc();
         const payload=JSON.parse(JSON.stringify(surveyState));
-        // coverPhoto is kept in IndexedDB locally; if present in state, don't send huge data URLs to Firestore.
         if(payload.coverPhoto && String(payload.coverPhoto).startsWith('data:')) payload.coverPhoto='';
+        const localCover=await loadSurveyCoverPhoto();
+        const cloudCover=localCover ? await compressSurveyCoverForCloud(localCover) : '';
         await ref.set({
           survey:payload,
           submitted:!!submitted,
+          hasCoverPhoto:!!cloudCover,
           updatedAt:firebase.firestore.FieldValue.serverTimestamp()
         },{merge:true});
+        if(cloudCover){
+          await window.__SURVEY_DB__.collection(CLOUD_SURVEY_COLLECTION).doc(CLOUD_SURVEY_DOC+'_cover').set({
+            imageData:cloudCover,
+            updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
         return true;
       }catch(e){ console.warn('Survey cloud save failed',e); return false; }
     }
@@ -7481,6 +7489,13 @@ window.__SURVEY_FIREBASE_READY__=(async()=>{
         if(data.submitted===true){
           localStorage.setItem(POSTTRIP_SUBMITTED_KEY,'true');
           localStorage.setItem(POSTTRIP_BONUS_KEY,'true');
+        }
+        if(data.hasCoverPhoto){
+          try{
+            const coverSnap=await window.__SURVEY_DB__.collection(CLOUD_SURVEY_COLLECTION).doc(CLOUD_SURVEY_DOC+'_cover').get();
+            const cloudCover=coverSnap.exists ? (coverSnap.data()?.imageData||'') : '';
+            if(cloudCover){ await saveSurveyCoverPhoto(cloudCover); surveyCoverPhotoData=cloudCover; }
+          }catch(e){ console.warn('Survey cover cloud load failed',e); }
         }
         return true;
       }catch(e){ console.warn('Survey cloud load failed',e); return false; }
@@ -8165,6 +8180,31 @@ window.__SURVEY_FIREBASE_READY__=(async()=>{
         });
         db.close(); return value||'';
       }catch(e){ return ''; }
+    }
+
+    async function compressSurveyCoverForCloud(dataUrl){
+      if(!dataUrl) return '';
+      return await new Promise(resolve=>{
+        const img=new Image();
+        img.onload=()=>{
+          let maxSide=1200, quality=.78, result='';
+          for(let attempt=0;attempt<6;attempt++){
+            const scale=Math.min(1,maxSide/Math.max(img.width,img.height));
+            const c=document.createElement('canvas');
+            c.width=Math.max(1,Math.round(img.width*scale));
+            c.height=Math.max(1,Math.round(img.height*scale));
+            c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+            result=c.toDataURL('image/jpeg',quality);
+            // Keep generous headroom below Firestore's per-document size limit.
+            if(result.length<650000) break;
+            maxSide=Math.round(maxSide*.82);
+            quality=Math.max(.52,quality-.07);
+          }
+          resolve(result);
+        };
+        img.onerror=()=>resolve('');
+        img.src=dataUrl;
+      });
     }
 
     function wrapCanvasText(ctx,text,x,y,maxWidth,lineHeight,maxLines=99){

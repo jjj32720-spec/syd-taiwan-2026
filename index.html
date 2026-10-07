@@ -7493,6 +7493,8 @@ function updateAchievementWall() {
       })();
       return surveyFirebasePromise;
     }
+    // Expose the exact same initializer used by the survey to the diagnostic button.
+    window.__ensureSurveyFirebase__ = ensureSurveyFirebase;
     async function cloudSurveyDoc(){
       const ok=await ensureSurveyFirebase();
       if(!ok || !window.__SURVEY_DB__) throw new Error('Firebase unavailable');
@@ -9682,7 +9684,9 @@ window.runFirebaseConnectionTest=async function(btn){
   try{
     if(btn){btn.disabled=true;btn.textContent='診斷中…';}
     if(status) status.textContent='① 準備載入 Firebase…';
-    const ok=await window.__ensureSurveyFirebase__();
+    const init=window.__ensureSurveyFirebase__;
+    if(typeof init!=='function') throw new Error('診斷工具載入失敗：找不到 Firebase 初始化函式');
+    const ok=await init();
     if(!ok || !window.__SURVEY_DB__){
       const d=window.__FIREBASE_DIAG__||{};
       throw new Error((d.stage||'Firebase 初始化')+'｜'+(d.error||'初始化失敗'));

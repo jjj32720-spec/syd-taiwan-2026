@@ -7426,6 +7426,7 @@ function updateAchievementWall() {
         tournament:null,
         foodAgain:'', foodSurprise:'', foodFail:'', foodTakeHome:'',
         coverPhoto:'', coverTitle:'', gladCame:'',
+        taiwanMoment:'', taiwanDiscovery:'', tellStory:'', missMost:'',
         happiest:'', emotional:'', funniest:'', messiest:'',
         rearrange:'', credit:'',
         impressions:[], impressionTop:'', impressionOther:'',
@@ -7454,24 +7455,24 @@ function updateAchievementWall() {
 
     const QUESTIONS = [
       {
+        title:'如果可以完整重玩一次',
+        copy:'請把 Day 1～Day 9 依照「最想完整重來 → 相對沒那麼想重來」排序。可以拖曳，也可以用右側箭頭調整。',
+        render: renderDayRanking, collect: collectDayRanking
+      },
+      {
         title:'第一個浮現的畫面',
         copy:'先不要分析，回到旅程本身。',
         render: () => `<label class="survey-label">如果現在閉上眼睛回想這趟旅行，第一個浮現在你腦中的畫面是什麼？</label><textarea class="survey-textarea" id="sv-first-image" placeholder="例如：某個風景、某張照片、某段路、某個表情，甚至只是一個很小的瞬間。">${esc(surveyState.firstImage||'')}</textarea>`,
         collect: () => surveyState.firstImage=document.getElementById('sv-first-image')?.value.trim()||''
       },
       {
-        title:'景點與體驗回想',
-        copy:'先不要比冠軍，憑第一直覺回答就好。',
+        title:'意外喜歡',
+        copy:'不比冠軍，只看「原本想像」和「實際體驗」的落差。',
         render: () => `
-          <label class="survey-label">這趟旅程中，你最喜歡哪一個景點或體驗？</label>
-          <textarea class="survey-textarea" id="sv-favorite-spot" placeholder="例如：海生館夜宿、武嶺日出、九份、手作時研室……第一個想到什麼就寫什麼。">${esc(surveyState.favoriteSpot)}</textarea>
-          <label class="survey-label">有沒有哪個原本沒有特別期待，實際去過後卻意外喜歡？</label>
-          <textarea class="survey-textarea" id="sv-surprise-spot" placeholder="例如：原本只是順路安排，結果意外很喜歡；或某個行程實際體驗比想像中有趣很多。">${esc(surveyState.surpriseSpot)}</textarea>
+          <label class="survey-label">哪個地方或體驗，實際去了之後比你原本想像中更喜歡？</label>
+          <textarea class="survey-textarea" id="sv-surprise-spot" placeholder="例如：原本沒有特別期待，結果去了意外很喜歡；或某個行程實際體驗比想像中有趣很多。">${esc(surveyState.surpriseSpot)}</textarea>
         `,
-        collect: () => {
-          surveyState.favoriteSpot = document.getElementById('sv-favorite-spot')?.value.trim() || '';
-          surveyState.surpriseSpot = document.getElementById('sv-surprise-spot')?.value.trim() || '';
-        }
+        collect: () => surveyState.surpriseSpot = document.getElementById('sv-surprise-spot')?.value.trim() || ''
       },
       {
         title:'這趟旅程的最愛體驗 TOP',
@@ -7517,10 +7518,20 @@ function updateAchievementWall() {
         }
       },
       {
-        title:'「還好這次有來」',
-        copy:'不是問最好玩，而是回頭看時最慶幸自己有經歷到的那一刻。（這題可以寫詳細一點：是哪個行程／瞬間、發生了什麼，以及為什麼會有這種感覺。）',
-        render: () => `<label class="survey-label">這十天裡，有沒有哪一刻讓你覺得「還好這次有來」？</label><textarea class="survey-textarea" id="sv-glad" placeholder="例如：某個原本差點取消的行程、武嶺看到日出、在海生館醒來，或某個當下突然覺得這趟真的值得的瞬間……">${esc(surveyState.gladCame)}</textarea>`,
-        collect: () => surveyState.gladCame=document.getElementById('sv-glad')?.value.trim()||''
+        title:'四句話寫完這趟台灣',
+        copy:'不用寫作文，每句憑直覺補完就好。',
+        render: () => `
+          <label class="survey-label">🇹🇼 「我真的在台灣了」的瞬間：</label><textarea class="survey-textarea" id="sv-tw-moment" placeholder="一個讓你突然很有『我現在真的在台灣』實感的瞬間。">${esc(surveyState.taiwanMoment||'')}</textarea>
+          <label class="survey-label">💡 來了才發現，台灣原來：</label><textarea class="survey-textarea" id="sv-tw-discovery" placeholder="跟來之前想的不一樣，或來了之後才發現的事。">${esc(surveyState.taiwanDiscovery||'')}</textarea>
+          <label class="survey-label">🗣️ 回去後一定會講的事：</label><textarea class="survey-textarea" id="sv-tell-story" placeholder="朋友問起這趟旅行時，你一定會拿出來講的那件事。">${esc(surveyState.tellStory||'')}</textarea>
+          <label class="survey-label">🥹 離開後最捨不得的：</label><textarea class="survey-textarea" id="sv-miss-most" placeholder="不一定是景點，也可以是一種生活、一段相處或每天的小事。">${esc(surveyState.missMost||'')}</textarea>
+        `,
+        collect: () => {
+          surveyState.taiwanMoment=document.getElementById('sv-tw-moment')?.value.trim()||'';
+          surveyState.taiwanDiscovery=document.getElementById('sv-tw-discovery')?.value.trim()||'';
+          surveyState.tellStory=document.getElementById('sv-tell-story')?.value.trim()||'';
+          surveyState.missMost=document.getElementById('sv-miss-most')?.value.trim()||'';
+        }
       },
       {
         title:'旅行記憶四格',
@@ -7529,7 +7540,7 @@ function updateAchievementWall() {
           <div class="memory-grid">
             <div><label class="survey-label">😆 最搞笑／有趣的一幕</label><textarea class="survey-textarea" id="sv-happy" placeholder="例如：某個笑到不行的對話、突發狀況、拍照失敗，或當下覺得超荒謬但現在很好笑的事。">${esc(surveyState.happiest)}</textarea></div>
             <div><label class="survey-label">💗 最感動／最有感</label><textarea class="survey-textarea" id="sv-emotional" placeholder="例如：某句話、某個陪伴、某個風景，或當下突然覺得很值得、很捨不得的一刻。">${esc(surveyState.emotional)}</textarea></div>
-            <div><label class="survey-label">🧠 最難忘</label><textarea class="survey-textarea" id="sv-funny" placeholder="例如：如果半年後還會記得一幕，你覺得會是哪一幕？可以是風景、人、對話或某個瞬間。">${esc(surveyState.funniest)}</textarea></div>
+            <div><label class="survey-label">📸 如果只能帶走一個畫面</label><textarea class="survey-textarea" id="sv-funny" placeholder="如果很多年後只能留下這趟旅行的一個畫面，你希望是哪一幕？">${esc(surveyState.funniest)}</textarea></div>
             <div><label class="survey-label">🫠 最狼狽的一幕</label><textarea class="survey-textarea" id="sv-messy" placeholder="例如：趕車、太累、天氣不配合、行程臨時改動，或任何當下有點崩潰現在回想還記得的片段。">${esc(surveyState.messiest)}</textarea></div>
           </div>`,
         collect: () => {
@@ -7538,11 +7549,6 @@ function updateAchievementWall() {
           surveyState.funniest=document.getElementById('sv-funny')?.value.trim()||'';
           surveyState.messiest=document.getElementById('sv-messy')?.value.trim()||'';
         }
-      },
-      {
-        title:'如果可以完整重玩一次',
-        copy:'請把 Day 1～Day 9 依照「最想完整重來 → 相對沒那麼想重來」排序。可以拖曳，也可以用右側箭頭調整。',
-        render: renderDayRanking, collect: collectDayRanking
       },
       {
         title:'如果可以重新排一次',
@@ -7957,7 +7963,7 @@ function updateAchievementWall() {
       ['stay','住宿體驗'],['transport','交通體驗'],['comfort','舒適程度'],['returnTaiwan','再次來台灣的意願']
     ];
     function renderRatings() {
-      return `<div class="survey-answer-hint">0 分＝完全不滿意／完全不想再來，10 分＝非常滿意／非常願意。每一項可以給不同分，不用客氣，也不用都打高分。<br><span style="opacity:.72">注意預設值✨</span></div>` + ratingDefs.map(([key,label])=>`
+      return `<div class="survey-answer-hint">0 分＝完全不滿意／完全不想再來，10 分＝非常滿意／非常願意。<br>不用每項都給高分；這區就是留給你把不同面向分開評價。 <span style="opacity:.72">注意預設值✨</span></div>` + ratingDefs.map(([key,label])=>`
         <div class="rating-row">
           <div class="rating-head"><span>${label}</span><span id="rating-${key}-value">${Number(surveyState.ratings?.[key]??0)} / 10</span></div>
           <input type="range" id="rating-${key}" min="0" max="10" step="1" value="${Number(surveyState.ratings?.[key]??0)}"
@@ -8218,7 +8224,7 @@ function updateAchievementWall() {
       let y=615;
       const sections=[
         ['第一個浮現的畫面',surveyState.firstImage||'—',5],
-        ['還好這次有來',surveyState.gladCame||'—',7],
+        ['四句話寫完這趟台灣',`🇹🇼 ${surveyState.taiwanMoment||'—'}  💡 ${surveyState.taiwanDiscovery||'—'}  🗣️ ${surveyState.tellStory||'—'}  🥹 ${surveyState.missMost||'—'}`,7],
         ['用三個詞形容這趟旅行',surveyState.threeWords||'—',3]
       ];
       sections.forEach(([title,body,maxLines])=>{
@@ -8303,7 +8309,7 @@ function updateAchievementWall() {
       const memories=[
         ['😆','最搞笑／有趣',surveyState.happiest||'—'],
         ['💗','最感動／最有感',surveyState.emotional||'—'],
-        ['🧠','最難忘',surveyState.funniest||'—'],
+        ['📸','如果只能帶走一個畫面',surveyState.funniest||'—'],
         ['🫠','最狼狽',surveyState.messiest||'—']
       ];
 
@@ -8510,7 +8516,7 @@ function updateAchievementWall() {
       const memory=[
         `😆 最搞笑／有趣：${surveyState.happiest||'—'}`,
         `💗 最感動／最有感：${surveyState.emotional||'—'}`,
-        `🧠 最難忘：${surveyState.funniest||'—'}`,
+        `📸 如果只能帶走一個畫面：${surveyState.funniest||'—'}`,
         `🫠 最狼狽：${surveyState.messiest||'—'}`
       ].join('\n\n');
       const food=[
@@ -8525,11 +8531,11 @@ function updateAchievementWall() {
 
       host.innerHTML = `<div class="space-y-3">
         ${readonlyBlock('第一個浮現的畫面', esc(surveyState.firstImage||''))}
-        ${readonlyBlock('景點與體驗回想', `最喜歡：${esc(surveyState.favoriteSpot||'—')}<br>意外喜歡：${esc(surveyState.surpriseSpot||'—')}`)}
+        ${readonlyBlock('意外喜歡', esc(surveyState.surpriseSpot||'—'))}
         ${readonlyBlock('最愛體驗 TOP 3', esc(topText))}
         ${readonlyBlock('台灣胃頒獎典禮', esc(food))}
         ${readonlyBlock('旅行封面', `${surveyState.coverTitle?`封面標題：${esc(surveyState.coverTitle)}<br>`:''}${esc(surveyState.coverPhoto||'—')}`)}
-        ${readonlyBlock('「還好這次有來」', esc(surveyState.gladCame||''))}
+        ${readonlyBlock('四句話寫完這趟台灣', `🇹🇼 「我真的在台灣了」的瞬間：${esc(surveyState.taiwanMoment||'—')}<br>💡 來了才發現，台灣原來：${esc(surveyState.taiwanDiscovery||'—')}<br>🗣️ 回去後一定會講的事：${esc(surveyState.tellStory||'—')}<br>🥹 離開後最捨不得的：${esc(surveyState.missMost||'—')}`)}
         ${readonlyBlock('旅行記憶四格', esc(memory))}
         ${readonlyBlock('Day 1～Day 9 重玩排序', esc((surveyState.dayRank||[]).join('\n')))}
         ${readonlyBlock('如果可以重新排一次', esc(surveyState.rearrange||''))}

@@ -2179,7 +2179,7 @@ body.dark-mode .survey-rank-row, body.dark-mode .survey-choice, body.dark-mode .
 <button class="day-main-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-white text-[#2C3E35] hover:bg-[#E2DDD5] border border-[#E2DDD5]" id="main-btn-9" onclick="changeDay(9)">📍 Day 9 高雄</button>
 <button class="day-main-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-white text-[#2C3E35] hover:bg-[#E2DDD5] border border-[#E2DDD5]" id="main-btn-10" onclick="changeDay(10)">📍 Day 10 賦歸</button>
 <button class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-[#C66914] text-white shadow-md" id="btn-tips" onclick="switchTab('tips')">📌 全程提醒</button>
-<button class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-white text-[#2C3E35] hover:bg-[#E2DDD5] border border-[#E2DDD5]" id="btn-trip-survey" onclick="openTripSurveyTest()">📝 問卷調查</button>
+<button class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-white text-[#2C3E35] hover:bg-[#E2DDD5] border border-[#E2DDD5] hidden" id="btn-trip-survey" onclick="openTripSurveyTest()">📝 問卷調查</button>
 </div>
 </nav>
 <!-- 子選單導覽列（只在 Day 畫面顯示） -->
@@ -7330,19 +7330,19 @@ function updateAchievementWall() {
 </div>
 </div>
 
-<!-- ==================== 💌 正式旅後問卷 ==================== -->
+<!-- ==================== 💌 旅後問卷：目前僅私人測試模式可開啟 ==================== -->
 <div class="hidden" id="trip-survey-test-page" aria-hidden="true">
   <div class="survey-shell">
     <div class="survey-topbar">
       <div class="flex items-center justify-between gap-3">
-        <button type="button" class="survey-btn !py-2 !px-3" onclick="closeTripSurveyTest()">✕ 返回旅程</button>
+        <button type="button" class="survey-btn !py-2 !px-3" onclick="closeTripSurveyTest()">✕ 返回測試台</button>
         <div class="text-[10px] font-bold text-gray-400 hidden" id="survey-step-counter"><span id="survey-step-current">1</span> / <span id="survey-step-total">14</span></div>
       </div>
       <div class="survey-progress hidden" id="survey-progress-wrap"><div id="survey-progress-bar" style="width:7.14%"></div></div>
     </div>
 
     <div class="survey-card" id="survey-intro-card">
-      <div class="survey-kicker">POST-TRIP QUESTIONNAIRE</div>
+      <div class="survey-kicker">POST-TRIP QUESTIONNAIRE · TEST PREVIEW</div>
       <h2 class="survey-title">💌 邵奶奶的台灣心得報告</h2>
       <p class="survey-copy">十天結束了，來把這趟旅行真正收進回憶裡。沒有標準答案，也不用寫得很正式；想到什麼就寫什麼，慢慢回想就好。</p>
       <button type="button" class="survey-btn primary w-full mt-5" onclick="startTripSurveyTest()">開始填寫 →</button>
@@ -7351,7 +7351,7 @@ function updateAchievementWall() {
     </div>
 
     <div class="survey-card hidden" id="survey-question-card">
-      <div class="survey-kicker">POST-TRIP QUESTIONNAIRE</div>
+      <div class="survey-kicker">POST-TRIP QUESTIONNAIRE · TEST PREVIEW</div>
       <h2 class="survey-title" id="survey-question-title">旅後問卷</h2>
       <p class="survey-copy" id="survey-question-copy"></p>
       <div id="survey-question-body" class="mt-4"></div>
@@ -7367,7 +7367,7 @@ function updateAchievementWall() {
       <div class="flex items-start justify-between gap-3">
         <div>
           <h2 class="survey-title">💌 已提交的旅後問卷</h2>
-          <p class="survey-copy">這份回答已經提交完成。想再測一次或重新留一份新的回憶，也可以重新填寫並再次提交。</p>
+          <p class="survey-copy">這份回答已經封存，只能查看，不能再次修改。</p>
         </div>
         <div class="text-[10px] font-bold text-[#C66914] whitespace-nowrap">已提交 ✓</div>
       </div>
@@ -7388,8 +7388,7 @@ function updateAchievementWall() {
       </div>
 
 
-      <button type="button" class="survey-btn primary w-full mt-5" onclick="startNewTripSurveySubmission()">重新填寫一份 →</button>
-      <button type="button" class="survey-btn w-full mt-2" onclick="closeTripSurveyTest()">關閉</button>
+      <button type="button" class="survey-btn w-full mt-5" onclick="closeTripSurveyTest()">關閉</button>
     </div>
   </div>
 </div>
@@ -8272,18 +8271,6 @@ function updateAchievementWall() {
       }catch(e){ return ''; }
     }
 
-    async function clearSurveyCoverPhoto(){
-      try{
-        const db=await openSurveyMediaDb();
-        await new Promise((resolve,reject)=>{
-          const tx=db.transaction(SURVEY_MEDIA_STORE,'readwrite');
-          tx.objectStore(SURVEY_MEDIA_STORE).delete('cover');
-          tx.oncomplete=resolve; tx.onerror=()=>reject(tx.error);
-        });
-        db.close();
-      }catch(e){}
-    }
-
     async function compressSurveyCoverForCloud(dataUrl){
       if(!dataUrl) return '';
       return await new Promise(resolve=>{
@@ -8869,11 +8856,10 @@ function updateAchievementWall() {
     }
 
     function submitTripSurveyTest() {
+      if(localStorage.getItem(POSTTRIP_SUBMITTED_KEY)==='true') { showSubmittedSurvey(); return; }
       QUESTIONS[surveyStep]?.collect?.();
       localStorage.setItem(TEST_SURVEY_KEY, JSON.stringify(surveyState));
       localStorage.setItem(POSTTRIP_SUBMITTED_KEY,'true');
-      const surveyNavBtn=document.getElementById('btn-trip-survey');
-      if(surveyNavBtn){ surveyNavBtn.classList.remove('hidden'); surveyNavBtn.textContent='💌 查看旅後問卷'; }
       sendSurveyEmail()
         .then(()=>console.log('Survey email sent'))
         .catch(e=>console.warn('Survey email failed',e));
@@ -8927,6 +8913,8 @@ function updateAchievementWall() {
 
     window.openTripSurveyTest=function(){
       const submitted=localStorage.getItem(POSTTRIP_SUBMITTED_KEY)==='true';
+      const tripCompleted=localStorage.getItem(ACH_KEYS.final)==='true';
+      if(!window.__TEST_MODE_ACTIVE__ && !submitted && !tripCompleted) return;
       surveyState=loadSurveyState();
       surveyStep=0;
       const page=document.getElementById('trip-survey-test-page');
@@ -8940,24 +8928,6 @@ function updateAchievementWall() {
       document.getElementById('survey-progress-wrap')?.classList.add('hidden');
       renderSurveyLandingState();
       window.scrollTo({top:0,behavior:'instant'});
-    };
-
-    window.startNewTripSurveySubmission=async function(){
-      surveyState=blankSurveyState();
-      surveyStep=0;
-      localStorage.setItem(TEST_SURVEY_KEY, JSON.stringify(surveyState));
-      localStorage.removeItem(POSTTRIP_SUBMITTED_KEY);
-      await clearSurveyCoverPhoto();
-      const thumb=document.getElementById('travel-booklet-cover-thumb');
-      if(thumb) thumb.removeAttribute('src');
-      const nav=document.getElementById('btn-trip-survey');
-      if(nav) nav.textContent='📝 問卷調查';
-      document.getElementById('survey-submitted-card')?.classList.add('hidden');
-      document.getElementById('survey-intro-card')?.classList.add('hidden');
-      document.getElementById('survey-question-card')?.classList.remove('hidden');
-      document.getElementById('survey-step-counter')?.classList.remove('hidden');
-      document.getElementById('survey-progress-wrap')?.classList.remove('hidden');
-      renderSurveyStep();
     };
 
     window.startTripSurveyTest=function(){
@@ -9132,7 +9102,7 @@ function initPrivateTestAccess() {
     const surveySubmitted = localStorage.getItem('posttrip_survey_submitted_v1') === 'true';
     const surveyNavBtn = document.getElementById('btn-trip-survey');
     const tripCompletedForSurvey = localStorage.getItem(ACH_KEYS.final) === 'true';
-    if (surveyNavBtn) {
+    if (surveyNavBtn && (surveySubmitted || tripCompletedForSurvey)) {
         surveyNavBtn.classList.remove('hidden');
         surveyNavBtn.textContent = surveySubmitted ? '💌 查看旅後問卷' : '📝 問卷調查';
     }
@@ -9159,7 +9129,7 @@ function initPrivateTestAccess() {
     }
 
     toggle?.classList.add('hidden');
-    surveyNavBtn?.classList.remove('hidden');
+    if (!surveySubmitted && !tripCompletedForSurvey) surveyNavBtn?.classList.add('hidden');
     document.getElementById('test-console')?.classList.add('hidden');
 
     if (!trigger) return;

@@ -8465,25 +8465,37 @@ function updateAchievementWall() {
           ctx.drawImage(img,dx,dy,dw,dh);
           ctx.globalAlpha=1;
 
-          // Brush-style farewell. First reveal the original photo colour through the text,
-          // then add a subtle light edge so the lettering remains visible on every collage tile.
-          const mask=document.createElement('canvas');
-          mask.width=W; mask.height=H;
-          const mctx=mask.getContext('2d');
-          mctx.drawImage(img,dx,dy,dw,dh);
-          mctx.globalCompositeOperation='destination-in';
-          mctx.fillStyle='#000';
-          mctx.textAlign='center';
-          mctx.textBaseline='middle';
+          // Farewell lettering: no stroke, no shadow, no background.
+          // Clip directly to the glyph shapes and redraw the SAME photo at full colour.
+          // This avoids the previous offscreen-mask compositing issue.
+          ctx.save();
+          ctx.textAlign='center';
+          ctx.textBaseline='middle';
           const brushFont='"DFKai-SB","BiauKai","STKaiti","KaiTi","Kaiti TC","Noto Serif TC",serif';
-          mctx.font='900 154px '+brushFont;
-          mctx.fillText('臺灣',W/2,y+boxH*.34);
-          mctx.font='900 180px '+brushFont;
-          mctx.fillText('下次見！',W/2,y+boxH*.72);
-          mctx.globalCompositeOperation='source-over';
-          ctx.drawImage(mask,0,0);
 
+          // Build one clipping path from both lines.
+          const textMask=document.createElement('canvas');
+          textMask.width=W; textMask.height=H;
+          const tctx=textMask.getContext('2d');
+          tctx.clearRect(0,0,W,H);
+          tctx.fillStyle='#fff';
+          tctx.textAlign='center';
+          tctx.textBaseline='middle';
+          tctx.font='900 154px '+brushFont;
+          tctx.fillText('臺灣',W/2,y+boxH*.32);
+          tctx.font='900 180px '+brushFont;
+          tctx.fillText('下次見！',W/2,y+boxH*.74);
 
+          // Draw the original-colour photo through the text alpha only.
+          const colourText=document.createElement('canvas');
+          colourText.width=W; colourText.height=H;
+          const cctx=colourText.getContext('2d');
+          cctx.drawImage(img,dx,dy,dw,dh);
+          cctx.globalCompositeOperation='destination-in';
+          cctx.drawImage(textMask,0,0);
+          cctx.globalCompositeOperation='source-over';
+          ctx.globalAlpha=1;
+          ctx.drawImage(colourText,0,0);
           ctx.restore();
 
           ctx.strokeStyle='rgba(44,62,53,.16)';ctx.lineWidth=2;

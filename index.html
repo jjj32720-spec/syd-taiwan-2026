@@ -8703,12 +8703,19 @@ function updateAchievementWall() {
       const btn=intro.querySelector('.survey-btn.primary');
       if(!btn) return;
       const submitted=localStorage.getItem(POSTTRIP_SUBMITTED_KEY)==='true';
+      // Avoid inline onclick for the submitted view: showSubmittedSurvey is scoped inside this script.
+      btn.removeAttribute('onclick');
+      const fresh=btn.cloneNode(true);
+      btn.replaceWith(fresh);
       if(submitted){
-        btn.textContent='查看問卷＆旅遊小書 →';
-        btn.setAttribute('onclick','showSubmittedSurvey()');
+        fresh.textContent='查看問卷＆旅遊小書 →';
+        fresh.addEventListener('click',()=>{
+          surveyState=loadSurveyState();
+          showSubmittedSurvey();
+        });
       }else{
-        btn.textContent='開始填寫 →';
-        btn.setAttribute('onclick','startTripSurveyTest()');
+        fresh.textContent='開始填寫 →';
+        fresh.addEventListener('click',()=>window.startTripSurveyTest());
       }
     }
 

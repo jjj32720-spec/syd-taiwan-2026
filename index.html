@@ -7317,7 +7317,9 @@ function updateAchievementWall() {
 <div class="mt-3 text-[11px] font-bold">💌 旅後問卷（僅測試模式可見）</div>
 <div class="test-row">
 <button class="test-btn" onclick="openTripSurveyTest()">開啟旅後問卷</button>
+<button class="test-btn" id="firebase-connection-test-btn" onclick="runFirebaseConnectionTest(this)">🔥 Firebase 連線測試</button>
 </div>
+<div id="firebase-connection-test-status" class="text-[10px] text-gray-500 mt-2"></div>
 <div class="test-survey-achievement">
 <div class="text-[11px] font-bold text-[#2C3E35]">💌 ＋1｜邵奶奶的台灣心得報告</div>
 <div class="tiny mt-1">目前只在私人測試模式預覽。這是一題額外的 Bonus ＋1；10＋6＋1＝17，生日密碼依然完整配對 🎂</div>
@@ -7462,6 +7464,7 @@ function updateAchievementWall() {
       })();
       return surveyFirebasePromise;
     }
+    window.__ensureSurveyFirebase__=ensureSurveyFirebase;
     async function cloudSurveyDoc(){
       const ok=await ensureSurveyFirebase();
       if(!ok || !window.__SURVEY_DB__) throw new Error('Firebase unavailable');
@@ -9643,6 +9646,37 @@ window.addEventListener('DOMContentLoaded', () => {
     <span id="booklet-page-label">1 / 1</span>
   </div>
 </div>
+
+
+<script>
+window.runFirebaseConnectionTest=async function(btn){
+  const status=document.getElementById('firebase-connection-test-status');
+  const original=btn?.textContent||'🔥 Firebase 連線測試';
+  try{
+    if(btn){btn.disabled=true;btn.textContent='連線中…';}
+    if(status) status.textContent='正在載入 Firebase 並測試寫入／讀取…';
+    if(typeof window.__ensureSurveyFirebase__!=='function') throw new Error('Firebase lazy loader not ready');
+    const ok=await window.__ensureSurveyFirebase__();
+    if(!ok || !window.__SURVEY_DB__) throw new Error('Firebase 初始化失敗');
+    const ref=window.__SURVEY_DB__.collection('connectionTest').doc('website');
+    await ref.set({
+      ok:true,
+      source:'GitHub Pages',
+      testedAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    const snap=await ref.get();
+    if(!snap.exists || snap.data()?.ok!==true) throw new Error('寫入後讀取驗證失敗');
+    if(status) status.textContent='✅ Firebase 寫入＋讀取成功。這筆測試不會影響問卷或成就。';
+    if(btn) btn.textContent='✅ Firebase 正常';
+  }catch(e){
+    console.error(e);
+    if(status) status.textContent='❌ 連線測試失敗：'+(e?.message||e);
+    if(btn) btn.textContent='❌ 再測一次';
+  }finally{
+    if(btn) btn.disabled=false;
+  }
+};
+</script>
 
 </body>
 </html>

@@ -7431,7 +7431,7 @@ function updateAchievementWall() {
         rearrange:'', credit:'',
         impressions:[], impressionTop:'', impressionOther:'',
         threeWords:'',
-        ratings:{ overall:2, itinerary:0, food:0, stay:1, transport:1, comfort:0, returnTaiwan:7 },
+        ratings:{ overall:2, itinerary:0, food:2, stay:6, transport:1, comfort:0, returnTaiwan:7 },
         finalMessage:''
       };
     }
@@ -8029,7 +8029,7 @@ function updateAchievementWall() {
       const prev=document.getElementById('survey-prev-btn'), next=document.getElementById('survey-next-btn');
       prev.disabled=surveyStep===0;
       next.textContent=surveyStep===QUESTIONS.length-1?'送出問卷 ✨':'後一題 →';
-      if (surveyStep===2) {
+      if (surveyStep===3) {
         ensureTournament();
         next.disabled=!tournamentPlacementsComplete();
       } else next.disabled=false;
@@ -8049,7 +8049,7 @@ function updateAchievementWall() {
     };
     window.surveyNext=function(){
       collectCurrent();
-      if(surveyStep===2 && !tournamentPlacementsComplete()){
+      if(surveyStep===3 && !tournamentPlacementsComplete()){
         alert('先完成冠軍賽與季軍加賽，排出完整前三名後才能前往下一題。'); return;
       }
       if(surveyStep<QUESTIONS.length-1){surveyStep++;renderSurveyStep();return;}

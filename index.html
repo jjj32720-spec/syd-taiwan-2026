@@ -7392,6 +7392,27 @@ function updateAchievementWall() {
 </div>
 
 
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+window.__SURVEY_FIREBASE_READY__=(async()=>{
+  try{
+    const cfg={
+      apiKey:"AIzaSyCI75sbHHiTyov7xK850_fnSJsT2kqlCqM",
+      authDomain:"syd-taiwan-2026-be9e7.firebaseapp.com",
+      projectId:"syd-taiwan-2026-be9e7",
+      storageBucket:"syd-taiwan-2026-be9e7.firebasestorage.app",
+      messagingSenderId:"662429903185",
+      appId:"1:662429903185:web:5fdc19074c71ce6b798b70"
+    };
+    if(!firebase.apps.length) firebase.initializeApp(cfg);
+    await firebase.auth().signInAnonymously();
+    window.__SURVEY_DB__=firebase.firestore();
+    return true;
+  }catch(e){ console.warn("Firebase survey sync unavailable",e); return false; }
+})();
+</script>
 <script id="trip-survey-test-script">
 (() => {
     const TEST_SURVEY_KEY = 'test_trip_survey_v1';
@@ -7426,6 +7447,45 @@ function updateAchievementWall() {
     let draggedRankEl = null;
     let surveyCoverPhotoData = '';
 
+    const CLOUD_SURVEY_COLLECTION='sharedTrip';
+    const CLOUD_SURVEY_DOC='sydTaiwan2026Survey';
+    async function cloudSurveyDoc(){
+      const ok=await window.__SURVEY_FIREBASE_READY__;
+      if(!ok || !window.__SURVEY_DB__) throw new Error('Firebase unavailable');
+      return window.__SURVEY_DB__.collection(CLOUD_SURVEY_COLLECTION).doc(CLOUD_SURVEY_DOC);
+    }
+    async function uploadSurveyToCloud(submitted=false){
+      try{
+        const ref=await cloudSurveyDoc();
+        const payload=JSON.parse(JSON.stringify(surveyState));
+        // coverPhoto is kept in IndexedDB locally; if present in state, don't send huge data URLs to Firestore.
+        if(payload.coverPhoto && String(payload.coverPhoto).startsWith('data:')) payload.coverPhoto='';
+        await ref.set({
+          survey:payload,
+          submitted:!!submitted,
+          updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+        },{merge:true});
+        return true;
+      }catch(e){ console.warn('Survey cloud save failed',e); return false; }
+    }
+    async function downloadSurveyFromCloud(){
+      try{
+        const ref=await cloudSurveyDoc();
+        const snap=await ref.get();
+        if(!snap.exists) return false;
+        const data=snap.data()||{};
+        if(data.survey && typeof data.survey==='object'){
+          surveyState={...blankSurveyState(),...data.survey};
+          localStorage.setItem(TEST_SURVEY_KEY,JSON.stringify(surveyState));
+        }
+        if(data.submitted===true){
+          localStorage.setItem(POSTTRIP_SUBMITTED_KEY,'true');
+          localStorage.setItem(POSTTRIP_BONUS_KEY,'true');
+        }
+        return true;
+      }catch(e){ console.warn('Survey cloud load failed',e); return false; }
+    }
+
     function blankSurveyState() {
       return {
         dayRank:[...DAY_RANK_DEFAULT],
@@ -7451,7 +7511,6 @@ function updateAchievementWall() {
     }
 
     function saveSurveyState() {
-      if (!window.__TEST_MODE_ACTIVE__) return;
       if (localStorage.getItem(POSTTRIP_SUBMITTED_KEY) === 'true') return;
       localStorage.setItem(TEST_SURVEY_KEY, JSON.stringify(surveyState));
     }
@@ -8668,11 +8727,11 @@ function updateAchievementWall() {
     }
 
     function submitTripSurveyTest() {
-      if(!window.__TEST_MODE_ACTIVE__) return;
       if(localStorage.getItem(POSTTRIP_SUBMITTED_KEY)==='true') { showSubmittedSurvey(); return; }
       QUESTIONS[surveyStep]?.collect?.();
       localStorage.setItem(TEST_SURVEY_KEY, JSON.stringify(surveyState));
       localStorage.setItem(POSTTRIP_SUBMITTED_KEY,'true');
+      uploadSurveyToCloud(true);
       localStorage.setItem(POSTTRIP_BONUS_KEY,'true');
       if(typeof updateAchievementWall==='function') updateAchievementWall();
       const page=document.getElementById('trip-survey-test-page');
@@ -8718,7 +8777,8 @@ function updateAchievementWall() {
       }
     }
 
-    window.openTripSurveyTest=function(){
+    window.openTripSurveyTest=async function(){
+      await downloadSurveyFromCloud();
       const submitted=localStorage.getItem(POSTTRIP_SUBMITTED_KEY)==='true';
       const tripCompleted=localStorage.getItem(ACH_KEYS.final)==='true';
       if(!window.__TEST_MODE_ACTIVE__ && !submitted && !tripCompleted) return;

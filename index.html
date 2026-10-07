@@ -7431,12 +7431,25 @@ function updateAchievementWall() {
     const CLOUD_SURVEY_COLLECTION='sharedTrip';
     const CLOUD_SURVEY_DOC='sydTaiwan2026Survey';
     let surveyFirebasePromise=null;
-    function loadSurveyScript(src){
+    window.__FIREBASE_DIAG__={stage:'尚未開始',error:''};
+    function setFirebaseDiag(stage,error=''){
+      window.__FIREBASE_DIAG__={stage,error:String(error||'')};
+      console.log('[Firebase]',stage,error||'');
+    }
+    function loadSurveyScript(src,label){
       return new Promise((resolve,reject)=>{
+        setFirebaseDiag('載入 '+label);
+        if(window.firebase && label==='Firebase App') return resolve();
         const existing=[...document.scripts].find(s=>s.src===src);
-        if(existing){ if(window.firebase) return resolve(); existing.addEventListener('load',resolve,{once:true}); existing.addEventListener('error',reject,{once:true}); return; }
+        if(existing){
+          existing.addEventListener('load',()=>{setFirebaseDiag(label+' 載入完成');resolve();},{once:true});
+          existing.addEventListener('error',()=>reject(new Error(label+' SDK 載入失敗：'+src)),{once:true});
+          return;
+        }
         const el=document.createElement('script'); el.src=src; el.async=true;
-        el.onload=resolve; el.onerror=reject; document.head.appendChild(el);
+        el.onload=()=>{setFirebaseDiag(label+' 載入完成');resolve();};
+        el.onerror=()=>reject(new Error(label+' SDK 載入失敗：'+src));
+        document.head.appendChild(el);
       });
     }
     async function ensureSurveyFirebase(){
@@ -7445,9 +7458,14 @@ function updateAchievementWall() {
       surveyFirebasePromise=(async()=>{
         try{
           const base='https://www.gstatic.com/firebasejs/10.14.1/';
-          await loadSurveyScript(base+'firebase-app-compat.js');
-          await loadSurveyScript(base+'firebase-auth-compat.js');
-          await loadSurveyScript(base+'firebase-firestore-compat.js');
+          await loadSurveyScript(base+'firebase-app-compat.js','Firebase App');
+          if(!window.firebase) throw new Error('Firebase App SDK 載入後仍找不到 window.firebase');
+          await loadSurveyScript(base+'firebase-auth-compat.js','Firebase Auth');
+          if(typeof firebase.auth!=='function') throw new Error('Firebase Auth SDK 未正確初始化');
+          await loadSurveyScript(base+'firebase-firestore-compat.js','Firestore');
+          if(typeof firebase.firestore!=='function') throw new Error('Firestore SDK 未正確初始化');
+
+          setFirebaseDiag('初始化 Firebase App');
           const cfg={
             apiKey:"AIzaSyCI75sbHHiTyov7xK850_fnSJsT2kqlCqM",
             authDomain:"syd-taiwan-2026-be9e7.firebaseapp.com",
@@ -7457,14 +7475,24 @@ function updateAchievementWall() {
             appId:"1:662429903185:web:5fdc19074c71ce6b798b70"
           };
           if(!firebase.apps.length) firebase.initializeApp(cfg);
+
+          setFirebaseDiag('匿名登入');
           if(!firebase.auth().currentUser) await firebase.auth().signInAnonymously();
+
+          setFirebaseDiag('建立 Firestore 連線');
           window.__SURVEY_DB__=firebase.firestore();
+          setFirebaseDiag('Firebase 初始化完成');
           return true;
-        }catch(e){ console.warn('Firebase survey sync unavailable',e); surveyFirebasePromise=null; return false; }
+        }catch(e){
+          const detail=(e?.code ? e.code+'｜' : '')+(e?.message||String(e));
+          setFirebaseDiag(window.__FIREBASE_DIAG__?.stage||'初始化',detail);
+          console.error('Firebase survey sync unavailable',e);
+          surveyFirebasePromise=null;
+          return false;
+        }
       })();
       return surveyFirebasePromise;
     }
-    window.__ensureSurveyFirebase__=ensureSurveyFirebase;
     async function cloudSurveyDoc(){
       const ok=await ensureSurveyFirebase();
       if(!ok || !window.__SURVEY_DB__) throw new Error('Firebase unavailable');
@@ -9651,27 +9679,27 @@ window.addEventListener('DOMContentLoaded', () => {
 <script>
 window.runFirebaseConnectionTest=async function(btn){
   const status=document.getElementById('firebase-connection-test-status');
-  const original=btn?.textContent||'🔥 Firebase 連線測試';
   try{
-    if(btn){btn.disabled=true;btn.textContent='連線中…';}
-    if(status) status.textContent='正在載入 Firebase 並測試寫入／讀取…';
-    if(typeof window.__ensureSurveyFirebase__!=='function') throw new Error('Firebase lazy loader not ready');
+    if(btn){btn.disabled=true;btn.textContent='診斷中…';}
+    if(status) status.textContent='① 準備載入 Firebase…';
     const ok=await window.__ensureSurveyFirebase__();
-    if(!ok || !window.__SURVEY_DB__) throw new Error('Firebase 初始化失敗');
+    if(!ok || !window.__SURVEY_DB__){
+      const d=window.__FIREBASE_DIAG__||{};
+      throw new Error((d.stage||'Firebase 初始化')+'｜'+(d.error||'初始化失敗'));
+    }
+    if(status) status.textContent='⑦ Firebase 已初始化，測試 Firestore 寫入…';
     const ref=window.__SURVEY_DB__.collection('connectionTest').doc('website');
-    await ref.set({
-      ok:true,
-      source:'GitHub Pages',
-      testedAt:firebase.firestore.FieldValue.serverTimestamp()
-    });
+    await ref.set({ok:true,source:'GitHub Pages',testedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    if(status) status.textContent='⑧ 寫入成功，測試讀取…';
     const snap=await ref.get();
-    if(!snap.exists || snap.data()?.ok!==true) throw new Error('寫入後讀取驗證失敗');
-    if(status) status.textContent='✅ Firebase 寫入＋讀取成功。這筆測試不會影響問卷或成就。';
+    if(!snap.exists || snap.data()?.ok!==true) throw new Error('Firestore 寫入後讀取驗證失敗');
+    if(status) status.textContent='✅ Firebase 初始化＋匿名登入＋Firestore 寫入＋讀取全部成功';
     if(btn) btn.textContent='✅ Firebase 正常';
   }catch(e){
+    const msg=(e?.code?e.code+'｜':'')+(e?.message||String(e));
     console.error(e);
-    if(status) status.textContent='❌ 連線測試失敗：'+(e?.message||e);
-    if(btn) btn.textContent='❌ 再測一次';
+    if(status) status.textContent='❌ '+msg;
+    if(btn) btn.textContent='❌ 複製／截圖這行錯誤';
   }finally{
     if(btn) btn.disabled=false;
   }

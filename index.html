@@ -7317,9 +7317,7 @@ function updateAchievementWall() {
 <div class="mt-3 text-[11px] font-bold">💌 旅後問卷（僅測試模式可見）</div>
 <div class="test-row">
 <button class="test-btn" onclick="openTripSurveyTest()">開啟旅後問卷</button>
-<button class="test-btn" id="emailjs-test-btn" onclick="testSurveyEmail(this)">📧 測試寄信</button>
 </div>
-<div id="emailjs-test-status" class="text-[10px] text-gray-500 mt-2"></div>
 <div class="test-survey-achievement">
 <div class="text-[11px] font-bold text-[#2C3E35]">💌 ＋1｜邵奶奶的台灣心得報告</div>
 <div class="tiny mt-1">目前只在私人測試模式預覽。這是一題額外的 Bonus ＋1；10＋6＋1＝17，生日密碼依然完整配對 🎂</div>
@@ -7348,6 +7346,8 @@ function updateAchievementWall() {
       <h2 class="survey-title">💌 邵奶奶的台灣心得報告</h2>
       <p class="survey-copy">十天結束了，來把這趟旅行真正收進回憶裡。沒有標準答案，也不用寫得很正式；想到什麼就寫什麼，慢慢回想就好。</p>
       <button type="button" class="survey-btn primary w-full mt-5" onclick="startTripSurveyTest()">開始填寫 →</button>
+      <button type="button" id="cloud-booklet-view-btn" class="survey-btn w-full mt-2" onclick="openSubmittedBookletFromCloud()">☁️ 查看已收到的旅遊小書</button>
+      <div id="cloud-booklet-view-status" class="text-[10px] text-gray-500 mt-2 text-center"></div>
     </div>
 
     <div class="survey-card hidden" id="survey-question-card">
@@ -7532,6 +7532,61 @@ function updateAchievementWall() {
         if(btn) btn.textContent='❌ 再測一次';
       }finally{
         if(btn) btn.disabled=false;
+      }
+    };
+
+
+    async function compressSurveyCoverForBookletCloud(dataUrl){
+      if(!dataUrl || !String(dataUrl).startsWith('data:image/')) return '';
+      return await new Promise(resolve=>{
+        const img=new Image();
+        img.onload=()=>{
+          const maxSide=720;
+          const scale=Math.min(1,maxSide/Math.max(img.width,img.height));
+          const c=document.createElement('canvas');
+          c.width=Math.max(1,Math.round(img.width*scale));
+          c.height=Math.max(1,Math.round(img.height*scale));
+          c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+          resolve(c.toDataURL('image/jpeg',0.62));
+        };
+        img.onerror=()=>resolve('');
+        img.src=dataUrl;
+      });
+    }
+
+    async function saveSubmittedBookletToCloud(){
+      if(typeof window.__saveSubmittedSurveyBookletCloud__!=='function') return false;
+      const coverRaw=await loadSurveyCoverPhoto().catch(()=> '');
+      const coverPhotoData=await compressSurveyCoverForBookletCloud(coverRaw);
+      return await window.__saveSubmittedSurveyBookletCloud__({
+        schemaVersion:1,
+        surveyState:JSON.parse(JSON.stringify(surveyState)),
+        coverPhotoData
+      });
+    }
+
+    window.openSubmittedBookletFromCloud=async function(){
+      const status=document.getElementById('cloud-booklet-view-status');
+      try{
+        if(status) status.textContent='正在讀取已提交的小書…';
+        if(typeof window.__loadSubmittedSurveyBookletCloud__!=='function'){
+          throw new Error('雲端尚未連線，請稍後再試');
+        }
+        const payload=await window.__loadSubmittedSurveyBookletCloud__();
+        if(!payload?.surveyState) throw new Error('目前還沒有收到已提交的小書');
+        surveyState={...blankSurveyState(),...payload.surveyState};
+        if(payload.coverPhotoData) await saveSurveyCoverPhoto(payload.coverPhotoData);
+        if(status) status.textContent='✅ 已讀取最新提交版本';
+        document.getElementById('survey-intro-card')?.classList.add('hidden');
+        document.getElementById('survey-question-card')?.classList.add('hidden');
+        document.getElementById('survey-step-counter')?.classList.add('hidden');
+        document.getElementById('survey-progress-wrap')?.classList.add('hidden');
+        document.getElementById('survey-submitted-card')?.classList.remove('hidden');
+        renderSubmittedSurveySummary();
+        await generateTravelBooklet();
+        openTravelBooklet();
+      }catch(e){
+        if(status) status.textContent='❌ '+(e?.message||'讀取失敗');
       }
     };
 
@@ -8808,6 +8863,9 @@ function updateAchievementWall() {
       sendSurveyEmail()
         .then(()=>console.log('Survey email sent'))
         .catch(e=>console.warn('Survey email failed',e));
+      saveSubmittedBookletToCloud()
+        .then(ok=>console.log(ok?'Submitted booklet snapshot saved':'Booklet cloud snapshot skipped'))
+        .catch(e=>console.warn('Booklet cloud snapshot failed',e));
       localStorage.setItem(POSTTRIP_BONUS_KEY,'true');
       if(typeof updateAchievementWall==='function') updateAchievementWall();
       const page=document.getElementById('trip-survey-test-page');
@@ -9624,6 +9682,26 @@ document.addEventListener('DOMContentLoaded', initPrivateTestAccess);
             setSyncStatus('Firebase 初始化失敗', 'error');
         }
     }
+
+
+    // 旅後小書只在「正式提交」時寫入一次，不同步填寫過程。
+    const SUBMITTED_BOOKLET_DOC_PATH = 'sharedTrip/syd-taiwan-2026-submitted-booklet';
+
+    window.__saveSubmittedSurveyBookletCloud__ = async function(payload) {
+        if (!fbDb || !fbAuth?.currentUser) throw new Error('請先登入網站的旅程同步帳號');
+        await fbDb.doc(SUBMITTED_BOOKLET_DOC_PATH).set({
+            ...payload,
+            submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            submittedBy: fbAuth.currentUser.uid
+        }, { merge: false });
+        return true;
+    };
+
+    window.__loadSubmittedSurveyBookletCloud__ = async function() {
+        if (!fbDb || !fbAuth?.currentUser) throw new Error('請先登入網站的旅程同步帳號');
+        const snap = await fbDb.doc(SUBMITTED_BOOKLET_DOC_PATH).get();
+        return snap.exists ? snap.data() : null;
+    };
 
     window.addEventListener('DOMContentLoaded', initFirebaseSync);
 })();

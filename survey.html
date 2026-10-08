@@ -2098,6 +2098,7 @@ body{background:#f7f3eb!important;margin:0}#trip-survey-test-page{position:relat
       <h2 class="survey-title">💌 邵奶奶的台灣心得報告</h2>
       <p class="survey-copy">十天結束了，來把這趟旅行真正收進回憶裡。沒有標準答案，也不用寫得很正式；想到什麼就寫什麼，慢慢回想就好。</p>
       <button type="button" class="survey-btn primary w-full mt-5" onclick="startTripSurveyTest()">開始填寫 →</button>
+      <button type="button" id="survey-landing-resubmit" class="survey-btn w-full mt-2 hidden" onclick="startNewTripSurveySubmission()">修改＆重新提交 →</button>
 
     </div>
 
@@ -2306,6 +2307,10 @@ window.openOfficialBookletForOwner=async function(){
         }else{
           localStorage.removeItem(POSTTRIP_SUBMITTED_KEY);
           localStorage.removeItem(POSTTRIP_BONUS_KEY);
+          if(localStorage.getItem('syd_owner_formal_rehearsal_local_v1')==='1'){
+            localStorage.removeItem('test_trip_survey_v1');
+            surveyState=blankSurveyState();surveyCoverPhotoData='';surveyStep=0;
+          }
           localStorage.removeItem('syd_owner_formal_rehearsal_local_v1');
           document.getElementById('survey-submitted-card')?.classList.add('hidden');
           document.getElementById('survey-intro-card')?.classList.remove('hidden');
@@ -3756,7 +3761,7 @@ window.openOfficialBookletForOwner=async function(){
         if(firebase.auth().currentUser?.email?.toLowerCase()==='jjj32720@gmail.com')localStorage.setItem('syd_owner_formal_rehearsal_local_v1','1');
         localStorage.setItem(POSTTRIP_BONUS_KEY,'true');
         showSubmittedSurvey();
-        if(first && !window.__OWNER_TEST_SURVEY__) window.showAchievementUnlockModal?.({icon:'💌',title:'加分題・邵奶奶的台灣心得報告',desc:'完成台灣旅行心得問卷，成功解鎖加分題！'});
+        if(first && !window.__OWNER_TEST_SURVEY__) window.showAchievementUnlockModal?.({icon:'💌',title:'加分題・邵奶奶的台灣心得報告',desc:'🎂 生日密碼修復成功！\n\n鑑於某邵女士不小心錯過了「調皮搗蛋鬼」，系統決定破例開放一次專屬補考機會！\n\n原本 10＋7＝17，現在變成……\n10＋6＋1＝17！\n\n恭喜成功把 10/7 的生日密碼湊回來！🎉\n17 個成就，留給 10/7 的你。\n\n這次真的全劇終了！🎬💌'});
         // Real email for both official and owner test; mail failure is shown separately.
         sendSurveyEmail().catch(e=>{console.warn('Email send failed',e);alert('問卷已存入雲端，但 Email 寄送失敗：'+e.message);});
       }catch(e){alert('雲端提交失敗，回答已留在此頁，請確認登入及網路後重試：'+(e?.message||e));}
@@ -3773,6 +3778,8 @@ window.openOfficialBookletForOwner=async function(){
       btn.removeAttribute('onclick');
       const fresh=btn.cloneNode(true);
       btn.replaceWith(fresh);
+      const resubmit=document.getElementById('survey-landing-resubmit');
+      if(resubmit)resubmit.classList.toggle('hidden',!submitted);
       if(submitted){
         fresh.textContent='查看問卷＆旅遊小書 →';
         fresh.addEventListener('click',()=>{
@@ -3804,6 +3811,9 @@ window.openOfficialBookletForOwner=async function(){
     };
 
     window.startNewTripSurveySubmission=async function(){
+      if(!window.__OWNER_TEST_SURVEY__ && firebase.auth().currentUser?.uid==='vLaRKhDNXeUUGGd58X4S0UX11PY2'){
+        alert('管理員正式演練只能首次提交，不能直接覆蓋已提交的演練。請先在七下隱藏模式安全重置，再重新填寫。旅伴正式問卷可直接修改並重新提交。');return;
+      }
       surveyState=loadSurveyState();
       surveyStep=0;
       const nav=document.getElementById('btn-trip-survey');
@@ -3865,7 +3875,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
 <div class="text-6xl mb-4" id="survey-achievement-modal-icon">🏆</div>
 <div class="text-xs font-bold tracking-widest text-[#C66914]">ACHIEVEMENT UNLOCKED</div>
 <h3 class="text-2xl font-bold text-[#2C3E35]" id="survey-achievement-modal-title"></h3>
-<p class="text-sm text-gray-600 leading-relaxed mt-3" id="survey-achievement-modal-desc"></p>
+<p class="text-sm text-gray-600 leading-relaxed mt-3" id="survey-achievement-modal-desc" style="white-space:pre-line"></p>
 <button class="mt-6 w-full bg-[#2C3E35] text-white py-3 rounded-xl text-xs font-bold hover:bg-[#C66914] transition" onclick="closeSurveyAchievementUnlockModal()" type="button">收下成就</button>
 </div></div>
 </body>

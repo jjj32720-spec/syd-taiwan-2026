@@ -2009,6 +2009,7 @@ html:not(.secret-content-ready) [data-secret-emoji] {
 <button class="day-main-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-white text-[#2C3E35] hover:bg-[#E2DDD5] border border-[#E2DDD5]" id="main-btn-9" onclick="changeDay(9)">📍 Day 9 高雄</button>
 <button class="day-main-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-white text-[#2C3E35] hover:bg-[#E2DDD5] border border-[#E2DDD5]" id="main-btn-10" onclick="changeDay(10)">📍 Day 10 賦歸</button>
 <button class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-[#C66914] text-white shadow-md" id="btn-tips" onclick="switchTab('tips')">📌 全程提醒</button>
+<button id="survey-top-entry" class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-white text-[#2C3E35] border border-[#E2DDD5]" onclick="openIntegratedSurvey()">💌 旅遊問卷</button>
 </div>
 </nav>
 <!-- 子選單導覽列（只在 Day 畫面顯示） -->
@@ -3383,7 +3384,7 @@ html:not(.secret-content-ready) [data-secret-emoji] {
                     </div>
 <div class="mt-4 flex flex-wrap justify-center gap-2">
 <button class="bg-[#2C3E35] text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-[#C66914] transition shadow" id="finish-trip-btn" onclick="openFinishTripConfirm()" type="button">完成旅程 ✨</button>
-<button class="hidden bg-white text-[#2C3E35] border border-[#2C3E35]/20 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-[#F0EDEA] transition" id="reset-trip-btn" onclick="resetTaiwanTripCompletion()" type="button">取消完成</button>
+
 </div>
 </div>
 <div class="fixed inset-0 z-[120] hidden items-center justify-center bg-black/45 backdrop-blur-[2px] px-5 py-[max(1.25rem,env(safe-area-inset-top))]" id="finish-trip-confirm-modal" style="height:100dvh;" role="dialog" aria-modal="true" aria-labelledby="finish-trip-confirm-title">
@@ -3616,6 +3617,7 @@ html:not(.secret-content-ready) [data-secret-emoji] {
 </div>
 </div>
 <!-- ==================== 📌 全程提醒 ==================== -->
+<div id="survey-reminder-entry" style="max-width:1152px;margin:12px auto;padding:0 16px"><button type="button" onclick="openIntegratedSurvey()" style="width:100%;background:#fff9f2;border:1px solid #e5c5a4;border-radius:14px;padding:13px;color:#995519;font-weight:800">💌 旅遊心得問卷・旅行小書 →</button></div>
 <div class="tab-content hidden fade-in space-y-6" id="tab-tips">
 <div class="taiwan-card rounded-2xl overflow-hidden p-6 md:p-8 border-t-4 border-[#C66914] space-y-4">
 <span class="text-xs bg-[#C66914]/20 text-[#C66914] px-3 py-1 rounded-md font-bold">IMPORTANT TIPS</span>
@@ -3952,6 +3954,7 @@ html:not(.secret-content-ready) [data-secret-emoji] {
 </div>
 <!-- 預算與記帳 -->
 <div class="tab-content hidden fade-in space-y-6" id="tab-achievements">
+<div id="syd-bonus-achievement" class="achievement-card" style="margin:12px 0"><div class="ach-icon">💌</div><div><div class="ach-title">加分題・邵奶奶的台灣心得報告</div><div class="ach-desc" id="syd-bonus-status">☁️ 正在確認正式問卷提交狀態…</div></div><div class="achievement-lock">🔒</div></div>
 <div class="taiwan-card rounded-2xl overflow-hidden p-6 md:p-8 border-t-4 border-[#C66914] space-y-6">
 <div>
 <span class="text-xs bg-[#C66914]/20 text-[#C66914] px-3 py-1 rounded-md font-bold">ACHIEVEMENTS</span>
@@ -6589,11 +6592,13 @@ function updateAchievementWall() {
             btn.classList.remove('bg-[#2C3E35]');
             btn.classList.add('bg-[#C66914]');
         }
-        if (resetBtn) resetBtn.classList.remove('hidden');
+        if (resetBtn) resetBtn.classList.add('hidden');
         updateAchievementWall();
     }
 
     function resetTaiwanTripCompletion() {
+        return; // 旅程完成不可取消（含測試模式）
+        if (!window.__TEST_MODE_ACTIVE__) return;
         localStorage.removeItem(ACH_KEYS.final);
         const finale = document.getElementById('trip-finale-card');
         const btn = document.getElementById('finish-trip-btn');
@@ -6788,7 +6793,7 @@ function updateAchievementWall() {
                 finishBtn.classList.remove('bg-[#2C3E35]');
                 finishBtn.classList.add('bg-[#C66914]');
             }
-            if (resetBtn) resetBtn.classList.remove('hidden');
+            if (resetBtn) resetBtn.classList.add('hidden');
         } else {
             updateFinishTripAvailability();
         }
@@ -7000,11 +7005,6 @@ function updateAchievementWall() {
 <button class="w-9 h-9 rounded-full bg-[#F0EDEA] text-[#2C3E35] font-bold" onclick="closeMobileSheets()">✕</button>
 </div>
 <div class="px-4 space-y-2 pb-[calc(26px+env(safe-area-inset-bottom))]" id="mobile-more-list">
-<a class="mobile-more-item" href="survey.html" style="text-decoration:none">
-<span>💌</span>
-<span>邵奶奶的台灣心得報告</span>
-<span>›</span>
-</a>
 <button class="mobile-more-item" onclick="toggleDarkMode()">
 <span id="dark-mode-icon">🌙</span>
 <span id="dark-mode-label">深色模式</span>
@@ -7209,6 +7209,8 @@ function testResetData() {
     if (!confirm('清除這次測試造成的變更，回到進入測試模式前的正式資料狀態。確定嗎？')) return;
 
     restoreProductionSnapshot({ keepTestMode: true });
+    localStorage.removeItem("syd_survey_first_visit_v1");
+    localStorage.setItem("syd_survey_test_reopen_v1","1");
     location.reload();
 }
 
@@ -7838,6 +7840,81 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }, 250);
 });
+</script>
+
+<style>
+#syd-survey-welcome[hidden],#syd-survey-admin[hidden]{display:none!important}
+#syd-survey-welcome{position:fixed;inset:0;z-index:15000;background:#17221bd9;display:flex;align-items:center;justify-content:center;padding:20px}
+#syd-survey-welcome>div{background:#fffdf9;color:#2c3e35;border-radius:22px;max-width:400px;width:100%;padding:25px;text-align:center;box-shadow:0 18px 50px #0004}
+#syd-survey-welcome button,.syd-survey-button{border-radius:12px;padding:11px 16px;font-weight:700}
+#syd-survey-admin{position:fixed;inset:0;z-index:15001;background:#eef1eb;overflow-y:auto;padding:20px 14px 50px}
+#syd-survey-admin .syd-panel{max-width:690px;margin:auto;background:#fffdf9;border-radius:18px;padding:20px;color:#2c3e35}
+#syd-survey-admin img{width:100%;max-height:460px;object-fit:contain;border-radius:12px;background:#eee}
+#syd-survey-admin pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;background:#f5f3ee;padding:14px;border-radius:12px}
+</style>
+<div id="syd-survey-welcome" hidden role="dialog" aria-modal="true" aria-label="旅遊心得問卷邀請"><div>
+<div style="font-size:38px">💌</div><h2 style="font-size:21px;font-weight:800;margin:10px 0">旅程結束了，來寫下回憶吧！</h2>
+<p style="font-size:13px;line-height:1.8;margin-bottom:18px">填寫旅遊心得、上傳旅行小書封面，留下我們的台灣回憶。</p>
+<button onclick="dismissSurveyWelcome();openIntegratedSurvey()" style="background:#2c3e35;color:white;width:100%">開始填寫／查看問卷</button>
+<button onclick="dismissSurveyWelcome()" style="background:transparent;color:#777;margin-top:8px">稍後再說</button>
+</div></div>
+<div id="syd-survey-admin" hidden role="dialog" aria-modal="true" aria-label="正式問卷管理與測試"><div class="syd-panel">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2 style="font-size:19px;font-weight:800">💌 問卷・旅行小書管理</h2><button onclick="document.getElementById('syd-survey-admin').hidden=true">✕ 關閉</button></div>
+<p style="font-size:12px;color:#777;margin:12px 0">正式資料僅供查看。測試問卷及重置不會修改旅伴的正式提交。</p>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px"><button class="syd-survey-button" style="background:#2c3e35;color:white" onclick="loadOfficialSurvey()">☁️ 重新讀取正式答案／封面</button><button class="syd-survey-button" style="background:#f0e7db" onclick="location.href='survey-test.html?test=1'">🧪 我的測試問卷／重置</button><button class="syd-survey-button" style="background:#f0e7db" onclick="location.href='survey-test.html?test=1&amp;view=official'">📖 完整正式旅行小書</button></div>
+<p id="syd-survey-admin-status" role="status" style="font-size:12px;margin:10px 0">尚未讀取</p><div id="syd-survey-admin-results"></div>
+</div></div>
+<script>
+function dismissSurveyWelcome(){document.getElementById('syd-survey-welcome').hidden=true;}
+function openIntegratedSurvey(){
+ dismissSurveyWelcome();
+ if(window.__TEST_MODE_ACTIVE__){document.getElementById('syd-survey-admin').hidden=false;loadOfficialSurvey();}
+ else location.href='survey.html';
+}
+async function loadOfficialSurvey(){
+ const status=document.getElementById('syd-survey-admin-status'),root=document.getElementById('syd-survey-admin-results');
+ status.textContent='☁️ 正在讀取最新資料…';root.replaceChildren();
+ try{
+  if(typeof firebase==='undefined')throw Error('Firebase 尚未載入');
+  const app=firebase.apps.length?firebase.app():firebase.initializeApp({apiKey:'AIzaSyDQXRqTMufXU8JAiFqyTSPAOTGJVyd1EMg',authDomain:'syd-taiwan-2026.firebaseapp.com',projectId:'syd-taiwan-2026'});
+  const user=await new Promise((resolve,reject)=>{let done=false;const timeout=setTimeout(()=>{if(!done){done=true;reject(Error('登入狀態確認逾時，請確認首頁已登入'))}},10000);firebase.auth().onAuthStateChanged(u=>{if(!done){done=true;clearTimeout(timeout);resolve(u)}},e=>{if(!done){done=true;clearTimeout(timeout);reject(e)}})});
+  if(!user)throw Error('請先在首頁登入 Firebase，才能讀取正式問卷');
+  const db=firebase.firestore();
+  const [official,draft]=await Promise.all([db.doc('surveySubmissions/official').get(),db.doc('surveyCoverDrafts/official').get()]);
+  const submission=official.exists?official.data():null,coverDraft=draft.exists?draft.data():null;
+  status.textContent=submission?'✅ 已讀取最新正式問卷':'目前尚無正式提交的問卷';
+  if(typeof window.__sydSetBonusAchievement==='function')window.__sydSetBonusAchievement(!!submission?.bonusUnlocked);
+  const addHeading=t=>{const h=document.createElement('h3');h.textContent=t;h.style='font-weight:800;margin:16px 0 8px';root.append(h)};
+  const addPhoto=(title,data)=>{if(!data)return;addHeading(title);const img=document.createElement('img');img.src=data;img.alt=title;root.append(img)};
+  addPhoto('📷 最新上傳封面（可能尚未重新提交）',coverDraft?.coverPhotoData);
+  addPhoto('📖 最近一次正式提交時的封面',submission?.coverPhotoData);
+  if(submission){addHeading('📝 最近一次正式提交的答案');const pre=document.createElement('pre');let answers=submission.surveyState||submission;try{answers=typeof answers==='string'?JSON.parse(answers):answers}catch(e){}pre.textContent=JSON.stringify(answers,null,2);root.append(pre)}
+  if(!submission&&!coverDraft)status.textContent='尚未找到正式答案或封面草稿';
+ }catch(e){status.textContent='❌ '+(e?.message||String(e))}
+}
+window.__sydSetBonusAchievement=function(unlocked){
+ const el=document.getElementById('syd-bonus-achievement');if(!el)return;
+ el.classList.toggle('unlocked',!!unlocked);
+ const lock=el.querySelector('.achievement-lock');if(lock)lock.textContent=unlocked?'✨':'🔒';
+ const status=document.getElementById('syd-bonus-status');if(status)status.textContent=unlocked?'首次正式提交已完成・成就解鎖！':'等待旅伴首次提交正式問卷';
+};
+(function(){
+ window.addEventListener('load',()=>{
+  if(typeof firebase==='undefined')return;
+  try{firebase.auth().onAuthStateChanged(async u=>{
+   if(!u)return;
+   try{const doc=await firebase.firestore().doc('surveySubmissions/official').get();window.__sydSetBonusAchievement(!!(doc.exists&&doc.data()?.bonusUnlocked));}catch(e){console.warn('Bonus achievement sync:',e)}
+  });}catch(e){console.warn('Bonus achievement auth:',e)}
+ });
+})();
+(function(){
+ const key='syd_survey_first_visit_v1';
+ window.addEventListener('load',()=>{
+  if(window.__TEST_MODE_ACTIVE__){if(localStorage.getItem('syd_survey_test_reopen_v1')==='1'){localStorage.removeItem('syd_survey_test_reopen_v1');document.getElementById('syd-survey-welcome').hidden=false}return;}
+  if(localStorage.getItem(key)==='1')return;
+  localStorage.setItem(key,'1');document.getElementById('syd-survey-welcome').hidden=false;
+ });
+})();
 </script>
 </body>
 </html>

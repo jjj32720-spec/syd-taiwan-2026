@@ -2152,6 +2152,8 @@ window.__updateSurveyOwnerToolsVisibility__=function(){};
 </script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script>
 window.__OWNER_TEST_SURVEY__=new URLSearchParams(location.search).get('test')==='1';
 window.__surveyCloudReady__=new Promise(resolve=>{
+  let settled=false;const finish=value=>{if(!settled){settled=true;clearTimeout(timer);resolve(value)}};
+  const timer=setTimeout(()=>{document.getElementById('cloud-survey-banner').textContent='⚠️ 登入確認逾時，請在下方登入';document.getElementById('survey-login-panel').hidden=false;finish(null)},12000);
   try{
     const app=firebase.apps.length?firebase.app():firebase.initializeApp({apiKey:"AIzaSyDQXRqTMufXU8JAiFqyTSPAOTGJVyd1EMg",authDomain:"syd-taiwan-2026.firebaseapp.com",projectId:"syd-taiwan-2026",storageBucket:"syd-taiwan-2026.firebasestorage.app",messagingSenderId:"336529747980",appId:"1:336529747980:web:f754c3b5def8ad9e6afe29"});
     const auth=firebase.auth(), db=firebase.firestore();
@@ -2194,9 +2196,9 @@ window.__surveyCloudReady__=new Promise(resolve=>{
         const snap=await db.doc('surveySubmissions/official').get();
         return snap.exists?snap.data():null;
       };
-      resolve(user);
-    },error=>{const banner=document.getElementById('cloud-survey-banner');if(banner)banner.textContent='❌ 登入驗證失敗：'+error.message;document.getElementById('survey-login-panel').hidden=false;resolve(null);});
-  }catch(e){const banner=document.getElementById('cloud-survey-banner');if(banner)banner.textContent='❌ 雲端初始化失敗：'+e.message;resolve(null);}
+      finish(user);
+    },error=>{const banner=document.getElementById('cloud-survey-banner');if(banner)banner.textContent='❌ 登入驗證失敗：'+error.message;document.getElementById('survey-login-panel').hidden=false;finish(null);});
+  }catch(e){const banner=document.getElementById('cloud-survey-banner');if(banner)banner.textContent='❌ 雲端初始化失敗：'+e.message;finish(null);}
 });
 // The installed travel app and this standalone page do not necessarily share Firebase Auth persistence.
 document.getElementById('survey-login-form')?.addEventListener('submit',async event=>{
@@ -2213,6 +2215,7 @@ window.resetOwnerSurveyTest=async function(){
  if(!window.__OWNER_TEST_SURVEY__)return;
  if(!confirm('只重置你自己的測試問卷與 💌 成就？不會影響他的正式紀錄。'))return;
  try{await Promise.all([firebase.firestore().doc('surveySubmissions/owner-test').delete(),firebase.firestore().doc('surveyCoverDrafts/owner-test').delete()]);}catch(e){alert('雲端測試紀錄未能刪除：'+e.message);return;}
+ localStorage.removeItem('syd_survey_first_visit_v1');localStorage.setItem('syd_survey_test_reopen_v1','1');
  localStorage.removeItem('owner_test_trip_survey_v3');localStorage.removeItem('posttrip_survey_owner_test_submitted_v3');localStorage.removeItem('posttrip_bonus_owner_test_v3');
  location.reload();
 };
@@ -2357,10 +2360,11 @@ window.openOfficialBookletForOwner=async function(){
       const coverRaw=await loadSurveyCoverPhoto().catch(()=> '');
       let coverPhotoData=await compressSurveyCoverForBookletCloud(coverRaw);
       if(!coverPhotoData && typeof window.__loadSurveyCoverDraftCloud__==='function') coverPhotoData=await window.__loadSurveyCoverDraftCloud__().catch(()=> '');
-      if(coverRaw && !coverPhotoData)throw new Error('封面照片壓縮失敗，請重新選擇照片');
+      // A photo is optional: an iOS Photos export problem must never block the written survey.
+      // Keep any existing cloud draft when local decoding fails.
       return await window.__saveSubmittedSurveyBookletCloud__({
         schemaVersion:1,
-        surveyState:JSON.stringify(surveyState), // JSON string preserves nested ranking arrays in Firestore
+        surveyState:JSON.parse(JSON.stringify(surveyState)),
         coverPhotoData
       });
     }
@@ -2374,7 +2378,7 @@ window.openOfficialBookletForOwner=async function(){
         }
         const payload=await window.__loadSubmittedSurveyBookletCloud__();
         if(!payload?.surveyState) throw new Error('目前還沒有收到已提交的小書');
-        surveyState={...blankSurveyState(),...(typeof payload.surveyState==='string'?JSON.parse(payload.surveyState):payload.surveyState)};
+        surveyState={...blankSurveyState(),...payload.surveyState};
         if(payload.coverPhotoData) await saveSurveyCoverPhoto(payload.coverPhotoData);
         if(status) status.textContent='✅ 已讀取最新提交版本';
         document.getElementById('survey-intro-card')?.classList.add('hidden');
@@ -2981,23 +2985,54 @@ window.openOfficialBookletForOwner=async function(){
         out.src=data;
       }; img.src=surveyCoverPhotoData;
     }
-    window.handleSurveyCoverUpload=function(input){
-      const file=input?.files?.[0]; if(!file)return;
-      if(!file.type.startsWith('image/')){alert('請選擇圖片檔。');return}
-      const reader=new FileReader();
-      reader.onload=async()=>{surveyCoverPhotoData=reader.result;const st=document.getElementById('survey-cover-save-status');if(st)st.textContent='⏳ 正在儲存照片…';try{
-        await saveSurveyCoverPhoto(reader.result);
-        if(st)st.textContent='⏳ 已儲存本機，正在同步雲端…';
+    window.handleSurveyCoverUpload=async function(input){
+      const file=input?.files?.[0];
+      if(!file)return;
+      const st=document.getElementById('survey-cover-save-status');
+      const show=message=>{if(st)st.textContent=message;};
+      show('⏳ 已選取照片，正在讀取…');
+      let url='';
+      try{
+        // Decode from a blob URL rather than base64-encoding the entire original.
+        // This avoids a large memory spike for iPhone camera photos.
+        url=URL.createObjectURL(file);
+        const image=await Promise.race([
+          new Promise((resolve,reject)=>{
+            const img=new Image();
+            img.onload=()=>resolve(img);
+            img.onerror=()=>reject(new Error('Safari 無法解碼這張照片。若是 HEIC／Live Photo，請先在「照片」中分享並存成 JPEG 再試。'));
+            img.src=url;
+          }),
+          new Promise((_,reject)=>setTimeout(()=>reject(new Error('照片讀取超過 25 秒，可能尚未從 iCloud 下載完成，或格式不受支援。')),25000))
+        ]);
+        show('⏳ 照片已讀取，正在壓縮…');
+        const maxSide=640;
+        const scale=Math.min(1,maxSide/Math.max(image.naturalWidth,image.naturalHeight));
+        const canvas=document.createElement('canvas');
+        canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
+        canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+        const ctx=canvas.getContext('2d');
+        if(!ctx)throw new Error('無法建立圖片畫布');
+        ctx.drawImage(image,0,0,canvas.width,canvas.height);
+        let compressed=canvas.toDataURL('image/jpeg',0.62);
+        if(compressed.length>600000)compressed=canvas.toDataURL('image/jpeg',0.42);
+        if(!compressed.startsWith('data:image/jpeg')||compressed.length>650000)throw new Error('圖片轉換失敗或檔案太大');
+        surveyCoverPhotoData=compressed;
+        drawSurveyCoverCard();
+        show('⏳ 照片已處理，正在儲存…');
+        try{await saveSurveyCoverPhoto(compressed)}catch(e){console.warn('本機照片儲存失敗',e)}
         await window.__surveyCloudReady__;
-        if(typeof window.__uploadSurveyCoverCloud__!=='function')throw Error('雲端連線尚未完成');
-        const compressed=await compressSurveyCoverForBookletCloud(reader.result);
-        if(!compressed)throw Error('照片壓縮失敗');
+        if(typeof window.__uploadSurveyCoverCloud__!=='function')throw new Error('雲端連線尚未完成');
+        show('⏳ 正在同步封面至雲端…');
         await window.__uploadSurveyCoverCloud__(compressed);
-        if(st)st.textContent='✅ 封面照片已同步至雲端';
-      }catch(e){if(st)st.textContent='⚠️ 照片已選取，但雲端同步失敗：'+e.message+'（提交時會重試）';}drawSurveyCoverCard()};
-      reader.readAsDataURL(file);
+        show('✅ 封面照片已同步至雲端');
+      }catch(error){
+        show('❌ '+(error?.message||String(error)));
+      }finally{
+        if(url)URL.revokeObjectURL(url);
+        if(input)input.value='';
+      }
     };
-
     function renderSurveyStep() {
       const q=QUESTIONS[surveyStep];
       document.getElementById('survey-question-title').textContent=q.title;
@@ -3792,5 +3827,6 @@ window.addEventListener('DOMContentLoaded',async()=>{
   </div>
 </div>
 
+<script>window.addEventListener('load',async()=>{if(new URLSearchParams(location.search).get('view')!=='official')return;await window.__surveyCloudReady__;setTimeout(()=>{if(typeof window.openOfficialBookletForOwner==='function')window.openOfficialBookletForOwner().catch(console.warn)},500)});</script>
 </body>
 </html>

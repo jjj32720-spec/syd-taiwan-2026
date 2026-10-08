@@ -2152,7 +2152,25 @@ window.showAchievementUnlockModal=function(meta){const e=document.getElementById
 window.__updateSurveyOwnerToolsVisibility__=function(){};
 </script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script>
 window.__OWNER_TEST_SURVEY__=false; // Formal release: no owner test mode
+window.addEventListener('load',()=>{
+  if(typeof firebase==='undefined'){
+    const banner=document.getElementById('cloud-survey-banner');
+    if(banner)banner.textContent='❌ Firebase 程式庫載入失敗，請檢查網路或內容阻擋器後重新整理。';
+  }
+});
 window.__surveyCloudReady__=new Promise(resolve=>{
+  // Never leave the questionnaire stuck behind an unresolved Auth callback.
+  let authSettled=false;
+  const authTimeout=setTimeout(()=>{
+    if(authSettled)return;
+    authSettled=true;
+    const banner=document.getElementById('cloud-survey-banner');
+    if(banner)banner.textContent='⚠️ 雲端登入確認逾時。可在下方重新登入，或檢查 Safari 網路連線。';
+    const panel=document.getElementById('survey-login-panel');if(panel)panel.hidden=false;
+    resolve(null);
+  },12000);
+  const finishAuth=(value)=>{if(!authSettled){authSettled=true;clearTimeout(authTimeout);resolve(value);}};
+
   try{
     const app=firebase.apps.length?firebase.app():firebase.initializeApp({apiKey:"AIzaSyDQXRqTMufXU8JAiFqyTSPAOTGJVyd1EMg",authDomain:"syd-taiwan-2026.firebaseapp.com",projectId:"syd-taiwan-2026",storageBucket:"syd-taiwan-2026.firebasestorage.app",messagingSenderId:"336529747980",appId:"1:336529747980:web:f754c3b5def8ad9e6afe29"});
     const auth=firebase.auth(), db=firebase.firestore();
@@ -2195,9 +2213,9 @@ window.__surveyCloudReady__=new Promise(resolve=>{
         const snap=await db.doc('surveySubmissions/official').get();
         return snap.exists?snap.data():null;
       };
-      resolve(user);
-    },error=>{const banner=document.getElementById('cloud-survey-banner');if(banner)banner.textContent='❌ 登入驗證失敗：'+error.message;document.getElementById('survey-login-panel').hidden=false;resolve(null);});
-  }catch(e){const banner=document.getElementById('cloud-survey-banner');if(banner)banner.textContent='❌ 雲端初始化失敗：'+e.message;resolve(null);}
+      finishAuth(user);
+    },error=>{const banner=document.getElementById('cloud-survey-banner');if(banner)banner.textContent='❌ 登入驗證失敗：'+error.message;document.getElementById('survey-login-panel').hidden=false;finishAuth(null);});
+  }catch(e){const banner=document.getElementById('cloud-survey-banner');if(banner)banner.textContent='❌ 雲端初始化失敗：'+e.message;document.getElementById('survey-login-panel').hidden=false;finishAuth(null);}
 });
 // The installed travel app and this standalone page do not necessarily share Firebase Auth persistence.
 document.getElementById('survey-login-form')?.addEventListener('submit',async event=>{

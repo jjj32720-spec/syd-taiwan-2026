@@ -6,7 +6,8 @@
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
 <title>邵奶奶快樂遊台灣 10 日山海縱走手札 | 2026.09.27 - 10.06</title>
 <!-- Tailwind CSS CDN -->
-<script src="https://cdn.tailwindcss.com">
+<script defer src="https://cdn.tailwindcss.com"></script>
+<script>
 document.addEventListener('keydown',e=>{
   const modal=document.getElementById('travel-booklet-modal');
   if(!modal?.classList.contains('active')) return;
@@ -17,12 +18,13 @@ document.addEventListener('keydown',e=>{
 
 </script>
 <!-- Firebase：只用於記帳／成就／美食勾選同步 -->
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
 
+<link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" media="print" onload="this.media='all'"/>
 <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
+        
         html {
             background-color: #EEF1EB;
         }
@@ -2310,7 +2312,7 @@ body.dark-mode .survey-rank-row, body.dark-mode .survey-choice, body.dark-mode .
 </summary>
 <div class="mt-4 space-y-4 pt-3 border-t border-[#E2DDD5]">
 <div class="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white p-2 cursor-pointer relative group" onclick="openImageModal('1.PNG', 'DAY 1 小地圖')">
-<img alt="DAY 1 行程地圖" class="w-full h-auto object-contain rounded-lg transition group-hover:opacity-95" src="1.PNG"/>
+<img loading="lazy" decoding="async" alt="DAY 1 行程地圖" class="w-full h-auto object-contain rounded-lg transition group-hover:opacity-95" src="1.PNG"/>
 <div class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2.5 py-1 rounded-md flex items-center gap-1 shadow">
                                 🔍 點擊放大
                             </div>
@@ -2456,7 +2458,7 @@ body.dark-mode .survey-rank-row, body.dark-mode .survey-choice, body.dark-mode .
 </summary>
 <div class="mt-4 space-y-4 pt-3 border-t border-[#E2DDD5]">
 <div class="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white p-2 cursor-pointer relative group" onclick="openImageModal(this.querySelector('img').src, 'DAY 2 小地圖')">
-<img alt="DAY 2 行程地圖" class="w-full h-auto object-contain rounded-lg transition group-hover:opacity-95" src="day3_map_final.PNG"/>
+<img loading="lazy" decoding="async" alt="DAY 2 行程地圖" class="w-full h-auto object-contain rounded-lg transition group-hover:opacity-95" src="day3_map_final.PNG"/>
 <div class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2.5 py-1 rounded-md flex items-center gap-1 shadow">
                                 🔍 點擊放大
                             </div>
@@ -2597,7 +2599,7 @@ body.dark-mode .survey-rank-row, body.dark-mode .survey-choice, body.dark-mode .
 </summary>
 <div class="mt-4 space-y-4 pt-3 border-t border-[#E2DDD5]">
 <div class="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white p-2 cursor-pointer relative group" onclick="openImageModal('2.PNG', 'DAY 3 小地圖')">
-<img alt="DAY 3 行程地圖" class="w-full h-auto object-contain rounded-lg transition group-hover:opacity-95" src="2.PNG"/>
+<img loading="lazy" decoding="async" alt="DAY 3 行程地圖" class="w-full h-auto object-contain rounded-lg transition group-hover:opacity-95" src="2.PNG"/>
 <div class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2.5 py-1 rounded-md flex items-center gap-1 shadow">
                                 🔍 點擊放大
                             </div>
@@ -2721,7 +2723,7 @@ body.dark-mode .survey-rank-row, body.dark-mode .survey-choice, body.dark-mode .
 </summary>
 <div class="mt-4 space-y-4 pt-3 border-t border-[#E2DDD5]">
 <div class="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white p-2 cursor-pointer relative group" onclick="openImageModal(this.querySelector('img').src, 'DAY 4 小地圖')">
-<img alt="DAY 4 行程地圖" class="w-full h-auto object-contain rounded-lg transition group-hover:opacity-95" src="day4_map_final.PNG"/>
+<img loading="lazy" decoding="async" alt="DAY 4 行程地圖" class="w-full h-auto object-contain rounded-lg transition group-hover:opacity-95" src="day4_map_final.PNG"/>
 <div class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2.5 py-1 rounded-md flex items-center gap-1 shadow">
                                 🔍 點擊放大
                             </div>
@@ -2854,7 +2856,7 @@ body.dark-mode .survey-rank-row, body.dark-mode .survey-choice, body.dark-mode .
 </summary>
 <div class="mt-4 space-y-4 pt-3 border-t border-[#E2DDD5]">
 <div class="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white p-2 cursor-pointer relative group" onclick="openImageModal('5.jpg', 'DAY 5 小地圖')">
-<img alt="DAY 5 行程地圖" class="w-full h-auto object-contain rounded-lg transition group-hover:opacity-95" src="5.jpg"/>
+<img loading="lazy" decoding="async" alt="DAY 5 行程地圖" class="w-full h-auto object-contain rounded-lg transition group-hover:opacity-95" src="5.jpg"/>
 <div class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2.5 py-1 rounded-md flex items-center gap-1 shadow">
                                 🔍 點擊放大
                             </div>
@@ -2981,7 +2983,7 @@ body.dark-mode .survey-rank-row, body.dark-mode .survey-choice, body.dark-mode .
 </summary>
 <div class="mt-4 space-y-4 pt-3 border-t border-[#E2DDD5]">
 <div class="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white p-2 cursor-pointer relative group" onclick="openImageModal(this.querySelector('img').src, 'DAY 6 小地圖')">
-<img alt="DAY 6 行程地圖" class="w-full h-auto object-contain rounded-lg transition group-hover:opacity-95" src="day6_map_final.PNG"/>
+<img loading="lazy" decoding="async" alt="DAY 6 行程地圖" class="w-full h-auto object-contain rounded-lg transition group-hover:opacity-95" src="day6_map_final.PNG"/>
 <div class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2.5 py-1 rounded-md flex items-center gap-1 shadow">
                                 🔍 點擊放大
                             </div>
@@ -3111,7 +3113,7 @@ body.dark-mode .survey-rank-row, body.dark-mode .survey-choice, body.dark-mode .
 </summary>
 <div class="mt-4 space-y-4 pt-3 border-t border-[#E2DDD5]">
 <div class="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white p-2 cursor-pointer relative group" onclick="openImageModal(this.querySelector('img').src, 'DAY 7 小地圖')">
-<img alt="DAY 7 行程地圖" class="w-full h-auto object-contain rounded-lg transition group-hover:opacity-95" src="day7_map_final.PNG"/>
+<img loading="lazy" decoding="async" alt="DAY 7 行程地圖" class="w-full h-auto object-contain rounded-lg transition group-hover:opacity-95" src="day7_map_final.PNG"/>
 <div class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2.5 py-1 rounded-md flex items-center gap-1 shadow">
                                 🔍 點擊放大
                             </div>
@@ -3246,7 +3248,7 @@ body.dark-mode .survey-rank-row, body.dark-mode .survey-choice, body.dark-mode .
 </summary>
 <div class="mt-4 space-y-4 pt-3 border-t border-[#E2DDD5]">
 <div class="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white p-2 cursor-pointer relative group" onclick="openImageModal(this.querySelector('img').src, 'DAY 8 小地圖')">
-<img alt="DAY 8 行程地圖" class="w-full h-auto object-contain rounded-lg transition group-hover:opacity-95" src="day8_map_final.PNG"/>
+<img loading="lazy" decoding="async" alt="DAY 8 行程地圖" class="w-full h-auto object-contain rounded-lg transition group-hover:opacity-95" src="day8_map_final.PNG"/>
 <div class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2.5 py-1 rounded-md flex items-center gap-1 shadow">
                                 🔍 點擊放大
                             </div>
@@ -3377,7 +3379,7 @@ body.dark-mode .survey-rank-row, body.dark-mode .survey-choice, body.dark-mode .
 </summary>
 <div class="mt-4 space-y-4 pt-3 border-t border-[#E2DDD5]">
 <div class="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white p-2 cursor-pointer relative group" onclick="openImageModal(this.querySelector('img').src, 'DAY 9 小地圖')">
-<img alt="DAY 9 行程地圖" class="w-full h-auto object-contain rounded-lg transition group-hover:opacity-95" src="day9_map_final.PNG"/>
+<img loading="lazy" decoding="async" alt="DAY 9 行程地圖" class="w-full h-auto object-contain rounded-lg transition group-hover:opacity-95" src="day9_map_final.PNG"/>
 <div class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2.5 py-1 rounded-md flex items-center gap-1 shadow">
                                 🔍 點擊放大
                             </div>
@@ -3503,7 +3505,7 @@ body.dark-mode .survey-rank-row, body.dark-mode .survey-choice, body.dark-mode .
 </summary>
 <div class="mt-4 space-y-4 pt-3 border-t border-[#E2DDD5]">
 <div class="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white p-2 cursor-pointer relative group" onclick="openImageModal('10.PNG', 'DAY 10 小地圖')">
-<img alt="DAY 10 行程地圖" class="w-full h-auto object-contain rounded-lg transition group-hover:opacity-95" src="10.PNG"/>
+<img loading="lazy" decoding="async" alt="DAY 10 行程地圖" class="w-full h-auto object-contain rounded-lg transition group-hover:opacity-95" src="10.PNG"/>
 <div class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2.5 py-1 rounded-md flex items-center gap-1 shadow">
                                 🔍 點擊放大
                             </div>
@@ -4476,7 +4478,7 @@ class="w-full bg-white border border-[#E2DDD5] text-[#2C3E35] rounded-xl px-4 py
 </div>
 <button aria-label="關閉地圖" class="map-viewer-close" onclick="closeImageModal()" type="button">✕</button>
 <div class="map-viewer-stage" id="mapViewerStage">
-<img alt="放大地圖" draggable="false" id="modalImg" src=""/>
+<img loading="lazy" decoding="async" alt="放大地圖" draggable="false" id="modalImg" src=""/>
 </div>
 <div class="map-viewer-hint">雙指縮放・拖曳查看・點外側關閉</div>
 </div>
@@ -7290,17 +7292,17 @@ function updateAchievementWall() {
 </div>
 <div class="px-4 pb-[calc(26px+env(safe-area-inset-bottom))] grid grid-cols-3 gap-3">
 <a href="icon-road.html" class="block text-center">
-<img src="syd-icon-road.png" alt="預設（幾何款）桌面圖示" class="w-full aspect-square object-contain shadow-sm">
+<img loading="lazy" decoding="async" src="syd-icon-road.png" alt="預設（幾何款）桌面圖示" class="w-full aspect-square object-contain shadow-sm">
 <div class="mt-2 text-[11px] leading-none text-gray-500">圖示</div>
 <div class="mt-1 text-xs font-bold text-[#2C3E35]">預設（幾何款）</div>
 </a>
 <a href="icon-minimal.html" class="block text-center">
-<img src="syd-icon-minimal.png" alt="簡約款桌面圖示" class="w-full aspect-square object-contain shadow-sm">
+<img loading="lazy" decoding="async" src="syd-icon-minimal.png" alt="簡約款桌面圖示" class="w-full aspect-square object-contain shadow-sm">
 <div class="mt-2 text-[11px] leading-none text-gray-500">圖示</div>
 <div class="mt-1 text-xs font-bold text-[#2C3E35]">簡約款</div>
 </a>
 <a href="icon-watercolor.html" class="block text-center">
-<img src="syd-icon-watercolor.png" alt="水彩款桌面圖示" class="w-full aspect-square object-contain shadow-sm">
+<img loading="lazy" decoding="async" src="syd-icon-watercolor.png" alt="水彩款桌面圖示" class="w-full aspect-square object-contain shadow-sm">
 <div class="mt-2 text-[11px] leading-none text-gray-500">圖示</div>
 <div class="mt-1 text-xs font-bold text-[#2C3E35]">水彩款</div>
 </a>
@@ -7421,7 +7423,7 @@ function updateAchievementWall() {
           <button type="button" class="survey-btn !py-2 !px-3" onclick="openTravelBooklet()">打開小書</button>
         </div>
         <div class="travel-booklet-thumb" onclick="openTravelBooklet()" role="button" aria-label="打開旅行小書">
-          <img id="travel-booklet-cover-thumb" alt="旅行小書封面">
+          <img loading="lazy" decoding="async" id="travel-booklet-cover-thumb" alt="旅行小書封面">
         </div>
       </div>
 
@@ -7980,7 +7982,7 @@ function updateAchievementWall() {
       }</div></div>
       <div class="bracket-save-card">
         <div class="bracket-save-title">🏆 我的台灣旅行 TOP 3 ＆ 淘汰樹</div>
-        <img id="bracket-save-image" class="bracket-save-image" alt="旅程最愛體驗前三名與淘汰樹狀圖，可長按儲存">
+        <img loading="lazy" decoding="async" id="bracket-save-image" class="bracket-save-image" alt="旅程最愛體驗前三名與淘汰樹狀圖，可長按儲存">
         <div class="bracket-save-hint">圖片版已自動排版完成｜手機可直接長按圖片儲存</div>
       </div>`;
     }
@@ -8749,7 +8751,7 @@ function updateAchievementWall() {
       const pages=window.__travelBookletPages||[];
       track.innerHTML=pages.map(([label,src],i)=>`
         <div class="booklet-modal-slide" data-booklet-page="${i}">
-          <img src="${src}" alt="旅行小書第 ${i+1} 頁｜${esc(label)}">
+          <img loading="lazy" decoding="async" src="${src}" alt="旅行小書第 ${i+1} 頁｜${esc(label)}">
         </div>`).join('');
       updateTravelBookletPosition(false);
     }
@@ -9257,7 +9259,7 @@ document.addEventListener('DOMContentLoaded', initPrivateTestAccess);
 
     const SHARED_DOC_PATH = 'sharedTrip/syd-taiwan-2026';
     const SYNC_SCHEMA_VERSION = 1;
-    const POLL_MS = 1200;
+    const POLL_MS = 5000;
 
     let fbApp = null;
     let fbAuth = null;

@@ -2081,7 +2081,7 @@ body.dark-mode .survey-rank-row, body.dark-mode .survey-choice, body.dark-mode .
     background:#18211D; border-color:#3A4A42; color:#EAE7E0;
 }
 
-body{background:#f7f3eb!important;margin:0}#trip-survey-test-page{position:relative!important;inset:auto!important;min-height:100dvh!important;display:block!important;overflow:visible!important;z-index:auto!important;background:#f7f3eb!important}#trip-survey-test-page.hidden{display:block!important}.survey-shell{min-height:100dvh!important;padding-bottom:40px!important}#bonus-toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:#29493d;color:white;padding:15px 22px;border-radius:16px;z-index:99999;box-shadow:0 8px 30px #0002;white-space:nowrap}#bonus-toast[hidden]{display:none}</style></head><body><div id="bonus-toast" hidden></div><div id="cloud-survey-banner" style="position:sticky;top:0;z-index:2000;padding:10px 15px;background:#fff5e8;color:#65411e;font-size:12px;text-align:center">☁️ 正在確認雲端登入…</div><div id="owner-survey-tools" hidden style="margin:12px auto;max-width:680px;padding:12px;border:1px solid #dbc8ad;border-radius:14px;background:white"><strong>🧪 管理測試區</strong><p style="font-size:12px;margin:8px 0">測試提交會寄出真實郵件，雲端資料與正式版分開。</p><button onclick="window.resetOwnerSurveyTest()" style="padding:10px;background:#f6ece3;border-radius:8px">重置我的測試問卷及 💌 成就</button> <button onclick="window.openOfficialBookletForOwner()" style="padding:10px;background:#f6ece3;border-radius:8px">☁️ 查看正式旅遊小書</button><p id="owner-cloud-result" style="font-size:12px"></p></div>
+body{background:#f7f3eb!important;margin:0}#trip-survey-test-page{position:relative!important;inset:auto!important;min-height:100dvh!important;display:block!important;overflow:visible!important;z-index:auto!important;background:#f7f3eb!important}#trip-survey-test-page.hidden{display:block!important}.survey-shell{min-height:100dvh!important;padding-bottom:40px!important}#bonus-toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:#29493d;color:white;padding:15px 22px;border-radius:16px;z-index:99999;box-shadow:0 8px 30px #0002;white-space:nowrap}#bonus-toast[hidden]{display:none}</style></head><body><div id="bonus-toast" hidden></div><div id="cloud-survey-banner" style="position:sticky;top:0;z-index:2000;padding:10px 15px;background:#fff5e8;color:#65411e;font-size:12px;text-align:center">☁️ 正在確認雲端登入…</div><section id="survey-login-panel" hidden style="max-width:680px;margin:14px auto;padding:18px;border:1px solid #e2d6c6;border-radius:18px;background:#fffdf9;color:#2c3e35;box-shadow:0 5px 18px #0000000b"><h3 style="font-weight:800;font-size:17px">🔐 連接旅程雲端</h3><p style="font-size:12px;line-height:1.7;margin:8px 0">獨立問卷與桌面版旅程可能使用不同的登入儲存空間。請用原本的 Firebase 帳號登入；不會刪除旅程紀錄。</p><form id="survey-login-form" style="display:grid;gap:9px"><input id="survey-login-email" type="email" required autocomplete="username" placeholder="Firebase 登入 Email" style="width:100%;border:1px solid #ddd3c6;border-radius:10px;padding:11px;font-size:14px"><input id="survey-login-password" type="password" required autocomplete="current-password" placeholder="密碼" style="width:100%;border:1px solid #ddd3c6;border-radius:10px;padding:11px;font-size:14px"><button type="submit" style="background:#2c3e35;color:#fff;border-radius:10px;padding:12px;font-weight:800">使用 Email／密碼登入</button></form><button id="survey-login-google" type="button" style="margin-top:10px;width:100%;padding:11px;border:1px solid #ddd3c6;border-radius:10px;font-weight:700">使用 Google 登入</button><p id="survey-login-error" role="status" style="font-size:12px;margin-top:8px;color:#a33"></p></section><div id="owner-survey-tools" hidden style="margin:12px auto;max-width:680px;padding:12px;border:1px solid #dbc8ad;border-radius:14px;background:white"><strong>🧪 管理測試區</strong><p style="font-size:12px;margin:8px 0">測試提交會寄出真實郵件，雲端資料與正式版分開。</p><button onclick="window.resetOwnerSurveyTest()" style="padding:10px;background:#f6ece3;border-radius:8px">重置我的測試問卷及 💌 成就</button> <button onclick="window.openOfficialBookletForOwner()" style="padding:10px;background:#f6ece3;border-radius:8px">☁️ 查看正式旅遊小書</button><p id="owner-cloud-result" style="font-size:12px"></p></div>
 <div id="trip-survey-test-page" aria-hidden="true">
   <div class="survey-shell">
     <div class="survey-topbar">
@@ -2159,12 +2159,14 @@ window.__surveyCloudReady__=new Promise(resolve=>{
       const owner=!!user&&user.email?.toLowerCase()==='jjj32720@gmail.com';
       window.__OWNER_TEST_SURVEY__=owner&&new URLSearchParams(location.search).get('test')==='1';
       const banner=document.getElementById('cloud-survey-banner');
-      if(banner)banner.textContent=user?'☁️ 已連接雲端（'+(window.__OWNER_TEST_SURVEY__?'管理測試':'正式問卷')+'）':'⚠️ 尚未登入雲端：請先回旅遊首頁登入 Firebase，再開啟問卷';
+      if(banner)banner.textContent=user?'☁️ 已連接雲端（'+(window.__OWNER_TEST_SURVEY__?'管理測試':'正式問卷')+'）':'⚠️ 尚未登入雲端：請在下方登入後繼續';
+      const loginPanel=document.getElementById('survey-login-panel');if(loginPanel)loginPanel.hidden=!!user;
       document.getElementById('owner-survey-tools').hidden=!window.__OWNER_TEST_SURVEY__;
       window.__saveSubmittedSurveyBookletCloud__=async payload=>{
         if(!auth.currentUser)throw Error('請先在首頁登入 Firebase');
         const test=window.__OWNER_TEST_SURVEY__;
         if(test && auth.currentUser.email?.toLowerCase()!=='jjj32720@gmail.com')throw Error('測試模式僅限管理帳號');
+        if(new URLSearchParams(location.search).get('test')==='1'&&!test)throw Error('管理測試需要使用管理帳號登入，不能提交到正式紀錄');
         const path=test?'surveySubmissions/owner-test':'surveySubmissions/official';
         await db.doc(path).set({...payload,submittedAt:firebase.firestore.FieldValue.serverTimestamp(),submittedBy:auth.currentUser.uid,submittedEmail:auth.currentUser.email||'',bonusUnlocked:true});
         return true;
@@ -2174,6 +2176,7 @@ window.__surveyCloudReady__=new Promise(resolve=>{
         if(!auth.currentUser)throw Error('尚未登入 Firebase，無法同步照片');
         const test=window.__OWNER_TEST_SURVEY__;
         if(test && auth.currentUser.email?.toLowerCase()!=='jjj32720@gmail.com')throw Error('沒有測試版權限');
+        if(new URLSearchParams(location.search).get('test')==='1'&&!test)throw Error('請先以管理帳號登入測試模式');
         const path=test?'surveyCoverDrafts/owner-test':'surveyCoverDrafts/official';
         // Image data is compressed before calling this function.
         if(new Blob([dataUrl]).size>650000)throw Error('照片仍然太大，請選擇較小的照片');
@@ -2192,8 +2195,19 @@ window.__surveyCloudReady__=new Promise(resolve=>{
         return snap.exists?snap.data():null;
       };
       resolve(user);
-    },error=>{const banner=document.getElementById('cloud-survey-banner');if(banner)banner.textContent='❌ 登入驗證失敗：'+error.message;resolve(null);});
+    },error=>{const banner=document.getElementById('cloud-survey-banner');if(banner)banner.textContent='❌ 登入驗證失敗：'+error.message;document.getElementById('survey-login-panel').hidden=false;resolve(null);});
   }catch(e){const banner=document.getElementById('cloud-survey-banner');if(banner)banner.textContent='❌ 雲端初始化失敗：'+e.message;resolve(null);}
+});
+// The installed travel app and this standalone page do not necessarily share Firebase Auth persistence.
+document.getElementById('survey-login-form')?.addEventListener('submit',async event=>{
+ event.preventDefault();const out=document.getElementById('survey-login-error');out.textContent='登入中…';
+ try{await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);await firebase.auth().signInWithEmailAndPassword(document.getElementById('survey-login-email').value.trim(),document.getElementById('survey-login-password').value);location.reload();}
+ catch(e){out.textContent='登入失敗：'+(e.code==='auth/invalid-credential'?'帳號或密碼不正確':e.message);}
+});
+document.getElementById('survey-login-google')?.addEventListener('click',async()=>{
+ const out=document.getElementById('survey-login-error');out.textContent='正在開啟 Google 登入…';
+ try{await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);await firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());location.reload();}
+ catch(e){if(e.code==='auth/popup-blocked'||e.code==='auth/operation-not-supported-in-this-environment'){try{await firebase.auth().signInWithRedirect(new firebase.auth.GoogleAuthProvider());return;}catch(err){out.textContent='Google 登入失敗：'+err.message;return;}}out.textContent='Google 登入失敗：'+e.message;}
 });
 window.resetOwnerSurveyTest=async function(){
  if(!window.__OWNER_TEST_SURVEY__)return;

@@ -2985,34 +2985,47 @@ window.openOfficialBookletForOwner=async function(){
       const file=input?.files?.[0];
       if(!file)return;
       const st=document.getElementById('survey-cover-save-status');
-      const show=(message)=>{if(st)st.textContent=message;};
-      show('⏳ 正在讀取及壓縮照片，請稍候…');
+      const show=message=>{if(st)st.textContent=message;};
+      show('⏳ 已選取照片，正在讀取…');
+      let url='';
       try{
-        if(!file.type.startsWith('image/'))throw new Error('請選擇照片格式的圖片');
-        const original=await new Promise((resolve,reject)=>{
-          const reader=new FileReader();
-          reader.onload=()=>resolve(reader.result);
-          reader.onerror=()=>reject(reader.error||new Error('照片讀取失敗'));
-          reader.onabort=()=>reject(new Error('照片讀取已取消'));
-          reader.readAsDataURL(file);
-        });
-        const compressed=await compressSurveyCoverForBookletCloud(original);
-        if(!compressed)throw new Error('照片無法壓縮，請試試截圖或其他 JPG 照片');
+        // Decode from a blob URL rather than base64-encoding the entire original.
+        // This avoids a large memory spike for iPhone camera photos.
+        url=URL.createObjectURL(file);
+        const image=await Promise.race([
+          new Promise((resolve,reject)=>{
+            const img=new Image();
+            img.onload=()=>resolve(img);
+            img.onerror=()=>reject(new Error('Safari 無法解碼這張照片。若是 HEIC／Live Photo，請先在「照片」中分享並存成 JPEG 再試。'));
+            img.src=url;
+          }),
+          new Promise((_,reject)=>setTimeout(()=>reject(new Error('照片讀取超過 25 秒，可能尚未從 iCloud 下載完成，或格式不受支援。')),25000))
+        ]);
+        show('⏳ 照片已讀取，正在壓縮…');
+        const maxSide=640;
+        const scale=Math.min(1,maxSide/Math.max(image.naturalWidth,image.naturalHeight));
+        const canvas=document.createElement('canvas');
+        canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
+        canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+        const ctx=canvas.getContext('2d');
+        if(!ctx)throw new Error('無法建立圖片畫布');
+        ctx.drawImage(image,0,0,canvas.width,canvas.height);
+        let compressed=canvas.toDataURL('image/jpeg',0.62);
+        if(compressed.length>600000)compressed=canvas.toDataURL('image/jpeg',0.42);
+        if(!compressed.startsWith('data:image/jpeg')||compressed.length>650000)throw new Error('圖片轉換失敗或檔案太大');
         surveyCoverPhotoData=compressed;
         drawSurveyCoverCard();
-        show('⏳ 照片已選取，正在儲存至手機…');
-        try{await saveSurveyCoverPhoto(compressed)}catch(localError){
-          show('⚠️ 照片已選取，但本機儲存失敗；正在嘗試雲端同步…');
-        }
+        show('⏳ 照片已處理，正在儲存…');
+        try{await saveSurveyCoverPhoto(compressed)}catch(e){console.warn('本機照片儲存失敗',e)}
         await window.__surveyCloudReady__;
         if(typeof window.__uploadSurveyCoverCloud__!=='function')throw new Error('雲端連線尚未完成');
         show('⏳ 正在同步封面至雲端…');
         await window.__uploadSurveyCoverCloud__(compressed);
         show('✅ 封面照片已同步至雲端');
       }catch(error){
-        const message=error?.message||String(error);
-        show((surveyCoverPhotoData?'⚠️ 照片已選取，但同步失敗：':'❌ 照片處理失敗：')+message);
+        show('❌ '+(error?.message||String(error)));
       }finally{
+        if(url)URL.revokeObjectURL(url);
         if(input)input.value='';
       }
     };

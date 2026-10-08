@@ -6,7 +6,7 @@
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
 <title>邵奶奶快樂遊台灣 10 日山海縱走手札 | 2026.09.27 - 10.06</title>
 <!-- Tailwind CSS CDN -->
-<script src="https://cdn.tailwindcss.com">
+<script defer src="https://cdn.tailwindcss.com">
 document.addEventListener('keydown',e=>{
   const modal=document.getElementById('travel-booklet-modal');
   if(!modal?.classList.contains('active')) return;
@@ -17,9 +17,9 @@ document.addEventListener('keydown',e=>{
 
 </script>
 <!-- Firebase：只用於記帳／成就／美食勾選同步 -->
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
 <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
@@ -7346,10 +7346,7 @@ function updateAchievementWall() {
       <h2 class="survey-title">💌 邵奶奶的台灣心得報告</h2>
       <p class="survey-copy">十天結束了，來把這趟旅行真正收進回憶裡。沒有標準答案，也不用寫得很正式；想到什麼就寫什麼，慢慢回想就好。</p>
       <button type="button" class="survey-btn primary w-full mt-5" onclick="startTripSurveyTest()">開始填寫 →</button>
-      <div id="survey-owner-tools" class="hidden">
-        <button type="button" id="cloud-booklet-view-btn" class="survey-btn w-full mt-2" onclick="openSubmittedBookletFromCloud()">☁️ 查看最新提交的旅遊小書</button>
-        <div id="cloud-booklet-view-status" class="text-[10px] text-gray-500 mt-2 text-center"></div>
-      </div>
+
     </div>
 
     <div class="survey-card hidden" id="survey-question-card">
@@ -9104,7 +9101,7 @@ function initPrivateTestAccess() {
     const surveyNavBtn = document.getElementById('btn-trip-survey');
     const tripCompletedForSurvey = localStorage.getItem(ACH_KEYS.final) === 'true';
     if (surveyNavBtn) {
-        surveyNavBtn.classList.remove('hidden');
+        surveyNavBtn.classList.toggle('hidden', !surveySubmitted && !tripCompletedForSurvey && !window.__TEST_MODE_ACTIVE__);
         surveyNavBtn.textContent = surveySubmitted ? '💌 查看旅後問卷' : '📝 問卷調查';
     }
 
@@ -9130,7 +9127,7 @@ function initPrivateTestAccess() {
     }
 
     toggle?.classList.add('hidden');
-    surveyNavBtn?.classList.remove('hidden');
+    surveyNavBtn?.classList.toggle('hidden', !surveySubmitted && !tripCompletedForSurvey);
     document.getElementById('test-console')?.classList.add('hidden');
 
     if (!trigger) return;
@@ -9713,7 +9710,6 @@ document.addEventListener('DOMContentLoaded', initPrivateTestAccess);
     window.__updateSurveyOwnerToolsVisibility__ = updateSurveyOwnerToolsVisibility;
 
     window.addEventListener('DOMContentLoaded', initFirebaseSync);
-    window.addEventListener('DOMContentLoaded', ()=>setTimeout(updateSurveyOwnerToolsVisibility, 900));
 })();
 </script>
 

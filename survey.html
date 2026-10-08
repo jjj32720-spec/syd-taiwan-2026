@@ -2207,6 +2207,14 @@ window.__surveyCloudReady__=new Promise(resolve=>{
             if(old.exists)throw Error('正式問卷已有紀錄，管理員演練禁止覆蓋；請先確認是否為旅伴提交。');
             tx.set(ref,data);
           });
+        }else if(!test && !owner){
+          // Commit the current version and an immutable historical snapshot together.
+          const batch=db.batch();
+          batch.set(db.doc(path),data);
+          batch.set(db.collection('surveySubmissionHistory').doc(),{
+            ...data, archiveVersion:1, archivedAt:firebase.firestore.FieldValue.serverTimestamp()
+          });
+          await batch.commit();
         }else await db.doc(path).set(data);
         return true;
       };

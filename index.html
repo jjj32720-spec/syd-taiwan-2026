@@ -7862,9 +7862,9 @@ window.addEventListener('DOMContentLoaded', () => {
 <div id="syd-survey-admin" hidden role="dialog" aria-modal="true" aria-label="正式問卷管理與測試"><div class="syd-panel">
 <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2 style="font-size:19px;font-weight:800">💌 問卷・旅行小書管理</h2><button onclick="document.getElementById('syd-survey-admin').hidden=true">✕ 關閉</button></div>
 <p style="font-size:12px;color:#777;margin:12px 0">正式資料僅供查看。測試問卷及重置不會修改旅伴的正式提交。</p>
-<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px"><button class="syd-survey-button" style="background:#2c3e35;color:white" onclick="loadOfficialSurvey()">☁️ 重新讀取正式答案／封面</button><button class="syd-survey-button" style="background:#f0e7db" onclick="location.href='survey-test.html?test=1'">🧪 我的測試問卷／重置</button><button class="syd-survey-button" style="background:#f0e7db" onclick="location.href='survey-test.html?test=1&amp;view=official'">📖 完整正式旅行小書</button></div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px"><button class="syd-survey-button" style="background:#e5edf0;color:#294653" onclick="loadSurveyHistory()">📚 歷史提交紀錄</button><button class="syd-survey-button" style="background:#2c3e35;color:white" onclick="loadOfficialSurvey()">☁️ 重新讀取正式答案／封面</button><button class="syd-survey-button" style="background:#f0e7db" onclick="location.href='survey-test.html?test=1'">🧪 我的測試問卷／重置</button><button class="syd-survey-button" style="background:#f0e7db" onclick="location.href='survey-test.html?test=1&amp;view=official'">📖 完整正式旅行小書</button></div>
 <div style="margin:12px 0;padding:13px;border:1px solid #e5c9b5;border-radius:12px;background:#fff6ee"><strong>🧪 管理員正式演練</strong><p style="font-size:12px;line-height:1.7;margin:7px 0">使用你的帳號從正式問卷提交後，可在這裡只清除你建立的演練答案及封面，並恢復 💌 灰階狀態。寄出的 Email 無法撤回。</p><button type="button" class="syd-survey-button" style="background:#9a402c;color:white" onclick="resetOwnerFormalRehearsal()">🧹 安全重置我的正式演練</button><p id="syd-formal-reset-status" role="status" style="font-size:12px;margin-top:8px"></p></div>
-<p id="syd-survey-admin-status" role="status" style="font-size:12px;margin:10px 0">尚未讀取</p><div id="syd-survey-admin-results"></div>
+<section id="syd-survey-history" hidden style="margin:14px 0;padding:14px;border:1px solid #d7e3e5;border-radius:12px;background:#f7faf9"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><strong>📚 正式問卷歷史提交</strong><button type="button" onclick="document.getElementById('syd-survey-history').hidden=true">收起</button></div><p id="syd-survey-history-status" role="status" style="font-size:12px;margin:10px 0"></p><div id="syd-survey-history-results"></div></section><p id="syd-survey-admin-status" role="status" style="font-size:12px;margin:10px 0">尚未讀取</p><div id="syd-survey-admin-results"></div>
 </div></div>
 <script>
 function dismissSurveyWelcome(){window.__sydSurveyWelcomeDismissed=true;document.getElementById('syd-survey-welcome').hidden=true;}
@@ -7894,6 +7894,26 @@ async function loadOfficialSurvey(){
   if(!submission&&!coverDraft)status.textContent='尚未找到正式答案或封面草稿';
  }catch(e){status.textContent='❌ '+(e?.message||String(e))}
 }
+window.loadSurveyHistory=async function(){
+ const panel=document.getElementById('syd-survey-history'),status=document.getElementById('syd-survey-history-status'),root=document.getElementById('syd-survey-history-results');
+ panel.hidden=false;root.replaceChildren();status.textContent='☁️ 正在讀取歷史版本…';
+ try{
+  if(!window.__TEST_MODE_ACTIVE__)throw Error('請先進入七下隱藏管理模式');
+  if(typeof firebase==='undefined'||!firebase.auth().currentUser)throw Error('請先登入管理員帳號');
+  if(firebase.auth().currentUser.uid!=='vLaRKhDNXeUUGGd58X4S0UX11PY2')throw Error('只有管理員可以查看歷史');
+  const snap=await firebase.firestore().collection('surveySubmissionHistory').orderBy('archivedAt','desc').limit(50).get({source:'server'});
+  status.textContent=snap.empty?'目前沒有歷史紀錄（啟用此功能前的舊版本不會自動補回）':`已找到 ${snap.size} 筆歷史提交（最多顯示最近 50 筆）`;
+  snap.forEach(doc=>{
+   const d=doc.data(),date=d.submittedAt?.toDate?.()||d.archivedAt?.toDate?.(),details=document.createElement('details');
+   details.style='padding:12px;margin:10px 0;border:1px solid #d8e1de;border-radius:10px;background:white';
+   const summary=document.createElement('summary');summary.style='cursor:pointer;font-weight:700';summary.textContent='📖 '+(date?date.toLocaleString('zh-TW',{timeZone:'Asia/Taipei'}):'提交時間未提供');details.append(summary);
+   if(d.coverPhotoData){const photo=document.createElement('img');photo.src=d.coverPhotoData;photo.alt='該次提交的封面';photo.style='width:100%;max-height:350px;object-fit:contain;margin:12px 0';details.append(photo);}
+   const heading=document.createElement('p');heading.textContent='📝 該次問卷答案與排名';heading.style='font-weight:700;margin:10px 0';details.append(heading);
+   const pre=document.createElement('pre');let answers=d.surveyState||{};try{if(typeof answers==='string')answers=JSON.parse(answers)}catch(e){}pre.textContent=JSON.stringify(answers,null,2);details.append(pre);
+   root.append(details);
+  });
+ }catch(e){status.textContent='❌ 讀取失敗：'+(e?.message||e)}
+};
 window.resetOwnerFormalRehearsal=async function(){
  const status=document.getElementById('syd-formal-reset-status');
  if(!window.__TEST_MODE_ACTIVE__){alert('請先點 👵🏻 七下進入隱藏管理模式');return;}

@@ -2148,7 +2148,18 @@ body{background:#f7f3eb!important;margin:0}#trip-survey-test-page{position:relat
 
 <script>
 window.updateAchievementWall=function(){};
-window.showAchievementUnlockModal=function(meta){const e=document.getElementById('bonus-toast');e.textContent='💌 首次完成問卷，Bonus 成就解鎖！';e.hidden=false;setTimeout(()=>e.hidden=true,5000);};
+window.showAchievementUnlockModal=function(meta){
+  const modal=document.getElementById('survey-achievement-unlock-modal');if(!modal)return;
+  document.getElementById('survey-achievement-modal-icon').textContent=meta?.icon||'🏆';
+  document.getElementById('survey-achievement-modal-title').textContent=meta?.title||'成就解鎖';
+  document.getElementById('survey-achievement-modal-desc').textContent=meta?.desc||'';
+  modal.classList.remove('hidden');modal.classList.add('flex');
+  if(typeof triggerSingleEmojiRain==='function')triggerSingleEmojiRain();
+};
+window.closeSurveyAchievementUnlockModal=function(){
+ const modal=document.getElementById('survey-achievement-unlock-modal');
+ modal?.classList.add('hidden');modal?.classList.remove('flex');
+};
 window.__updateSurveyOwnerToolsVisibility__=function(){};
 </script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script>
 window.__OWNER_TEST_SURVEY__=false; // Formal release: no owner test mode
@@ -3708,7 +3719,7 @@ window.openOfficialBookletForOwner=async function(){
         localStorage.setItem(POSTTRIP_SUBMITTED_KEY,'true');
         localStorage.setItem(POSTTRIP_BONUS_KEY,'true');
         showSubmittedSurvey();
-        if(first) window.showAchievementUnlockModal?.({icon:'💌',title:'邵奶奶的台灣心得報告'});
+        if(first && !window.__OWNER_TEST_SURVEY__) window.showAchievementUnlockModal?.({icon:'💌',title:'加分題・邵奶奶的台灣心得報告',desc:'完成台灣旅行心得問卷，成功解鎖加分題！'});
         // Real email for both official and owner test; mail failure is shown separately.
         sendSurveyEmail().catch(e=>{console.warn('Email send failed',e);alert('問卷已存入雲端，但 Email 寄送失敗：'+e.message);});
       }catch(e){alert('雲端提交失敗，回答已留在此頁，請確認登入及網路後重試：'+(e?.message||e));}
@@ -3811,5 +3822,13 @@ window.addEventListener('DOMContentLoaded',async()=>{
   </div>
 </div>
 
+<div class="fixed inset-0 z-[160] hidden items-center justify-center p-5 bg-black/45 backdrop-blur-sm" id="survey-achievement-unlock-modal" role="dialog" aria-modal="true" aria-label="成就解鎖">
+<div class="w-full max-w-sm bg-white rounded-3xl p-7 text-center shadow-2xl border border-[#E2DDD5]">
+<div class="text-6xl mb-4" id="survey-achievement-modal-icon">🏆</div>
+<div class="text-xs font-bold tracking-widest text-[#C66914]">ACHIEVEMENT UNLOCKED</div>
+<h3 class="text-2xl font-bold text-[#2C3E35]" id="survey-achievement-modal-title"></h3>
+<p class="text-sm text-gray-600 leading-relaxed mt-3" id="survey-achievement-modal-desc"></p>
+<button class="mt-6 w-full bg-[#2C3E35] text-white py-3 rounded-xl text-xs font-bold hover:bg-[#C66914] transition" onclick="closeSurveyAchievementUnlockModal()" type="button">收下成就</button>
+</div></div>
 </body>
 </html>

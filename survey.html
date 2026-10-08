@@ -2189,16 +2189,24 @@ window.__surveyCloudReady__=new Promise(resolve=>{
       const owner=!!user&&user.email?.toLowerCase()==='jjj32720@gmail.com';
       window.__OWNER_TEST_SURVEY__=false; // Formal release
       const banner=document.getElementById('cloud-survey-banner');
-      if(banner)banner.textContent=user?'☁️ 已連接雲端（'+(window.__OWNER_TEST_SURVEY__?'管理測試':'正式問卷')+'）':'⚠️ 尚未登入雲端：請在下方登入後繼續';
+      if(banner)banner.textContent=user?(owner?'🧪 管理員正式演練：提交後須在七下隱藏模式重置':'☁️ 已連接雲端（正式問卷）'):'⚠️ 尚未登入雲端：請在下方登入後繼續';
       const loginPanel=document.getElementById('survey-login-panel');if(loginPanel)loginPanel.hidden=!!user;
       document.getElementById('owner-survey-tools').hidden=true;
       window.__saveSubmittedSurveyBookletCloud__=async payload=>{
         if(!auth.currentUser)throw Error('請先在首頁登入 Firebase');
         const test=window.__OWNER_TEST_SURVEY__;
         if(test && auth.currentUser.email?.toLowerCase()!=='jjj32720@gmail.com')throw Error('測試模式僅限管理帳號');
-        if(owner)throw Error('管理帳號不可提交正式問卷，請使用旅伴帳號');
         const path=test?'surveySubmissions/owner-test':'surveySubmissions/official';
-        await db.doc(path).set({...payload,submittedAt:firebase.firestore.FieldValue.serverTimestamp(),submittedBy:auth.currentUser.uid,submittedEmail:auth.currentUser.email||'',bonusUnlocked:true});
+        const data={...payload,submittedAt:firebase.firestore.FieldValue.serverTimestamp(),submittedBy:auth.currentUser.uid,submittedEmail:auth.currentUser.email||'',bonusUnlocked:true};
+        if(owner && !test){
+          // 管理員只能建立尚不存在的正式演練，不能覆蓋旅伴正式答案。
+          data.ownerRehearsal=true;
+          await db.runTransaction(async tx=>{
+            const ref=db.doc(path), old=await tx.get(ref);
+            if(old.exists)throw Error('正式問卷已有紀錄，管理員演練禁止覆蓋；請先確認是否為旅伴提交。');
+            tx.set(ref,data);
+          });
+        }else await db.doc(path).set(data);
         return true;
       };
       // Save cover immediately to a separate Firestore document; never touch the shared trip record.
@@ -2206,7 +2214,10 @@ window.__surveyCloudReady__=new Promise(resolve=>{
         if(!auth.currentUser)throw Error('尚未登入 Firebase，無法同步照片');
         const test=window.__OWNER_TEST_SURVEY__;
         if(test && auth.currentUser.email?.toLowerCase()!=='jjj32720@gmail.com')throw Error('沒有測試版權限');
-        if(owner)throw Error('管理帳號不可修改正式封面，請使用旅伴帳號');
+        if(owner && !test){
+          const official=await db.doc('surveySubmissions/official').get({source:'server'});
+          if(official.exists && official.data()?.submittedBy!==auth.currentUser.uid)throw Error('旅伴已提交正式問卷，管理員不可覆蓋封面');
+        }
         const path=test?'surveyCoverDrafts/owner-test':'surveyCoverDrafts/official';
         // Image data is compressed before calling this function.
         if(new Blob([dataUrl]).size>650000)throw Error('照片仍然太大，請選擇較小的照片');
@@ -3717,6 +3728,7 @@ window.openOfficialBookletForOwner=async function(){
         const first=localStorage.getItem(POSTTRIP_BONUS_KEY)!=='true';
         localStorage.setItem(TEST_SURVEY_KEY,JSON.stringify(surveyState));
         localStorage.setItem(POSTTRIP_SUBMITTED_KEY,'true');
+        if(firebase.auth().currentUser?.email?.toLowerCase()==='jjj32720@gmail.com')localStorage.setItem('syd_owner_formal_rehearsal_local_v1','1');
         localStorage.setItem(POSTTRIP_BONUS_KEY,'true');
         showSubmittedSurvey();
         if(first && !window.__OWNER_TEST_SURVEY__) window.showAchievementUnlockModal?.({icon:'💌',title:'加分題・邵奶奶的台灣心得報告',desc:'完成台灣旅行心得問卷，成功解鎖加分題！'});

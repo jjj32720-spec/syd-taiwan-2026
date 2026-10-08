@@ -7862,6 +7862,7 @@ window.addEventListener('DOMContentLoaded', () => {
 <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2 style="font-size:19px;font-weight:800">💌 問卷・旅行小書管理</h2><button onclick="document.getElementById('syd-survey-admin').hidden=true">✕ 關閉</button></div>
 <p style="font-size:12px;color:#777;margin:12px 0">正式資料僅供查看。測試問卷及重置不會修改旅伴的正式提交。</p>
 <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px"><button class="syd-survey-button" style="background:#2c3e35;color:white" onclick="loadOfficialSurvey()">☁️ 重新讀取正式答案／封面</button><button class="syd-survey-button" style="background:#f0e7db" onclick="location.href='survey-test.html?test=1'">🧪 我的測試問卷／重置</button><button class="syd-survey-button" style="background:#f0e7db" onclick="location.href='survey-test.html?test=1&amp;view=official'">📖 完整正式旅行小書</button></div>
+<div style="margin:12px 0;padding:13px;border:1px solid #e5c9b5;border-radius:12px;background:#fff6ee"><strong>🧪 管理員正式演練</strong><p style="font-size:12px;line-height:1.7;margin:7px 0">使用你的帳號從正式問卷提交後，可在這裡只清除你建立的演練答案及封面，並恢復 💌 灰階狀態。寄出的 Email 無法撤回。</p><button type="button" class="syd-survey-button" style="background:#9a402c;color:white" onclick="resetOwnerFormalRehearsal()">🧹 安全重置我的正式演練</button><p id="syd-formal-reset-status" role="status" style="font-size:12px;margin-top:8px"></p></div>
 <p id="syd-survey-admin-status" role="status" style="font-size:12px;margin:10px 0">尚未讀取</p><div id="syd-survey-admin-results"></div>
 </div></div>
 <script>
@@ -7892,6 +7893,34 @@ async function loadOfficialSurvey(){
   if(!submission&&!coverDraft)status.textContent='尚未找到正式答案或封面草稿';
  }catch(e){status.textContent='❌ '+(e?.message||String(e))}
 }
+window.resetOwnerFormalRehearsal=async function(){
+ const status=document.getElementById('syd-formal-reset-status');
+ if(!window.__TEST_MODE_ACTIVE__){alert('請先點 👵🏻 七下進入隱藏管理模式');return;}
+ const user=firebase.auth().currentUser;
+ const ownerUID='vLaRKhDNXeUUGGd58X4S0UX11PY2';
+ if(!user||user.uid!==ownerUID){status.textContent='❌ 請以管理員帳號登入';return;}
+ status.textContent='☁️ 正在核對正式紀錄…';
+ try{
+  const db=firebase.firestore(),ref=db.doc('surveySubmissions/official'),cover=db.doc('surveyCoverDrafts/official');
+  const snap=await ref.get({source:'server'}),draft=await cover.get({source:'server'});
+  if(snap.exists && (snap.data()?.submittedBy!==ownerUID||snap.data()?.ownerRehearsal!==true))throw Error('目前正式紀錄不是你的演練，已停止重置，絕不刪除旅伴資料');
+  if(draft.exists && draft.data()?.updatedBy!==ownerUID)throw Error('目前正式封面不是你上傳的，已停止重置');
+  if(!snap.exists&&!draft.exists){status.textContent='目前沒有需要清除的管理員正式演練';return;}
+  if(!confirm('確認只刪除你建立的正式演練答案及封面？不會刪除其他成就或記帳。已寄出的 Email 無法撤回。'))return;
+  // Rules re-check ownership at commit time; the transaction also re-checks current data.
+  await db.runTransaction(async tx=>{
+   const [a,b]=await Promise.all([tx.get(ref),tx.get(cover)]);
+   if(a.exists&&(a.data()?.submittedBy!==ownerUID||a.data()?.ownerRehearsal!==true))throw Error('正式資料已改變，停止重置');
+   if(b.exists&&b.data()?.updatedBy!==ownerUID)throw Error('封面已改變，停止重置');
+   if(a.exists)tx.delete(ref);
+   if(b.exists)tx.delete(cover);
+  });
+  ['test_trip_survey_v1','posttrip_bonus_unlocked_v2','posttrip_survey_submitted_v1','syd_owner_formal_rehearsal_local_v1'].forEach(k=>localStorage.removeItem(k));
+  window.__sydSetBonusAchievement?.(false);
+  status.textContent='✅ 正式演練答案與封面已清除；💌 成就恢復未解鎖。請重新整理首頁確認問卷邀請。';
+  await loadOfficialSurvey();
+ }catch(e){status.textContent='❌ 重置停止：'+(e?.message||e)}
+};
 window.__sydSetBonusAchievement=function(unlocked){
  const el=document.getElementById('syd-bonus-achievement');if(!el)return;
  el.classList.toggle('unlocked',!!unlocked);

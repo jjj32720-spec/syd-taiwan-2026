@@ -2981,23 +2981,41 @@ window.openOfficialBookletForOwner=async function(){
         out.src=data;
       }; img.src=surveyCoverPhotoData;
     }
-    window.handleSurveyCoverUpload=function(input){
-      const file=input?.files?.[0]; if(!file)return;
-      if(!file.type.startsWith('image/')){alert('請選擇圖片檔。');return}
-      const reader=new FileReader();
-      reader.onload=async()=>{surveyCoverPhotoData=reader.result;const st=document.getElementById('survey-cover-save-status');if(st)st.textContent='⏳ 正在儲存照片…';try{
-        await saveSurveyCoverPhoto(reader.result);
-        if(st)st.textContent='⏳ 已儲存本機，正在同步雲端…';
+    window.handleSurveyCoverUpload=async function(input){
+      const file=input?.files?.[0];
+      if(!file)return;
+      const st=document.getElementById('survey-cover-save-status');
+      const show=(message)=>{if(st)st.textContent=message;};
+      show('⏳ 正在讀取及壓縮照片，請稍候…');
+      try{
+        if(!file.type.startsWith('image/'))throw new Error('請選擇照片格式的圖片');
+        const original=await new Promise((resolve,reject)=>{
+          const reader=new FileReader();
+          reader.onload=()=>resolve(reader.result);
+          reader.onerror=()=>reject(reader.error||new Error('照片讀取失敗'));
+          reader.onabort=()=>reject(new Error('照片讀取已取消'));
+          reader.readAsDataURL(file);
+        });
+        const compressed=await compressSurveyCoverForBookletCloud(original);
+        if(!compressed)throw new Error('照片無法壓縮，請試試截圖或其他 JPG 照片');
+        surveyCoverPhotoData=compressed;
+        drawSurveyCoverCard();
+        show('⏳ 照片已選取，正在儲存至手機…');
+        try{await saveSurveyCoverPhoto(compressed)}catch(localError){
+          show('⚠️ 照片已選取，但本機儲存失敗；正在嘗試雲端同步…');
+        }
         await window.__surveyCloudReady__;
-        if(typeof window.__uploadSurveyCoverCloud__!=='function')throw Error('雲端連線尚未完成');
-        const compressed=await compressSurveyCoverForBookletCloud(reader.result);
-        if(!compressed)throw Error('照片壓縮失敗');
+        if(typeof window.__uploadSurveyCoverCloud__!=='function')throw new Error('雲端連線尚未完成');
+        show('⏳ 正在同步封面至雲端…');
         await window.__uploadSurveyCoverCloud__(compressed);
-        if(st)st.textContent='✅ 封面照片已同步至雲端';
-      }catch(e){if(st)st.textContent='⚠️ 照片已選取，但雲端同步失敗：'+e.message+'（提交時會重試）';}drawSurveyCoverCard()};
-      reader.readAsDataURL(file);
+        show('✅ 封面照片已同步至雲端');
+      }catch(error){
+        const message=error?.message||String(error);
+        show((surveyCoverPhotoData?'⚠️ 照片已選取，但同步失敗：':'❌ 照片處理失敗：')+message);
+      }finally{
+        if(input)input.value='';
+      }
     };
-
     function renderSurveyStep() {
       const q=QUESTIONS[surveyStep];
       document.getElementById('survey-question-title').textContent=q.title;

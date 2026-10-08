@@ -3761,7 +3761,7 @@ window.openOfficialBookletForOwner=async function(){
         if(firebase.auth().currentUser?.email?.toLowerCase()==='jjj32720@gmail.com')localStorage.setItem('syd_owner_formal_rehearsal_local_v1','1');
         localStorage.setItem(POSTTRIP_BONUS_KEY,'true');
         showSubmittedSurvey();
-        if(first && !window.__OWNER_TEST_SURVEY__) window.showAchievementUnlockModal?.({icon:'💌',title:'加分題・邵奶奶的台灣心得報告',desc:'🎂 生日密碼修復成功！\n\n鑑於某邵女士不小心錯過了「調皮搗蛋鬼」，系統決定破例開放一次專屬補考機會！\n\n原本 10＋7＝17，現在變成……\n10＋6＋1＝17！\n\n恭喜成功把 10/7 的生日密碼湊回來！🎉\n17 個成就，留給 10/7 的你。\n\n這次真的全劇終了！🎬💌'});
+        if(first && !window.__OWNER_TEST_SURVEY__) window.showAchievementUnlockModal?.({icon:'💌',title:'加分題・邵奶奶的台灣心得報告',desc:'🎂 生日密碼修復成功！\n\n鑑於某邵女士不小心錯過了「調皮搗蛋鬼」，系統決定破例開放一次專屬補考機會！\n\n原本 10＋7，現在變成 10＋6＋1！\n\n恭喜成功把生日密碼湊回來！🎉\n17 個成就，留給 10/7 的你。\n\n這次真的全劇終了！🎬💌'});
         // Real email for both official and owner test; mail failure is shown separately.
         sendSurveyEmail().catch(e=>{console.warn('Email send failed',e);alert('問卷已存入雲端，但 Email 寄送失敗：'+e.message);});
       }catch(e){alert('雲端提交失敗，回答已留在此頁，請確認登入及網路後重試：'+(e?.message||e));}

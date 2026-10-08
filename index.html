@@ -7905,7 +7905,14 @@ window.resetOwnerFormalRehearsal=async function(){
   const snap=await ref.get({source:'server'}),draft=await cover.get({source:'server'});
   if(snap.exists && (snap.data()?.submittedBy!==ownerUID||snap.data()?.ownerRehearsal!==true))throw Error('目前正式紀錄不是你的演練，已停止重置，絕不刪除旅伴資料');
   if(draft.exists && draft.data()?.updatedBy!==ownerUID)throw Error('目前正式封面不是你上傳的，已停止重置');
-  if(!snap.exists&&!draft.exists){status.textContent='目前沒有需要清除的管理員正式演練';return;}
+  if(!snap.exists&&!draft.exists){
+   // Cloud is already empty. Do not strand the owner in the old local submitted state.
+   if(!confirm('雲端已沒有正式演練資料。要清除這台裝置殘留的問卷已提交標記嗎？不會刪除任何雲端資料。'))return;
+   ['posttrip_survey_submitted_v1','posttrip_bonus_unlocked_v2','syd_owner_formal_rehearsal_local_v1'].forEach(k=>localStorage.removeItem(k));
+   window.__sydSetBonusAchievement?.(false);
+   status.textContent='✅ 雲端沒有正式問卷；本機殘留狀態已清除。請重新開啟問卷頁面確認。';
+   await loadOfficialSurvey();return;
+  }
   if(!confirm('確認只刪除你建立的正式演練答案及封面？不會刪除其他成就或記帳。已寄出的 Email 無法撤回。'))return;
   // Rules re-check ownership at commit time; the transaction also re-checks current data.
   await db.runTransaction(async tx=>{

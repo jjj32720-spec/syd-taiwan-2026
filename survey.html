@@ -2292,6 +2292,28 @@ window.openOfficialBookletForOwner=async function(){
 
     const POSTTRIP_BONUS_KEY = window.__OWNER_TEST_SURVEY__ ? 'posttrip_bonus_owner_test_v3' : 'posttrip_bonus_unlocked_v2';
     const POSTTRIP_SUBMITTED_KEY = window.__OWNER_TEST_SURVEY__ ? 'posttrip_survey_owner_test_submitted_v3' : 'posttrip_survey_submitted_v1';
+    // Firestore is authoritative. A previous browser-local submission must not keep
+    // the formal survey in read-only mode after a verified cloud reset.
+    async function reconcileOfficialSubmissionFromCloud(){
+      if(window.__OWNER_TEST_SURVEY__ || typeof firebase==='undefined')return;
+      const user=await window.__surveyCloudReady__;
+      if(!user)return; // Offline or signed out: do not destroy local answers.
+      try{
+        const snap=await firebase.firestore().doc('surveySubmissions/official').get({source:'server'});
+        if(snap.exists){
+          localStorage.setItem(POSTTRIP_SUBMITTED_KEY,'true');
+          if(snap.data()?.bonusUnlocked)localStorage.setItem(POSTTRIP_BONUS_KEY,'true');
+        }else{
+          localStorage.removeItem(POSTTRIP_SUBMITTED_KEY);
+          localStorage.removeItem(POSTTRIP_BONUS_KEY);
+          localStorage.removeItem('syd_owner_formal_rehearsal_local_v1');
+          document.getElementById('survey-submitted-card')?.classList.add('hidden');
+          document.getElementById('survey-intro-card')?.classList.remove('hidden');
+        }
+        renderSurveyLandingState();
+      }catch(err){console.warn('正式問卷雲端狀態檢查失敗，保留本機資料：',err);}
+    }
+    window.__reconcileOfficialSubmissionFromCloud__=reconcileOfficialSubmissionFromCloud;
     let surveyStep = 0;
     let surveyState = loadSurveyState();
     let draggedRankEl = null;
@@ -3725,7 +3747,10 @@ window.openOfficialBookletForOwner=async function(){
       try{
         // Do not declare a successful submission until cloud persistence succeeds.
         await saveSubmittedBookletToCloud();
-        const first=localStorage.getItem(POSTTRIP_BONUS_KEY)!=='true';
+        // The owner rehearsal uses a Firestore create-only transaction, so a successful save is the first official submission.
+        // Do not let stale localStorage from prior tests suppress its achievement modal.
+        const ownerFormalRehearsal=!window.__OWNER_TEST_SURVEY__ && firebase.auth().currentUser?.uid==='vLaRKhDNXeUUGGd58X4S0UX11PY2';
+        const first=ownerFormalRehearsal || localStorage.getItem(POSTTRIP_BONUS_KEY)!=='true';
         localStorage.setItem(TEST_SURVEY_KEY,JSON.stringify(surveyState));
         localStorage.setItem(POSTTRIP_SUBMITTED_KEY,'true');
         if(firebase.auth().currentUser?.email?.toLowerCase()==='jjj32720@gmail.com')localStorage.setItem('syd_owner_formal_rehearsal_local_v1','1');
@@ -3814,6 +3839,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
  document.getElementById('trip-survey-test-page')?.setAttribute('aria-hidden','false');
  document.body.style.overflow='auto';
  window.openTripSurveyTest?.();
+ await window.__reconcileOfficialSubmissionFromCloud__?.();
  document.body.style.overflow='auto';
 });
 </script><div id="travel-booklet-modal" aria-hidden="true">
@@ -3834,7 +3860,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
   </div>
 </div>
 
-<div class="fixed inset-0 z-[160] hidden items-center justify-center p-5 bg-black/45 backdrop-blur-sm" id="survey-achievement-unlock-modal" role="dialog" aria-modal="true" aria-label="成就解鎖">
+<div class="fixed inset-0 hidden items-center justify-center p-5 bg-black/45 backdrop-blur-sm" style="z-index:10000000!important" id="survey-achievement-unlock-modal" role="dialog" aria-modal="true" aria-label="成就解鎖">
 <div class="w-full max-w-sm bg-white rounded-3xl p-7 text-center shadow-2xl border border-[#E2DDD5]">
 <div class="text-6xl mb-4" id="survey-achievement-modal-icon">🏆</div>
 <div class="text-xs font-bold tracking-widest text-[#C66914]">ACHIEVEMENT UNLOCKED</div>

@@ -2179,7 +2179,7 @@ body.dark-mode .survey-rank-row, body.dark-mode .survey-choice, body.dark-mode .
 <button class="day-main-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-white text-[#2C3E35] hover:bg-[#E2DDD5] border border-[#E2DDD5]" id="main-btn-9" onclick="changeDay(9)">📍 Day 9 高雄</button>
 <button class="day-main-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-white text-[#2C3E35] hover:bg-[#E2DDD5] border border-[#E2DDD5]" id="main-btn-10" onclick="changeDay(10)">📍 Day 10 賦歸</button>
 <button class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-[#C66914] text-white shadow-md" id="btn-tips" onclick="switchTab('tips')">📌 全程提醒</button>
-<button class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-white text-[#2C3E35] hover:bg-[#E2DDD5] border border-[#E2DDD5] hidden" id="btn-trip-survey" onclick="openTripSurveyTest()">📝 問卷調查</button>
+<button class="tab-btn px-4 py-2 rounded-lg text-xs font-semibold transition shrink-0 bg-white text-[#2C3E35] hover:bg-[#E2DDD5] border border-[#E2DDD5]" id="btn-trip-survey" onclick="openTripSurveyTest()">📝 問卷調查</button>
 </div>
 </nav>
 <!-- 子選單導覽列（只在 Day 畫面顯示） -->
@@ -7330,28 +7330,30 @@ function updateAchievementWall() {
 </div>
 </div>
 
-<!-- ==================== 💌 旅後問卷：目前僅私人測試模式可開啟 ==================== -->
+<!-- ==================== 💌 正式旅後問卷 ==================== -->
 <div class="hidden" id="trip-survey-test-page" aria-hidden="true">
   <div class="survey-shell">
     <div class="survey-topbar">
       <div class="flex items-center justify-between gap-3">
-        <button type="button" class="survey-btn !py-2 !px-3" onclick="closeTripSurveyTest()">✕ 返回測試台</button>
+        <button type="button" class="survey-btn !py-2 !px-3" onclick="closeTripSurveyTest()">✕ 返回旅程</button>
         <div class="text-[10px] font-bold text-gray-400 hidden" id="survey-step-counter"><span id="survey-step-current">1</span> / <span id="survey-step-total">14</span></div>
       </div>
       <div class="survey-progress hidden" id="survey-progress-wrap"><div id="survey-progress-bar" style="width:7.14%"></div></div>
     </div>
 
     <div class="survey-card" id="survey-intro-card">
-      <div class="survey-kicker">POST-TRIP QUESTIONNAIRE · TEST PREVIEW</div>
+      <div class="survey-kicker">POST-TRIP QUESTIONNAIRE</div>
       <h2 class="survey-title">💌 邵奶奶的台灣心得報告</h2>
       <p class="survey-copy">十天結束了，來把這趟旅行真正收進回憶裡。沒有標準答案，也不用寫得很正式；想到什麼就寫什麼，慢慢回想就好。</p>
       <button type="button" class="survey-btn primary w-full mt-5" onclick="startTripSurveyTest()">開始填寫 →</button>
-      <button type="button" id="cloud-booklet-view-btn" class="survey-btn w-full mt-2" onclick="openSubmittedBookletFromCloud()">☁️ 查看已收到的旅遊小書</button>
-      <div id="cloud-booklet-view-status" class="text-[10px] text-gray-500 mt-2 text-center"></div>
+      <div id="survey-owner-tools" class="hidden">
+        <button type="button" id="cloud-booklet-view-btn" class="survey-btn w-full mt-2" onclick="openSubmittedBookletFromCloud()">☁️ 查看最新提交的旅遊小書</button>
+        <div id="cloud-booklet-view-status" class="text-[10px] text-gray-500 mt-2 text-center"></div>
+      </div>
     </div>
 
     <div class="survey-card hidden" id="survey-question-card">
-      <div class="survey-kicker">POST-TRIP QUESTIONNAIRE · TEST PREVIEW</div>
+      <div class="survey-kicker">POST-TRIP QUESTIONNAIRE</div>
       <h2 class="survey-title" id="survey-question-title">旅後問卷</h2>
       <p class="survey-copy" id="survey-question-copy"></p>
       <div id="survey-question-body" class="mt-4"></div>
@@ -7367,7 +7369,7 @@ function updateAchievementWall() {
       <div class="flex items-start justify-between gap-3">
         <div>
           <h2 class="survey-title">💌 已提交的旅後問卷</h2>
-          <p class="survey-copy">這份回答已經封存，只能查看，不能再次修改。</p>
+          <p class="survey-copy">這裡會保留你目前這份回答紀錄。之後想修改內容，可以重新編輯並再次提交。</p>
         </div>
         <div class="text-[10px] font-bold text-[#C66914] whitespace-nowrap">已提交 ✓</div>
       </div>
@@ -7388,7 +7390,8 @@ function updateAchievementWall() {
       </div>
 
 
-      <button type="button" class="survey-btn w-full mt-5" onclick="closeTripSurveyTest()">關閉</button>
+      <button type="button" class="survey-btn primary w-full mt-5" onclick="startNewTripSurveySubmission()">修改／重新提交 →</button>
+      <button type="button" class="survey-btn w-full mt-2" onclick="closeTripSurveyTest()">關閉</button>
     </div>
   </div>
 </div>
@@ -7503,38 +7506,6 @@ function updateAchievementWall() {
       }
       return true;
     }
-
-    window.testSurveyEmail=async function(btn){
-      const status=document.getElementById('emailjs-test-status');
-      try{
-        if(btn){btn.disabled=true;btn.textContent='寄送中…';}
-        if(status) status.textContent='正在寄送測試信…';
-        const response=await fetch('https://api.emailjs.com/api/v1.0/email/send',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({
-            service_id:EMAILJS_SERVICE_ID,
-            template_id:EMAILJS_TEMPLATE_ID,
-            user_id:EMAILJS_PUBLIC_KEY,
-            template_params:{
-              survey_content:'【EmailJS 連線測試】\n如果你收到這封信，代表網站 → EmailJS → Gmail 已經成功連線。\n\n這只是測試，不會提交問卷、不會解鎖成就，也不會修改任何問卷答案。'
-            }
-          })
-        });
-        if(!response.ok){
-          const msg=await response.text().catch(()=> '');
-          throw new Error(`${response.status}${msg?`｜${msg}`:''}`);
-        }
-        if(status) status.textContent='✅ 測試信已送出，請到 Gmail 收件匣確認。';
-        if(btn) btn.textContent='✅ 已送出';
-      }catch(e){
-        if(status) status.textContent='❌ 寄信失敗：'+(e?.message||e);
-        if(btn) btn.textContent='❌ 再測一次';
-      }finally{
-        if(btn) btn.disabled=false;
-      }
-    };
-
 
     async function compressSurveyCoverForBookletCloud(dataUrl){
       if(!dataUrl || !String(dataUrl).startsWith('data:image/')) return '';
@@ -8271,6 +8242,18 @@ function updateAchievementWall() {
       }catch(e){ return ''; }
     }
 
+    async function clearSurveyCoverPhoto(){
+      try{
+        const db=await openSurveyMediaDb();
+        await new Promise((resolve,reject)=>{
+          const tx=db.transaction(SURVEY_MEDIA_STORE,'readwrite');
+          tx.objectStore(SURVEY_MEDIA_STORE).delete('cover');
+          tx.oncomplete=resolve; tx.onerror=()=>reject(tx.error);
+        });
+        db.close();
+      }catch(e){}
+    }
+
     async function compressSurveyCoverForCloud(dataUrl){
       if(!dataUrl) return '';
       return await new Promise(resolve=>{
@@ -8856,18 +8839,22 @@ function updateAchievementWall() {
     }
 
     function submitTripSurveyTest() {
-      if(localStorage.getItem(POSTTRIP_SUBMITTED_KEY)==='true') { showSubmittedSurvey(); return; }
       QUESTIONS[surveyStep]?.collect?.();
+      const isFirstAchievementUnlock = localStorage.getItem(POSTTRIP_BONUS_KEY)!=='true';
       localStorage.setItem(TEST_SURVEY_KEY, JSON.stringify(surveyState));
       localStorage.setItem(POSTTRIP_SUBMITTED_KEY,'true');
+      const surveyNavBtn=document.getElementById('btn-trip-survey');
+      if(surveyNavBtn){ surveyNavBtn.classList.remove('hidden'); surveyNavBtn.textContent='💌 查看旅後問卷'; }
       sendSurveyEmail()
         .then(()=>console.log('Survey email sent'))
         .catch(e=>console.warn('Survey email failed',e));
       saveSubmittedBookletToCloud()
         .then(ok=>console.log(ok?'Submitted booklet snapshot saved':'Booklet cloud snapshot skipped'))
         .catch(e=>console.warn('Booklet cloud snapshot failed',e));
-      localStorage.setItem(POSTTRIP_BONUS_KEY,'true');
-      if(typeof updateAchievementWall==='function') updateAchievementWall();
+      if(isFirstAchievementUnlock){
+        localStorage.setItem(POSTTRIP_BONUS_KEY,'true');
+        if(typeof updateAchievementWall==='function') updateAchievementWall();
+      }
       const page=document.getElementById('trip-survey-test-page');
       page?.classList.remove('hidden');
       page?.setAttribute('aria-hidden','false');
@@ -8878,15 +8865,17 @@ function updateAchievementWall() {
       document.getElementById('survey-step-counter')?.classList.add('hidden');
       document.getElementById('survey-progress-wrap')?.classList.add('hidden');
       renderSurveyLandingState();
-      setTimeout(()=>{
-        if(typeof showAchievementUnlockModal==='function'){
-          showAchievementUnlockModal({
-            icon:'💌',
-            title:'邵奶奶的台灣心得報告',
-            desc:'Bonus ＋1 💌｜這是一題額外加分題。10＋6＋1＝17，生日密碼依然完整配對 🎂'
-          });
-        }
-      },180);
+      if(isFirstAchievementUnlock){
+        setTimeout(()=>{
+          if(typeof showAchievementUnlockModal==='function'){
+            showAchievementUnlockModal({
+              icon:'💌',
+              title:'邵奶奶的台灣心得報告',
+              desc:'Bonus ＋1 💌｜這是一題額外加分題。10＋6＋1＝17，生日密碼依然完整配對 🎂'
+            });
+          }
+        },180);
+      }
     }
 
     function renderSurveyLandingState(){
@@ -8912,9 +8901,8 @@ function updateAchievementWall() {
     }
 
     window.openTripSurveyTest=function(){
+      window.__updateSurveyOwnerToolsVisibility__?.();
       const submitted=localStorage.getItem(POSTTRIP_SUBMITTED_KEY)==='true';
-      const tripCompleted=localStorage.getItem(ACH_KEYS.final)==='true';
-      if(!window.__TEST_MODE_ACTIVE__ && !submitted && !tripCompleted) return;
       surveyState=loadSurveyState();
       surveyStep=0;
       const page=document.getElementById('trip-survey-test-page');
@@ -8928,6 +8916,19 @@ function updateAchievementWall() {
       document.getElementById('survey-progress-wrap')?.classList.add('hidden');
       renderSurveyLandingState();
       window.scrollTo({top:0,behavior:'instant'});
+    };
+
+    window.startNewTripSurveySubmission=async function(){
+      surveyState=loadSurveyState();
+      surveyStep=0;
+      const nav=document.getElementById('btn-trip-survey');
+      if(nav) nav.textContent='💌 查看旅後問卷';
+      document.getElementById('survey-submitted-card')?.classList.add('hidden');
+      document.getElementById('survey-intro-card')?.classList.add('hidden');
+      document.getElementById('survey-question-card')?.classList.remove('hidden');
+      document.getElementById('survey-step-counter')?.classList.remove('hidden');
+      document.getElementById('survey-progress-wrap')?.classList.remove('hidden');
+      renderSurveyStep();
     };
 
     window.startTripSurveyTest=function(){
@@ -9102,7 +9103,7 @@ function initPrivateTestAccess() {
     const surveySubmitted = localStorage.getItem('posttrip_survey_submitted_v1') === 'true';
     const surveyNavBtn = document.getElementById('btn-trip-survey');
     const tripCompletedForSurvey = localStorage.getItem(ACH_KEYS.final) === 'true';
-    if (surveyNavBtn && (surveySubmitted || tripCompletedForSurvey)) {
+    if (surveyNavBtn) {
         surveyNavBtn.classList.remove('hidden');
         surveyNavBtn.textContent = surveySubmitted ? '💌 查看旅後問卷' : '📝 問卷調查';
     }
@@ -9129,7 +9130,7 @@ function initPrivateTestAccess() {
     }
 
     toggle?.classList.add('hidden');
-    if (!surveySubmitted && !tripCompletedForSurvey) surveyNavBtn?.classList.add('hidden');
+    surveyNavBtn?.classList.remove('hidden');
     document.getElementById('test-console')?.classList.add('hidden');
 
     if (!trigger) return;
@@ -9703,7 +9704,16 @@ document.addEventListener('DOMContentLoaded', initPrivateTestAccess);
         return snap.exists ? snap.data() : null;
     };
 
+    function updateSurveyOwnerToolsVisibility(){
+        const box = document.getElementById('survey-owner-tools');
+        if (!box) return;
+        const email = String(fbAuth?.currentUser?.email || '').toLowerCase();
+        box.classList.toggle('hidden', email !== 'jjj32720@gmail.com');
+    }
+    window.__updateSurveyOwnerToolsVisibility__ = updateSurveyOwnerToolsVisibility;
+
     window.addEventListener('DOMContentLoaded', initFirebaseSync);
+    window.addEventListener('DOMContentLoaded', ()=>setTimeout(updateSurveyOwnerToolsVisibility, 900));
 })();
 </script>
 

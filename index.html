@@ -7908,7 +7908,7 @@ window.resetOwnerFormalRehearsal=async function(){
   if(!snap.exists&&!draft.exists){
    // Cloud is already empty. Do not strand the owner in the old local submitted state.
    if(!confirm('雲端已沒有正式演練資料。要清除這台裝置殘留的問卷已提交標記嗎？不會刪除任何雲端資料。'))return;
-   ['posttrip_survey_submitted_v1','posttrip_bonus_unlocked_v2','syd_owner_formal_rehearsal_local_v1'].forEach(k=>localStorage.removeItem(k));
+   ['test_trip_survey_v1','posttrip_survey_submitted_v1','posttrip_bonus_unlocked_v2','syd_owner_formal_rehearsal_local_v1'].forEach(k=>localStorage.removeItem(k));
    window.__sydSetBonusAchievement?.(false);
    status.textContent='✅ 雲端沒有正式問卷；本機殘留狀態已清除。請重新開啟問卷頁面確認。';
    await loadOfficialSurvey();return;
@@ -7922,7 +7922,7 @@ window.resetOwnerFormalRehearsal=async function(){
    if(a.exists)tx.delete(ref);
    if(b.exists)tx.delete(cover);
   });
-  ['test_trip_survey_v1','posttrip_bonus_unlocked_v2','posttrip_survey_submitted_v1','syd_owner_formal_rehearsal_local_v1'].forEach(k=>localStorage.removeItem(k));
+  ['test_trip_survey_v1','posttrip_survey_submitted_v1','posttrip_bonus_unlocked_v2','syd_owner_formal_rehearsal_local_v1'].forEach(k=>localStorage.removeItem(k));
   window.__sydSetBonusAchievement?.(false);
   status.textContent='✅ 正式演練答案與封面已清除；💌 成就恢復未解鎖。請重新整理首頁確認問卷邀請。';
   await loadOfficialSurvey();
@@ -7933,6 +7933,9 @@ window.__sydSetBonusAchievement=function(unlocked){
  el.classList.toggle('unlocked',!!unlocked);
  const lock=el.querySelector('.achievement-lock');if(lock)lock.textContent=unlocked?'✨':'🔒';
  const status=document.getElementById('syd-bonus-status');if(status)status.textContent=unlocked?'首次正式提交已完成・成就解鎖！':'等待旅伴首次提交正式問卷';
+ let link=el.querySelector('.achievement-jump-link');
+ if(unlocked&&!link){link=document.createElement('button');link.type='button';link.className='achievement-jump-link';link.textContent='查看問卷＆旅遊小書 →';link.addEventListener('click',()=>{location.href='survey.html';});status?.insertAdjacentElement('afterend',link);}
+ if(!unlocked&&link)link.remove();
 };
 (function(){
  window.addEventListener('load',()=>{

@@ -4090,7 +4090,7 @@ html:not(.secret-content-ready) [data-secret-emoji] {
 </div>
 <div class="bg-white p-3 rounded-lg border border-[#E2DDD5] flex justify-between gap-4">
 <span data-secret-key="d8-quick-link-label">🐠 夜宿海生館</span>
-<span class="font-bold text-[#C66914] shrink-0">NT$2,680／晚</span>
+<span class="font-bold text-[#C66914] shrink-0">NT$3,380／一人</span>
 </div>
 <div class="bg-white p-3 rounded-lg border border-[#E2DDD5] flex justify-between gap-4">
 <span data-secret-key="d9-quick-link-label">🚌 墾丁快線 海生館 → 左營</span>
@@ -4244,9 +4244,10 @@ class="w-full bg-white border border-[#E2DDD5] text-[#2C3E35] rounded-xl px-4 py
 
 <!-- 記帳明細列表 -->
 <div class="overflow-x-auto">
-<table class="w-full text-left text-xs min-w-[620px]">
+<table class="w-full text-left text-xs min-w-[710px]">
 <thead>
 <tr class="border-b border-[#E2DDD5] text-gray-500">
+<th class="py-2">排序</th>
 <th class="py-2">項目</th>
 <th class="py-2">分類</th>
 <th class="py-2">付款</th>
@@ -5655,14 +5656,26 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
 
                 const tr = document.createElement('tr');
                 tr.className = 'border-b border-[#E2DDD5]/60 hover:bg-[#F9F8F6]';
+                tr.draggable = true;
+                tr.dataset.expenseIndex = String(index);
+                tr.addEventListener('dragstart', expenseDragStart);
+                tr.addEventListener('dragover', expenseDragOver);
+                tr.addEventListener('drop', expenseDrop);
+                tr.addEventListener('dragend', expenseDragEnd);
+                const handle = tr.querySelector('.expense-touch-handle');
+                handle?.addEventListener('touchstart', expenseTouchStart, {passive:true});
+                handle?.addEventListener('touchmove', expenseTouchMove, {passive:false});
+                handle?.addEventListener('touchend', expenseTouchEnd);
                 tr.innerHTML = `
-                    <td class="py-2.5 font-medium text-[#2C3E35]">${item.name}</td>
+                    <td class="py-2.5 whitespace-nowrap"><span title="按住拖曳排序" class="expense-touch-handle cursor-grab select-none text-gray-500" style="touch-action:none">⠿</span> <button type="button" onclick="moveExpense(${index},-1)" aria-label="上移" class="px-1">↑</button><button type="button" onclick="moveExpense(${index},1)" aria-label="下移" class="px-1">↓</button></td>
+                    <td class="py-2.5 font-medium text-[#2C3E35]">${escapeExpenseText(item.name)}</td>
                     <td class="py-2.5"><span class="bg-[#F0EDEA] px-2 py-0.5 rounded text-[10px] font-bold text-[#2C3E35]">${item.category}</span></td>
                     <td class="py-2.5 font-bold text-[#2C3E35]">${item.needsSplitSetup ? '—' : getParticipantName(item.payer)}</td>
                     <td class="py-2.5 text-gray-600">${splitModeLabel(item)}</td>
                     <td class="py-2.5 font-bold text-[#C66914]">${formatMoney(item.cost)}</td>
                     <td class="py-2.5 text-right whitespace-nowrap">
                         ${item.needsSplitSetup ? `<button onclick="editLegacyExpenseSplit(${index})" class="text-[#C66914] font-bold px-2 py-1 rounded">補分帳</button>` : ''}
+                        <button onclick="editExpense(${index})" class="text-[#2C3E35] hover:text-[#C66914] font-bold px-2 py-1 rounded">編輯</button>
                         <button onclick="deleteExpense(${index})" class="text-gray-400 hover:text-rose-600 font-bold px-2 py-1 rounded">刪除</button>
                     </td>
                 `;
@@ -5718,6 +5731,93 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
             if (typeof refreshJourneyOverview === 'function') refreshJourneyOverview();
         }
 
+
+        // 記帳編輯與排序：直接修改現有 expenses 陣列，不清空或重建雲端帳本。
+        function escapeExpenseText(value) {
+            return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+        let draggedExpenseIndex = null;
+        function expenseDragStart(e) {
+            draggedExpenseIndex = Number(e.currentTarget.dataset.expenseIndex);
+            e.dataTransfer.effectAllowed = 'move';
+            e.currentTarget.style.opacity = '0.5';
+        }
+        function expenseDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+        function expenseDrop(e) {
+            e.preventDefault();
+            const target = Number(e.currentTarget.dataset.expenseIndex);
+            if (draggedExpenseIndex === null || !Number.isInteger(target)) return;
+            const [entry] = expenses.splice(draggedExpenseIndex, 1);
+            expenses.splice(target, 0, entry);
+            draggedExpenseIndex = null;
+            renderExpenses();
+        }
+        function expenseDragEnd(e) { e.currentTarget.style.opacity = ''; draggedExpenseIndex = null; }
+        let expenseTouchFrom = null, expenseTouchTo = null;
+        function expenseTouchStart(e) {
+            expenseTouchFrom = Number(e.currentTarget.closest('tr')?.dataset.expenseIndex);
+            expenseTouchTo = expenseTouchFrom;
+        }
+        function expenseTouchMove(e) {
+            if (expenseTouchFrom === null) return;
+            e.preventDefault();
+            const t=e.touches[0];
+            const target=document.elementFromPoint(t.clientX,t.clientY)?.closest('#expense-table-body tr');
+            if(target) {
+                expenseTouchTo=Number(target.dataset.expenseIndex);
+                document.querySelectorAll('#expense-table-body tr').forEach(tr=>tr.style.outline='');
+                target.style.outline='2px dashed #C66914';
+            }
+        }
+        function expenseTouchEnd() {
+            document.querySelectorAll('#expense-table-body tr').forEach(tr=>tr.style.outline='');
+            if(expenseTouchFrom!==null && expenseTouchTo!==null && expenseTouchFrom!==expenseTouchTo){
+                const [entry]=expenses.splice(expenseTouchFrom,1);
+                expenses.splice(expenseTouchTo,0,entry);
+                renderExpenses();
+            }
+            expenseTouchFrom=null; expenseTouchTo=null;
+        }
+        function moveExpense(index, delta) {
+            const next = index + delta;
+            if (next < 0 || next >= expenses.length) return;
+            [expenses[index], expenses[next]] = [expenses[next], expenses[index]];
+            renderExpenses();
+        }
+        function editExpense(index) {
+            const item = expenses[index];
+            if (!item) return;
+            const name = prompt('修改項目名稱', item.name);
+            if (name === null) return;
+            if (!name.trim()) { alert('項目名稱不能空白'); return; }
+            const costText = prompt('修改金額（NT$）', String(item.cost));
+            if (costText === null) return;
+            const cost = Number(costText);
+            if (!Number.isFinite(cost) || cost <= 0) { alert('請輸入有效的金額'); return; }
+            const categories = ['餐飲美食','交通車資','住宿花費','景點門票','購物伴手禮','其他'];
+            const categoryText = prompt('選擇分類：\n'+categories.map((c,i)=>(i+1)+' = '+c).join('\n'), String(Math.max(1,categories.indexOf(item.category)+1)));
+            if (categoryText === null) return;
+            const category = categories[Number(categoryText)-1];
+            if (!category) { alert('分類編號無效'); return; }
+            const payerText = prompt('付款人：1 = '+getParticipantName('CC')+'；2 = '+getParticipantName('YD'), item.payer==='CC'?'1':'2');
+            if (payerText === null) return;
+            if (!['1','2'].includes(payerText.trim())) { alert('付款人選項無效'); return; }
+            const payer = payerText.trim()==='1'?'CC':'YD';
+            const modeText = prompt('分帳方式：0 = 純紀錄；1 = AA 平分；2 = 自訂', item.splitMode==='equal'?'1':item.splitMode==='custom'?'2':'0');
+            if (modeText === null) return;
+            if (!['0','1','2'].includes(modeText.trim())) { alert('分帳方式無效'); return; }
+            const splitMode = {'0':'record','1':'equal','2':'custom'}[modeText.trim()];
+            let ccShare=0, ydShare=0;
+            if (splitMode==='equal') { ccShare=cost/2; ydShare=cost-ccShare; }
+            else if (splitMode==='custom') {
+                const ccText = prompt(getParticipantName('CC')+' 應負擔多少？', String(item.splitMode==='custom'?item.ccShare:Math.round(cost/2)));
+                if (ccText === null) return;
+                ccShare=Number(ccText); ydShare=cost-ccShare;
+                if (!Number.isFinite(ccShare) || ccShare<0 || ydShare<0) { alert('自訂分帳金額無效'); return; }
+            } else { ccShare=payer==='CC'?cost:0; ydShare=payer==='YD'?cost:0; }
+            expenses[index]={...item,name:name.trim(),cost,category,payer,splitMode,ccShare,ydShare,needsSplitSetup:false};
+            renderExpenses();
+        }
 
         function scrollToLegacyExpense() {
             const index = expenses.findIndex(item => item.needsSplitSetup);

@@ -2081,7 +2081,7 @@ body.dark-mode .survey-rank-row, body.dark-mode .survey-choice, body.dark-mode .
     background:#18211D; border-color:#3A4A42; color:#EAE7E0;
 }
 
-body{background:#f7f3eb!important;margin:0}#trip-survey-test-page{position:relative!important;inset:auto!important;min-height:100dvh!important;display:block!important;overflow:visible!important;z-index:auto!important;background:#f7f3eb!important}#trip-survey-test-page.hidden{display:block!important}.survey-shell{min-height:100dvh!important;padding-bottom:40px!important}#bonus-toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:#29493d;color:white;padding:15px 22px;border-radius:16px;z-index:99999;box-shadow:0 8px 30px #0002;white-space:nowrap}#bonus-toast[hidden]{display:none}</style></head><body><div id="bonus-toast" hidden></div><div id="cloud-survey-banner" style="position:sticky;top:0;z-index:2000;padding:10px 15px;background:#fff5e8;color:#65411e;font-size:12px;text-align:center">☁️ 正在確認雲端登入…</div><section id="survey-login-panel" hidden style="max-width:680px;margin:14px auto;padding:18px;border:1px solid #e2d6c6;border-radius:18px;background:#fffdf9;color:#2c3e35;box-shadow:0 5px 18px #0000000b"><h3 style="font-weight:800;font-size:17px">🔐 連接旅程雲端</h3><p style="font-size:12px;line-height:1.7;margin:8px 0">獨立問卷與桌面版旅程可能使用不同的登入儲存空間。請用原本的 Firebase 帳號登入；不會刪除旅程紀錄。</p><form id="survey-login-form" style="display:grid;gap:9px"><input id="survey-login-email" type="email" required autocomplete="username" placeholder="Firebase 登入 Email" style="width:100%;border:1px solid #ddd3c6;border-radius:10px;padding:11px;font-size:14px"><input id="survey-login-password" type="password" required autocomplete="current-password" placeholder="密碼" style="width:100%;border:1px solid #ddd3c6;border-radius:10px;padding:11px;font-size:14px"><button type="submit" style="background:#2c3e35;color:#fff;border-radius:10px;padding:12px;font-weight:800">使用 Email／密碼登入</button></form><button id="survey-login-google" type="button" style="margin-top:10px;width:100%;padding:11px;border:1px solid #ddd3c6;border-radius:10px;font-weight:700">使用 Google 登入</button><p id="survey-login-error" role="status" style="font-size:12px;margin-top:8px;color:#a33"></p></section><div id="owner-survey-tools" hidden style="margin:12px auto;max-width:680px;padding:12px;border:1px solid #dbc8ad;border-radius:14px;background:white"><strong>🧪 管理測試區</strong><p style="font-size:12px;margin:8px 0">測試提交會寄出真實郵件，雲端資料與正式版分開。</p><button onclick="window.resetOwnerSurveyTest()" style="padding:10px;background:#f6ece3;border-radius:8px">重置我的測試問卷及 💌 成就</button> <button onclick="window.openOfficialBookletForOwner()" style="padding:10px;background:#f6ece3;border-radius:8px">☁️ 查看正式旅遊小書</button><p id="owner-cloud-result" style="font-size:12px"></p></div>
+body{background:#f7f3eb!important;margin:0}#trip-survey-test-page{position:relative!important;inset:auto!important;min-height:100dvh!important;display:block!important;overflow:visible!important;z-index:auto!important;background:#f7f3eb!important}#trip-survey-test-page.hidden{display:block!important}.survey-shell{min-height:100dvh!important;padding-bottom:40px!important}#bonus-toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:#29493d;color:white;padding:15px 22px;border-radius:16px;z-index:99999;box-shadow:0 8px 30px #0002;white-space:nowrap}#bonus-toast[hidden]{display:none}</style></head><body><div id="bonus-toast" hidden></div><div id="cloud-survey-banner" style="position:sticky;top:0;z-index:2000;padding:10px 15px;background:#fff5e8;color:#65411e;font-size:12px;text-align:center">☁️ 正在確認雲端登入…</div><div id="owner-survey-tools" hidden style="margin:12px auto;max-width:680px;padding:12px;border:1px solid #dbc8ad;border-radius:14px;background:white"><strong>🧪 管理測試區</strong><p style="font-size:12px;margin:8px 0">測試提交會寄出真實郵件，雲端資料與正式版分開。</p><button onclick="window.resetOwnerSurveyTest()" style="padding:10px;background:#f6ece3;border-radius:8px">重置我的測試問卷及 💌 成就</button> <button onclick="window.openOfficialBookletForOwner()" style="padding:10px;background:#f6ece3;border-radius:8px">☁️ 查看正式旅遊小書</button><p id="owner-cloud-result" style="font-size:12px"></p></div>
 <div id="trip-survey-test-page" aria-hidden="true">
   <div class="survey-shell">
     <div class="survey-topbar">
@@ -2152,8 +2152,6 @@ window.__updateSurveyOwnerToolsVisibility__=function(){};
 </script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script>
 window.__OWNER_TEST_SURVEY__=new URLSearchParams(location.search).get('test')==='1';
 window.__surveyCloudReady__=new Promise(resolve=>{
-  let settled=false;const finish=value=>{if(!settled){settled=true;clearTimeout(timer);resolve(value)}};
-  const timer=setTimeout(()=>{document.getElementById('cloud-survey-banner').textContent='⚠️ 登入確認逾時，請在下方登入';document.getElementById('survey-login-panel').hidden=false;finish(null)},12000);
   try{
     const app=firebase.apps.length?firebase.app():firebase.initializeApp({apiKey:"AIzaSyDQXRqTMufXU8JAiFqyTSPAOTGJVyd1EMg",authDomain:"syd-taiwan-2026.firebaseapp.com",projectId:"syd-taiwan-2026",storageBucket:"syd-taiwan-2026.firebasestorage.app",messagingSenderId:"336529747980",appId:"1:336529747980:web:f754c3b5def8ad9e6afe29"});
     const auth=firebase.auth(), db=firebase.firestore();
@@ -2161,14 +2159,12 @@ window.__surveyCloudReady__=new Promise(resolve=>{
       const owner=!!user&&user.email?.toLowerCase()==='jjj32720@gmail.com';
       window.__OWNER_TEST_SURVEY__=owner&&new URLSearchParams(location.search).get('test')==='1';
       const banner=document.getElementById('cloud-survey-banner');
-      if(banner)banner.textContent=user?'☁️ 已連接雲端（'+(window.__OWNER_TEST_SURVEY__?'管理測試':'正式問卷')+'）':'⚠️ 尚未登入雲端：請在下方登入後繼續';
-      const loginPanel=document.getElementById('survey-login-panel');if(loginPanel)loginPanel.hidden=!!user;
+      if(banner)banner.textContent=user?'☁️ 已連接雲端（'+(window.__OWNER_TEST_SURVEY__?'管理測試':'正式問卷')+'）':'⚠️ 尚未登入雲端：請先回旅遊首頁登入 Firebase，再開啟問卷';
       document.getElementById('owner-survey-tools').hidden=!window.__OWNER_TEST_SURVEY__;
       window.__saveSubmittedSurveyBookletCloud__=async payload=>{
         if(!auth.currentUser)throw Error('請先在首頁登入 Firebase');
         const test=window.__OWNER_TEST_SURVEY__;
         if(test && auth.currentUser.email?.toLowerCase()!=='jjj32720@gmail.com')throw Error('測試模式僅限管理帳號');
-        if(new URLSearchParams(location.search).get('test')==='1'&&!test)throw Error('管理測試需要使用管理帳號登入，不能提交到正式紀錄');
         const path=test?'surveySubmissions/owner-test':'surveySubmissions/official';
         await db.doc(path).set({...payload,submittedAt:firebase.firestore.FieldValue.serverTimestamp(),submittedBy:auth.currentUser.uid,submittedEmail:auth.currentUser.email||'',bonusUnlocked:true});
         return true;
@@ -2178,7 +2174,6 @@ window.__surveyCloudReady__=new Promise(resolve=>{
         if(!auth.currentUser)throw Error('尚未登入 Firebase，無法同步照片');
         const test=window.__OWNER_TEST_SURVEY__;
         if(test && auth.currentUser.email?.toLowerCase()!=='jjj32720@gmail.com')throw Error('沒有測試版權限');
-        if(new URLSearchParams(location.search).get('test')==='1'&&!test)throw Error('請先以管理帳號登入測試模式');
         const path=test?'surveyCoverDrafts/owner-test':'surveyCoverDrafts/official';
         // Image data is compressed before calling this function.
         if(new Blob([dataUrl]).size>650000)throw Error('照片仍然太大，請選擇較小的照片');
@@ -2196,26 +2191,14 @@ window.__surveyCloudReady__=new Promise(resolve=>{
         const snap=await db.doc('surveySubmissions/official').get();
         return snap.exists?snap.data():null;
       };
-      finish(user);
-    },error=>{const banner=document.getElementById('cloud-survey-banner');if(banner)banner.textContent='❌ 登入驗證失敗：'+error.message;document.getElementById('survey-login-panel').hidden=false;finish(null);});
-  }catch(e){const banner=document.getElementById('cloud-survey-banner');if(banner)banner.textContent='❌ 雲端初始化失敗：'+e.message;finish(null);}
-});
-// The installed travel app and this standalone page do not necessarily share Firebase Auth persistence.
-document.getElementById('survey-login-form')?.addEventListener('submit',async event=>{
- event.preventDefault();const out=document.getElementById('survey-login-error');out.textContent='登入中…';
- try{await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);await firebase.auth().signInWithEmailAndPassword(document.getElementById('survey-login-email').value.trim(),document.getElementById('survey-login-password').value);location.reload();}
- catch(e){out.textContent='登入失敗：'+(e.code==='auth/invalid-credential'?'帳號或密碼不正確':e.message);}
-});
-document.getElementById('survey-login-google')?.addEventListener('click',async()=>{
- const out=document.getElementById('survey-login-error');out.textContent='正在開啟 Google 登入…';
- try{await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);await firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());location.reload();}
- catch(e){if(e.code==='auth/popup-blocked'||e.code==='auth/operation-not-supported-in-this-environment'){try{await firebase.auth().signInWithRedirect(new firebase.auth.GoogleAuthProvider());return;}catch(err){out.textContent='Google 登入失敗：'+err.message;return;}}out.textContent='Google 登入失敗：'+e.message;}
+      resolve(user);
+    },error=>{const banner=document.getElementById('cloud-survey-banner');if(banner)banner.textContent='❌ 登入驗證失敗：'+error.message;resolve(null);});
+  }catch(e){const banner=document.getElementById('cloud-survey-banner');if(banner)banner.textContent='❌ 雲端初始化失敗：'+e.message;resolve(null);}
 });
 window.resetOwnerSurveyTest=async function(){
  if(!window.__OWNER_TEST_SURVEY__)return;
  if(!confirm('只重置你自己的測試問卷與 💌 成就？不會影響他的正式紀錄。'))return;
  try{await Promise.all([firebase.firestore().doc('surveySubmissions/owner-test').delete(),firebase.firestore().doc('surveyCoverDrafts/owner-test').delete()]);}catch(e){alert('雲端測試紀錄未能刪除：'+e.message);return;}
- localStorage.removeItem('syd_survey_first_visit_v1');localStorage.setItem('syd_survey_test_reopen_v1','1');
  localStorage.removeItem('owner_test_trip_survey_v3');localStorage.removeItem('posttrip_survey_owner_test_submitted_v3');localStorage.removeItem('posttrip_bonus_owner_test_v3');
  location.reload();
 };
@@ -2273,34 +2256,22 @@ window.openOfficialBookletForOwner=async function(){
       return [
         '【Day 1～Day 9｜最想重玩排序】',rank,
         '',
-        '【第一個浮現的畫面】',surveyState.firstImage||'—',
-        '',
         '【意外喜歡】',surveyState.surpriseSpot||'—',
         '',
         '【最愛體驗 TOP 3】',
         `🥇 ${top3[0]||'—'}\n🥈 ${top3[1]||'—'}\n🥉 ${top3[2]||'—'}`,
         '',
         '【台灣胃頒獎典禮】',
-        `🏆 最想再吃一次：${surveyState.foodAgain||'—'}`,
-        `🤯 最意外好吃：${surveyState.foodSurprise||'—'}`,
-        `💀 最不合口味：${surveyState.foodFail||'—'}`,
-        `🎁 最想帶回去：${surveyState.foodTakeHome||'—'}`,
+        `🏆 最好吃：${surveyState.foodAgain||'—'}`,
+        `💀 最踩雷：${surveyState.foodFail||'—'}`,
         '',
         '【旅行封面】',
         `標題：${surveyState.coverTitle||'—'}`,
         surveyState.coverPhoto ? `照片：${surveyState.coverPhoto}` : '照片：已在填答者裝置保存',
         '',
-        '【四句話寫完這趟台灣】',
-        `🇹🇼 「我真的在台灣了」的瞬間：${surveyState.taiwanMoment||'—'}`,
-        `💡 來了才發現，台灣原來：${surveyState.taiwanDiscovery||'—'}`,
-        `🗣️ 回去後一定會講的事：${surveyState.tellStory||'—'}`,
-        `🥹 離開後最捨不得的：${surveyState.missMost||'—'}`,
+        '【台灣印象交換日記】',surveyState.taiwanDiscovery||'—',
         '',
-        '【旅行記憶四格】',
-        `😆 最搞笑／有趣：${surveyState.happiest||'—'}`,
-        `💗 最感動／最有感：${surveyState.emotional||'—'}`,
-        `📸 如果只能帶走一個畫面：${surveyState.funniest||'—'}`,
-        `🫠 最狼狽：${surveyState.messiest||'—'}`,
+        '【旅行回憶收藏夾】',memoryText(),
         '',
         '【如果可以重新排一次】',surveyState.rearrange||'—',
         '',
@@ -2360,11 +2331,10 @@ window.openOfficialBookletForOwner=async function(){
       const coverRaw=await loadSurveyCoverPhoto().catch(()=> '');
       let coverPhotoData=await compressSurveyCoverForBookletCloud(coverRaw);
       if(!coverPhotoData && typeof window.__loadSurveyCoverDraftCloud__==='function') coverPhotoData=await window.__loadSurveyCoverDraftCloud__().catch(()=> '');
-      // A photo is optional: an iOS Photos export problem must never block the written survey.
-      // Keep any existing cloud draft when local decoding fails.
+      if(coverRaw && !coverPhotoData)throw new Error('封面照片壓縮失敗，請重新選擇照片');
       return await window.__saveSubmittedSurveyBookletCloud__({
         schemaVersion:1,
-        surveyState:JSON.stringify(surveyState), // Store nested arrays safely as a JSON string
+        surveyState:JSON.parse(JSON.stringify(surveyState)),
         coverPhotoData
       });
     }
@@ -2378,7 +2348,7 @@ window.openOfficialBookletForOwner=async function(){
         }
         const payload=await window.__loadSubmittedSurveyBookletCloud__();
         if(!payload?.surveyState) throw new Error('目前還沒有收到已提交的小書');
-        surveyState={...blankSurveyState(),...(typeof payload.surveyState==='string'?JSON.parse(payload.surveyState):payload.surveyState)};
+        surveyState={...blankSurveyState(),...payload.surveyState};
         if(payload.coverPhotoData) await saveSurveyCoverPhoto(payload.coverPhotoData);
         if(status) status.textContent='✅ 已讀取最新提交版本';
         document.getElementById('survey-intro-card')?.classList.add('hidden');
@@ -2397,7 +2367,7 @@ window.openOfficialBookletForOwner=async function(){
 
     function blankSurveyState() {
       return {
-        dayRank:[...DAY_RANK_DEFAULT],
+        dayRank:[],
         favoriteSpot:'', surpriseSpot:'', firstImage:'',
         tournament:null,
         foodAgain:'', foodSurprise:'', foodFail:'', foodTakeHome:'',
@@ -2406,7 +2376,7 @@ window.openOfficialBookletForOwner=async function(){
         happiest:'', emotional:'', funniest:'', messiest:'',
         rearrange:'', credit:'',
         impressions:[], impressionTop:'', impressionOther:'',
-        threeWords:'',
+        threeWords:'', memorySelections:[],
         ratings:{ overall:2, itinerary:0, food:0, stay:1, transport:1, comfort:0, returnTaiwan:7 },
         finalMessage:''
       };
@@ -2428,17 +2398,46 @@ window.openOfficialBookletForOwner=async function(){
       return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
     }
 
+    const MEMORY_CHOICES = [{"id": "funny", "emoji": "😆", "title": "最搞笑的一幕"}, {"id": "touching", "emoji": "💗", "title": "最感動的一刻"}, {"id": "chaos", "emoji": "🫠", "title": "最狼狽的瞬間"}, {"id": "scene", "emoji": "📸", "title": "最難忘的畫面"}, {"id": "surprise", "emoji": "🎁", "title": "最驚喜的時刻"}, {"id": "miss", "emoji": "🥹", "title": "最捨不得的瞬間"}];
+    function getMemorySelections(){
+      const entries=Array.isArray(surveyState.memorySelections)?surveyState.memorySelections:[];
+      if(entries.length) return entries.filter(x=>MEMORY_CHOICES.some(m=>m.id===x.id)).slice(0,3);
+      // Older submissions continue to render their memories without being rewritten.
+      const legacy=[['funny',surveyState.happiest],['touching',surveyState.emotional],['scene',surveyState.funniest],['chaos',surveyState.messiest]];
+      return legacy.filter(x=>x[1]).slice(0,3).map(([id,answer])=>({id,answer}));
+    }
+    function renderMemoryCollection(){
+      const selected=getMemorySelections();
+      return `<div class="survey-answer-hint">從六種回憶中選出三種，每種用一兩句話記錄即可。</div>
+        <div class="grid grid-cols-2 gap-2">${MEMORY_CHOICES.map(m=>`<label class="rounded-xl border border-[#E2DDD5] p-3 cursor-pointer text-sm"><input type="checkbox" class="survey-memory-choice mr-1" value="${m.id}" ${selected.some(s=>s.id===m.id)?'checked':''} onchange="toggleSurveyMemory(this)"> ${m.emoji} ${m.title}</label>`).join('')}</div>
+        <div id="survey-memory-answers" class="mt-4"></div>
+        <p id="survey-memory-count" class="text-xs text-gray-500 mt-2">已選 ${selected.length}／3 項</p>`;
+    }
+    window.toggleSurveyMemory=function(input){
+      const selected=[...document.querySelectorAll('.survey-memory-choice:checked')];
+      if(selected.length>3){input.checked=false;alert('最多選三個回憶喔！');return;}
+      const container=document.getElementById('survey-memory-answers');
+      if(container){
+        const drafts={};container.querySelectorAll('textarea[data-memory-id]').forEach(el=>drafts[el.dataset.memoryId]=el.value);
+        const previous=getMemorySelections();
+        container.innerHTML=selected.map(el=>{
+          const m=MEMORY_CHOICES.find(x=>x.id===el.value);
+          const answer=drafts[m.id]??previous.find(x=>x.id===m.id)?.answer??'';
+          return `<div class="mb-3"><label class="survey-label">${m.emoji} ${m.title}</label><textarea data-memory-id="${m.id}" class="survey-textarea" placeholder="這個瞬間發生了什麼？寫一兩句就好。">${esc(answer)}</textarea></div>`;
+        }).join('');
+      }
+      const count=document.getElementById('survey-memory-count');if(count)count.textContent=`已選 ${selected.length}／3 項`;
+    };
+    function collectMemoryCollection(){
+      surveyState.memorySelections=[...document.querySelectorAll('.survey-memory-choice:checked')].map(el=>({id:el.value,answer:document.querySelector(`textarea[data-memory-id="${el.value}"]`)?.value.trim()||''}));
+    }
+    function memoryText(){return getMemorySelections().map(s=>{const m=MEMORY_CHOICES.find(x=>x.id===s.id);return `${m?.emoji||'📸'} ${m?.title||'回憶'}：${s.answer||'—'}`;}).join('\n\n')||'—';}
+
     const QUESTIONS = [
       {
-        title:'如果可以完整重玩一次',
-        copy:'請把 Day 1～Day 9 依照「最想完整重來 → 相對沒那麼想重來」排序。可以拖曳，也可以用右側箭頭調整。',
+        title:'最喜歡的三天',
+        copy:'從 Day 1～Day 9 選出最喜歡的三天，保留每天的行程介紹。',
         render: renderDayRanking, collect: collectDayRanking
-      },
-      {
-        title:'第一個浮現的畫面',
-        copy:'先不要分析，回到旅程本身。',
-        render: () => `<label class="survey-label">如果現在閉上眼睛回想這趟旅行，第一個浮現在你腦中的畫面是什麼？</label><textarea class="survey-textarea" id="sv-first-image" placeholder="例如：某個風景、某張照片、某段路、某個表情，甚至只是一個很小的瞬間。">${esc(surveyState.firstImage||'')}</textarea>`,
-        collect: () => surveyState.firstImage=document.getElementById('sv-first-image')?.value.trim()||''
       },
       {
         title:'意外喜歡',
@@ -2457,19 +2456,10 @@ window.openOfficialBookletForOwner=async function(){
       },
       {
         title:'台灣胃頒獎典禮',
-        copy:'想不起來可以回想：鼎泰豐、日月潭小吃、春水堂、牛肉湯、虱目魚肚、丹丹漢堡、雞排、四神湯、刈包、米血糕、太陽餅……',
-        render: () => `
-          <label class="survey-label">🏆 最想再吃一次</label><input class="survey-input" id="sv-food-again" placeholder="例如：牛肉湯、鼎泰豐、丹丹漢堡" value="${esc(surveyState.foodAgain)}">
-          <label class="survey-label">🤯 最意外好吃</label><input class="survey-input" id="sv-food-surprise" placeholder="例如：四神湯、米血糕、虱目魚肚" value="${esc(surveyState.foodSurprise)}">
-          <label class="survey-label">💀 最踩雷／最不合口味</label><input class="survey-input" id="sv-food-fail" placeholder="沒有也可以直接寫：沒有" value="${esc(surveyState.foodFail)}">
-          <label class="survey-label">🎁 如果只能帶一樣回去，你會帶什麼？</label><input class="survey-input" id="sv-food-takehome" placeholder="例如：太陽餅、珍奶、某間店的味道" value="${esc(surveyState.foodTakeHome)}">
-        `,
-        collect: () => {
-          surveyState.foodAgain=document.getElementById('sv-food-again')?.value.trim()||'';
-          surveyState.foodSurprise=document.getElementById('sv-food-surprise')?.value.trim()||'';
-          surveyState.foodFail=document.getElementById('sv-food-fail')?.value.trim()||'';
-          surveyState.foodTakeHome=document.getElementById('sv-food-takehome')?.value.trim()||'';
-        }
+        copy:'想不起來可以回想：鼎泰豐、春水堂、牛肉湯、台南小吃、夜市……',
+        render:()=>`<label class="survey-label">🏆 這趟最好吃的是？</label><input class="survey-input" id="sv-food-again" placeholder="最想再吃一次的美食" value="${esc(surveyState.foodAgain||'')}">
+          <label class="survey-label">💀 這趟最踩雷的是？</label><input class="survey-input" id="sv-food-fail" placeholder="沒有的話也可以填：沒有" value="${esc(surveyState.foodFail||'')}">`,
+        collect:()=>{surveyState.foodAgain=document.getElementById('sv-food-again')?.value.trim()||'';surveyState.foodFail=document.getElementById('sv-food-fail')?.value.trim()||'';}
       },
       {
         title:'這趟旅行的封面',
@@ -2493,37 +2483,16 @@ window.openOfficialBookletForOwner=async function(){
         }
       },
       {
-        title:'四句話寫完這趟台灣',
-        copy:'',
-        render: () => `
-          <label class="survey-label">🇹🇼 「我真的在台灣了」的瞬間：</label><textarea class="survey-textarea" id="sv-tw-moment" placeholder="一個讓你突然很有『我現在真的在台灣』實感的瞬間。">${esc(surveyState.taiwanMoment||'')}</textarea>
-          <label class="survey-label">💡 來了才發現，台灣原來：</label><textarea class="survey-textarea" id="sv-tw-discovery" placeholder="跟來之前想的不一樣，或來了之後才發現的事。">${esc(surveyState.taiwanDiscovery||'')}</textarea>
-          <label class="survey-label">🗣️ 回去後一定會講的事：</label><textarea class="survey-textarea" id="sv-tell-story" placeholder="朋友問起這趟旅行時，你一定會拿出來講的那件事。">${esc(surveyState.tellStory||'')}</textarea>
-          <label class="survey-label">🥹 離開後最捨不得的：</label><textarea class="survey-textarea" id="sv-miss-most" placeholder="不一定是景點，也可以是一種生活、一段相處或每天的小事。">${esc(surveyState.missMost||'')}</textarea>
-        `,
-        collect: () => {
-          surveyState.taiwanMoment=document.getElementById('sv-tw-moment')?.value.trim()||'';
-          surveyState.taiwanDiscovery=document.getElementById('sv-tw-discovery')?.value.trim()||'';
-          surveyState.tellStory=document.getElementById('sv-tell-story')?.value.trim()||'';
-          surveyState.missMost=document.getElementById('sv-miss-most')?.value.trim()||'';
-        }
+        title:'📝 台灣印象交換日記',
+        copy:'一兩句話就好，不用寫成作文。',
+        render:()=>`<label class="survey-label">來台灣之後，有什麼事情跟你原本想的不一樣？</label><textarea class="survey-textarea" id="sv-tw-discovery" placeholder="原本以為……結果發現……">${esc(surveyState.taiwanDiscovery||'')}</textarea>`,
+        collect:()=>surveyState.taiwanDiscovery=document.getElementById('sv-tw-discovery')?.value.trim()||''
       },
       {
-        title:'旅行記憶四格',
-        copy:'',
-        render: () => `
-          <div class="memory-grid">
-            <div><label class="survey-label">😆 最搞笑／有趣的一幕</label><textarea class="survey-textarea" id="sv-happy" placeholder="例如：某個笑到不行的對話、突發狀況、拍照失敗，或當下覺得超荒謬但現在很好笑的事。">${esc(surveyState.happiest)}</textarea></div>
-            <div><label class="survey-label">💗 最感動／最有感</label><textarea class="survey-textarea" id="sv-emotional" placeholder="例如：某句話、某個陪伴、某個風景，或當下突然覺得很值得、很捨不得的一刻。">${esc(surveyState.emotional)}</textarea></div>
-            <div><label class="survey-label">📸 如果只能帶走一個畫面</label><textarea class="survey-textarea" id="sv-funny" placeholder="如果很多年後只能留下這趟旅行的一個畫面，你希望是哪一幕？">${esc(surveyState.funniest)}</textarea></div>
-            <div><label class="survey-label">🫠 最狼狽的一幕</label><textarea class="survey-textarea" id="sv-messy" placeholder="例如：趕車、太累、天氣不配合、行程臨時改動，或任何當下有點崩潰現在回想還記得的片段。">${esc(surveyState.messiest)}</textarea></div>
-          </div>`,
-        collect: () => {
-          surveyState.happiest=document.getElementById('sv-happy')?.value.trim()||'';
-          surveyState.emotional=document.getElementById('sv-emotional')?.value.trim()||'';
-          surveyState.funniest=document.getElementById('sv-funny')?.value.trim()||'';
-          surveyState.messiest=document.getElementById('sv-messy')?.value.trim()||'';
-        }
+        title:'📸 旅行回憶收藏夾',
+        copy:'六選三，每段只要寫一兩句。',
+        render:renderMemoryCollection,
+        collect:collectMemoryCollection
       },
       {
         title:'如果可以重新排一次',
@@ -2544,16 +2513,16 @@ window.openOfficialBookletForOwner=async function(){
         collect: collectImpressions
       },
       {
-        title:'用三個詞留下這十天',
-        copy:'前面已經回想了一輪，現在只留三個詞。',
-        render: () => `<label class="survey-label">請用三個詞形容這趟旅行</label><input class="survey-input" id="sv-three" placeholder="例如：意外、好吃、很瘋、充實、荒謬、好逛⋯" value="${esc(surveyState.threeWords)}">`,
-        collect: () => surveyState.threeWords=document.getElementById('sv-three')?.value.trim()||''
-      },
-      {
         title:'最後的整體評分',
         copy:'',
         render: renderRatings,
         collect: collectRatings
+      },
+      {
+        title:'🏷️ 三個詞，替這趟旅行留下註解',
+        copy:'前面已經回想了一輪，現在只留三個詞。',
+        render: () => `<label class="survey-label">請用三個詞形容這趟旅行</label><input class="survey-input" id="sv-three" placeholder="例如：意外、好吃、很瘋、充實、荒謬、好逛⋯" value="${esc(surveyState.threeWords)}">`,
+        collect: () => surveyState.threeWords=document.getElementById('sv-three')?.value.trim()||''
       },
       {
         title:'總結',
@@ -2564,58 +2533,24 @@ window.openOfficialBookletForOwner=async function(){
     ];
 
     function renderDayRanking() {
-      const items = Array.isArray(surveyState.dayRank) && surveyState.dayRank.length===9 ? surveyState.dayRank : [...DAY_RANK_DEFAULT];
-      return `<div class="survey-answer-hint">按住左側 ⠿ 可以拖曳；也可以用右側 ↑ ↓ 調整。越上面代表越想把那一天完整重來一次。</div><div id="survey-rank-list">${items.map((x,i)=>`
-        <div class="survey-rank-row" draggable="true" data-rank="${esc(x)}">
-          <span class="survey-drag-handle">⠿</span>
-          <span class="survey-rank-label">${esc(x)}</span>
-          <button type="button" class="survey-rank-move" onclick="moveSurveyRank(this,-1)">↑</button>
-          <button type="button" class="survey-rank-move" onclick="moveSurveyRank(this,1)">↓</button>
-        </div>`).join('')}</div>`;
+      const chosen = Array.isArray(surveyState.dayRank) && surveyState.dayRank.length===3 ? surveyState.dayRank : [];
+      return `<div class="survey-answer-hint">選出最喜歡的三天即可（最多三天，不需要排名）。</div>
+        <div class="grid gap-2" id="survey-rank-list">${DAY_RANK_DEFAULT.map(day=>`
+          <label class="flex items-center gap-3 rounded-xl border border-[#E2DDD5] p-3 cursor-pointer">
+            <input type="checkbox" class="survey-day-choice" value="${esc(day)}" ${chosen.includes(day)?'checked':''} onchange="toggleSurveyFavoriteDay(this)">
+            <span>${esc(day)}</span>
+          </label>`).join('')}</div>
+        <p class="text-xs text-gray-500 mt-2" id="survey-day-count">已選 ${chosen.length}／3 天</p>`;
     }
-
-    function collectDayRanking() {
-      surveyState.dayRank=[...document.querySelectorAll('#survey-rank-list .survey-rank-row')].map(el=>el.dataset.rank);
-    }
-
-    window.moveSurveyRank = function(btn, delta) {
-      const row=btn.closest('.survey-rank-row'), list=row?.parentElement;
-      if (!row || !list) return;
-      if (delta<0 && row.previousElementSibling) list.insertBefore(row,row.previousElementSibling);
-      if (delta>0 && row.nextElementSibling) list.insertBefore(row.nextElementSibling,row);
-      relabelRanking();
+    window.toggleSurveyFavoriteDay=function(input) {
+      const chosen=[...document.querySelectorAll('.survey-day-choice:checked')];
+      if(chosen.length>3){ input.checked=false; alert('最多只能選三天喔！'); }
+      const count=document.querySelectorAll('.survey-day-choice:checked').length;
+      const el=document.getElementById('survey-day-count');
+      if(el)el.textContent=`已選 ${count}／3 天`;
     };
-
-    function relabelRanking() {
-      document.querySelectorAll('#survey-rank-list .survey-rank-row').forEach((row,i)=>{
-        const label=row.querySelector('.survey-rank-label');
-        if (label) label.textContent=row.dataset.rank;
-      });
-    }
-
-    function attachRankingDrag() {
-      const list=document.getElementById('survey-rank-list');
-      if (!list) return;
-      list.querySelectorAll('.survey-rank-row').forEach(row=>{
-        row.addEventListener('dragstart',()=>{draggedRankEl=row; row.style.opacity='.45';});
-        row.addEventListener('dragend',()=>{row.style.opacity=''; draggedRankEl=null; relabelRanking();});
-        row.addEventListener('dragover',e=>{
-          e.preventDefault();
-          if (!draggedRankEl || draggedRankEl===row) return;
-          const r=row.getBoundingClientRect();
-          list.insertBefore(draggedRankEl, e.clientY < r.top+r.height/2 ? row : row.nextSibling);
-        });
-        row.addEventListener('touchstart',()=>{draggedRankEl=row;},{passive:true});
-        row.addEventListener('touchmove',e=>{
-          if (!draggedRankEl) return;
-          const t=e.touches[0], under=document.elementFromPoint(t.clientX,t.clientY)?.closest('.survey-rank-row');
-          if (under && under!==draggedRankEl && under.parentElement===list) {
-            const r=under.getBoundingClientRect();
-            list.insertBefore(draggedRankEl, t.clientY < r.top+r.height/2 ? under : under.nextSibling);
-          }
-        },{passive:true});
-        row.addEventListener('touchend',()=>{draggedRankEl=null; relabelRanking();},{passive:true});
-      });
+    function collectDayRanking() {
+      surveyState.dayRank=[...document.querySelectorAll('.survey-day-choice:checked')].map(el=>el.value);
     }
 
     function makeTournament() {
@@ -2985,54 +2920,23 @@ window.openOfficialBookletForOwner=async function(){
         out.src=data;
       }; img.src=surveyCoverPhotoData;
     }
-    window.handleSurveyCoverUpload=async function(input){
-      const file=input?.files?.[0];
-      if(!file)return;
-      const st=document.getElementById('survey-cover-save-status');
-      const show=message=>{if(st)st.textContent=message;};
-      show('⏳ 已選取照片，正在讀取…');
-      let url='';
-      try{
-        // Decode from a blob URL rather than base64-encoding the entire original.
-        // This avoids a large memory spike for iPhone camera photos.
-        url=URL.createObjectURL(file);
-        const image=await Promise.race([
-          new Promise((resolve,reject)=>{
-            const img=new Image();
-            img.onload=()=>resolve(img);
-            img.onerror=()=>reject(new Error('Safari 無法解碼這張照片。若是 HEIC／Live Photo，請先在「照片」中分享並存成 JPEG 再試。'));
-            img.src=url;
-          }),
-          new Promise((_,reject)=>setTimeout(()=>reject(new Error('照片讀取超過 25 秒，可能尚未從 iCloud 下載完成，或格式不受支援。')),25000))
-        ]);
-        show('⏳ 照片已讀取，正在壓縮…');
-        const maxSide=640;
-        const scale=Math.min(1,maxSide/Math.max(image.naturalWidth,image.naturalHeight));
-        const canvas=document.createElement('canvas');
-        canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
-        canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
-        const ctx=canvas.getContext('2d');
-        if(!ctx)throw new Error('無法建立圖片畫布');
-        ctx.drawImage(image,0,0,canvas.width,canvas.height);
-        let compressed=canvas.toDataURL('image/jpeg',0.62);
-        if(compressed.length>600000)compressed=canvas.toDataURL('image/jpeg',0.42);
-        if(!compressed.startsWith('data:image/jpeg')||compressed.length>650000)throw new Error('圖片轉換失敗或檔案太大');
-        surveyCoverPhotoData=compressed;
-        drawSurveyCoverCard();
-        show('⏳ 照片已處理，正在儲存…');
-        try{await saveSurveyCoverPhoto(compressed)}catch(e){console.warn('本機照片儲存失敗',e)}
+    window.handleSurveyCoverUpload=function(input){
+      const file=input?.files?.[0]; if(!file)return;
+      if(!file.type.startsWith('image/')){alert('請選擇圖片檔。');return}
+      const reader=new FileReader();
+      reader.onload=async()=>{surveyCoverPhotoData=reader.result;const st=document.getElementById('survey-cover-save-status');if(st)st.textContent='⏳ 正在儲存照片…';try{
+        await saveSurveyCoverPhoto(reader.result);
+        if(st)st.textContent='⏳ 已儲存本機，正在同步雲端…';
         await window.__surveyCloudReady__;
-        if(typeof window.__uploadSurveyCoverCloud__!=='function')throw new Error('雲端連線尚未完成');
-        show('⏳ 正在同步封面至雲端…');
+        if(typeof window.__uploadSurveyCoverCloud__!=='function')throw Error('雲端連線尚未完成');
+        const compressed=await compressSurveyCoverForBookletCloud(reader.result);
+        if(!compressed)throw Error('照片壓縮失敗');
         await window.__uploadSurveyCoverCloud__(compressed);
-        show('✅ 封面照片已同步至雲端');
-      }catch(error){
-        show('❌ '+(error?.message||String(error)));
-      }finally{
-        if(url)URL.revokeObjectURL(url);
-        if(input)input.value='';
-      }
+        if(st)st.textContent='✅ 封面照片已同步至雲端';
+      }catch(e){if(st)st.textContent='⚠️ 照片已選取，但雲端同步失敗：'+e.message+'（提交時會重試）';}drawSurveyCoverCard()};
+      reader.readAsDataURL(file);
     };
+
     function renderSurveyStep() {
       const q=QUESTIONS[surveyStep];
       document.getElementById('survey-question-title').textContent=q.title;
@@ -3053,7 +2957,8 @@ window.openOfficialBookletForOwner=async function(){
       const prev=document.getElementById('survey-prev-btn'), next=document.getElementById('survey-next-btn');
       prev.disabled=surveyStep===0;
       next.textContent=surveyStep===QUESTIONS.length-1?'送出問卷 ✨':'後一題 →';
-      if (surveyStep===3) {
+      if (QUESTIONS[surveyStep]?.title.includes('旅行回憶收藏夾')) window.toggleSurveyMemory?.(null);
+      if (QUESTIONS[surveyStep]?.title==='這趟旅程的最愛體驗 TOP') {
         ensureTournament();
         next.disabled=!tournamentPlacementsComplete();
       } else next.disabled=false;
@@ -3073,9 +2978,11 @@ window.openOfficialBookletForOwner=async function(){
     };
     window.surveyNext=function(){
       collectCurrent();
-      if(surveyStep===3 && !tournamentPlacementsComplete()){
+      if(QUESTIONS[surveyStep]?.title==='這趟旅程的最愛體驗 TOP' && !tournamentPlacementsComplete()){
         alert('先完成冠軍賽與季軍加賽，排出完整前三名後才能前往下一題。'); return;
       }
+      if(QUESTIONS[surveyStep]?.title.includes('旅行回憶收藏夾') && document.querySelectorAll('.survey-memory-choice:checked').length!==3){alert('請選滿三種旅行回憶喔！');return;}
+      if(surveyStep===0 && document.querySelectorAll('.survey-day-choice:checked').length!==3){alert('請選滿最喜歡的三天！');return;}
       if(surveyStep<QUESTIONS.length-1){surveyStep++;renderSurveyStep();return;}
       submitTripSurveyTest();
     };
@@ -3266,91 +3173,19 @@ window.openOfficialBookletForOwner=async function(){
 
     function makeHighlightsPage(){
       const c=bookletCanvas(),ctx=c.getContext('2d'),W=c.width,H=c.height;
-      pageBase(ctx,W,H,'這趟旅行的 TOP 3','一路二選一，最後留下來的三個最愛');
-
+      pageBase(ctx,W,H,'旅程最愛 × 台灣日記','TOP 3 & TAIWAN DIARY');
       const t=surveyState.tournament||{};
       const top=[t.champion,t.runnerUp,t.thirdPlace];
-
-      // Champion hero card
-      ctx.fillStyle='#FFF1B8';
-      ctx.beginPath();
-      if(ctx.roundRect) ctx.roundRect(70,205,W-140,150,28); else ctx.rect(70,205,W-140,150);
-      ctx.fill();
-      ctx.fillStyle='#B97814';ctx.font='700 18px sans-serif';ctx.fillText('NO. 1  CHAMPION',105,242);
-      ctx.fillStyle='#2C3E35';ctx.font='700 42px sans-serif';ctx.fillText('🥇',105,315);
-      ctx.font='700 30px sans-serif';
-      wrapCanvasText(ctx,top[0]||'—',175,302,W-285,38,2);
-
-      // Runner-up + third place cards
-      const smallW=(W-170)/2;
-      const smalls=[
-        {x:70, medal:'🥈', label:'NO. 2', fill:'#E9EDF1', name:top[1]},
-        {x:100+smallW, medal:'🥉', label:'NO. 3', fill:'#F2D4BC', name:top[2]}
-      ];
-      smalls.forEach(s=>{
-        ctx.fillStyle=s.fill;
-        ctx.beginPath();
-        if(ctx.roundRect) ctx.roundRect(s.x,380,smallW,138,24); else ctx.rect(s.x,380,smallW,138);
-        ctx.fill();
-        ctx.fillStyle='#8B8278';ctx.font='700 17px sans-serif';ctx.fillText(s.label,s.x+28,414);
-        ctx.fillStyle='#2C3E35';ctx.font='700 31px sans-serif';ctx.fillText(s.medal,s.x+28,468);
-        ctx.font='700 21px sans-serif';
-        wrapCanvasText(ctx,s.name||'—',s.x+82,459,smallW-108,27,2);
+      top.forEach((name,i)=>{
+        const y=230+i*165;
+        ctx.fillStyle=i===0?'#FFF1B8':'#EEE8DF';ctx.fillRect(70,y,W-140,137);
+        ctx.fillStyle='#C66914';ctx.font='700 26px sans-serif';ctx.fillText(['NO.1','NO.2','NO.3'][i],100,y+44);
+        ctx.fillStyle='#2C3E35';ctx.font='700 27px sans-serif';wrapCanvasText(ctx,name||'—',225,y+57,W-320,38,2);
       });
-
-      // Divider / section heading
-      ctx.fillStyle='#C66914';ctx.font='700 20px sans-serif';ctx.fillText('旅程留下來的幾句話',70,580);
-      ctx.strokeStyle='#D9D0C4';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(70,600);ctx.lineTo(W-70,600);ctx.stroke();
-
-      // First image: a full-width memory card
-      ctx.fillStyle='#F0E9DF';
-      ctx.beginPath();
-      if(ctx.roundRect) ctx.roundRect(70,630,W-140,150,22); else ctx.rect(70,630,W-140,150);
-      ctx.fill();
-      ctx.fillStyle='#C66914';ctx.font='700 19px sans-serif';ctx.fillText('第一個浮現的畫面',96,668);
-      ctx.fillStyle='#2C3E35';ctx.font='500 20px sans-serif';
-      wrapCanvasText(ctx,surveyState.firstImage||'—',96,710,W-192,29,2);
-
-      // Four short Taiwan reflections in a 2×2 grid
-      const reflectionCards=[
-        ['🇹🇼','我真的在台灣了',surveyState.taiwanMoment||'—'],
-        ['💡','來了才發現',surveyState.taiwanDiscovery||'—'],
-        ['🗣️','回去後一定會講',surveyState.tellStory||'—'],
-        ['🥹','離開後最捨不得',surveyState.missMost||'—']
-      ];
-      const cardW=(W-170)/2, cardH=170, gap=30;
-      reflectionCards.forEach((it,i)=>{
-        const col=i%2,row=Math.floor(i/2);
-        const x=70+col*(cardW+gap), y=810+row*(cardH+20);
-        ctx.fillStyle=i%2===0?'#F6F2EC':'#F2EEE8';
-        ctx.beginPath();
-        if(ctx.roundRect) ctx.roundRect(x,y,cardW,cardH,20); else ctx.rect(x,y,cardW,cardH);
-        ctx.fill();
-        ctx.fillStyle='#C66914';ctx.font='700 18px sans-serif';
-        ctx.fillText(`${it[0]} ${it[1]}`,x+22,y+36);
-        ctx.fillStyle='#2C3E35';ctx.font='500 19px sans-serif';
-        wrapCanvasText(ctx,it[2],x+22,y+76,cardW-44,27,3);
-      });
-
-      // Three words as a closing strip
-      const words=String(surveyState.threeWords||'—').split(/[、，,／/|\s]+/).filter(Boolean).slice(0,3);
-      ctx.fillStyle='#2C3E35';ctx.font='700 19px sans-serif';ctx.fillText('三個詞留下這十天',70,1215);
-      const pillY=1240, pillGap=16, pillW=(W-140-pillGap*2)/3;
-      for(let i=0;i<3;i++){
-        const x=70+i*(pillW+pillGap);
-        ctx.fillStyle='#E6DED3';
-        ctx.beginPath();
-        if(ctx.roundRect) ctx.roundRect(x,pillY,pillW,72,36); else ctx.rect(x,pillY,pillW,72);
-        ctx.fill();
-        ctx.fillStyle='#2C3E35';ctx.font='700 20px sans-serif';ctx.textAlign='center';
-        ctx.fillText(words[i]||'—',x+pillW/2,pillY+44);
-      }
-      ctx.textAlign='left';
-
-      ctx.fillStyle='#9A9188';ctx.font='500 15px sans-serif';ctx.textAlign='center';
-      ctx.fillText('2026 · Taiwan Birthday Trip',W/2,1360);
-      ctx.textAlign='left';
-
+      ctx.fillStyle='#C66914';ctx.font='700 29px sans-serif';ctx.fillText('📝 台灣印象交換日記',70,820);
+      ctx.fillStyle='#F0E9DF';ctx.fillRect(70,860,W-140,315);
+      ctx.fillStyle='#2C3E35';ctx.font='500 26px sans-serif';
+      wrapCanvasText(ctx,surveyState.taiwanDiscovery||'—',100,930,W-200,40,6);
       return c.toDataURL('image/png');
     }
 
@@ -3387,65 +3222,22 @@ window.openOfficialBookletForOwner=async function(){
 
     function makeFoodMemoryPage(){
       const c=bookletCanvas(),ctx=c.getContext('2d'),W=c.width,H=c.height;
-      pageBase(ctx,W,H,'台灣胃 × 旅行記憶','吃過的味道，和留下來的片段');
-
-      // Left-ish food awards section
-      ctx.fillStyle='#2C3E35';
-      ctx.beginPath();
-      if(ctx.roundRect) ctx.roundRect(65,205,W-130,430,28); else ctx.rect(65,205,W-130,430);
-      ctx.fill();
-
-      ctx.fillStyle='#F6E8D6';ctx.font='700 28px sans-serif';
-      ctx.fillText('TAIWAN FOOD AWARDS',95,255);
-
-      const foodCards=[
-        ['🏆','最想再吃',surveyState.foodAgain||'—'],
-        ['🤯','最意外好吃',surveyState.foodSurprise||'—'],
-        ['💀','最不合口味',surveyState.foodFail||'—'],
-        ['🎁','最想帶回去',surveyState.foodTakeHome||'—']
-      ];
-      const cardW=(W-220)/2, cardH=128;
-      foodCards.forEach((it,i)=>{
-        const col=i%2,row=Math.floor(i/2);
-        const x=95+col*(cardW+30), y=290+row*(cardH+24);
-        ctx.fillStyle='rgba(255,255,255,.10)';
-        ctx.beginPath();
-        if(ctx.roundRect) ctx.roundRect(x,y,cardW,cardH,18); else ctx.rect(x,y,cardW,cardH);
-        ctx.fill();
-        ctx.fillStyle='#F7F3ED';ctx.font='700 19px sans-serif';
-        ctx.fillText(`${it[0]} ${it[1]}`,x+16,y+32);
-        ctx.fillStyle='rgba(255,255,255,.90)';ctx.font='600 21px sans-serif';
-        wrapCanvasText(ctx,it[2],x+16,y+68,cardW-32,28,2);
+      pageBase(ctx,W,H,'台灣胃 × 旅行回憶','兩道美食獎項，三段最想收藏的故事');
+      const foods=[['🏆 最好吃',surveyState.foodAgain||'—'],['💀 最踩雷',surveyState.foodFail||'—']];
+      foods.forEach((f,i)=>{
+        const x=70+i*435;ctx.fillStyle='#2C3E35';ctx.fillRect(x,210,410,185);
+        ctx.fillStyle='#F6E8D6';ctx.font='700 25px sans-serif';ctx.fillText(f[0],x+22,258);
+        ctx.fillStyle='#FFFFFF';ctx.font='500 24px sans-serif';wrapCanvasText(ctx,f[1],x+22,310,365,32,2);
       });
-
-      // Memory section
-      ctx.fillStyle='#C66914';ctx.font='700 26px sans-serif';
-      ctx.fillText('TRAVEL MOMENTS',70,700);
-
-      const memories=[
-        ['😆','最搞笑／有趣',surveyState.happiest||'—'],
-        ['💗','最感動／最有感',surveyState.emotional||'—'],
-        ['📸','如果只能帶走一個畫面',surveyState.funniest||'—'],
-        ['🫠','最狼狽',surveyState.messiest||'—']
-      ];
-
-      let y=745;
-      memories.forEach((m,i)=>{
-        ctx.fillStyle=i%2===0?'#F0E9DF':'#F6F2EC';
-        ctx.beginPath();
-        if(ctx.roundRect) ctx.roundRect(70,y,W-140,120,20); else ctx.rect(70,y,W-140,120);
-        ctx.fill();
-
-        ctx.fillStyle='#C66914';ctx.font='700 22px sans-serif';
-        ctx.fillText(`${m[0]} ${m[1]}`,92,y+35);
-        ctx.fillStyle='#2C3E35';ctx.font='500 20px sans-serif';
-        wrapCanvasText(ctx,m[2],92,y+70,W-184,27,2);
-        y+=138;
+      ctx.fillStyle='#C66914';ctx.font='700 28px sans-serif';ctx.fillText('📸 旅行回憶收藏夾',70,475);
+      getMemorySelections().forEach((s,i)=>{
+        const m=MEMORY_CHOICES.find(x=>x.id===s.id);const y=520+i*255;
+        ctx.fillStyle=i%2===0?'#F0E9DF':'#F6F2EC';ctx.fillRect(70,y,W-140,225);
+        ctx.fillStyle='#C66914';ctx.font='700 25px sans-serif';ctx.fillText(`${m?.emoji||'📸'} ${m?.title||'回憶'}`,95,y+49);
+        ctx.fillStyle='#2C3E35';ctx.font='500 23px sans-serif';wrapCanvasText(ctx,s.answer||'—',95,y+105,W-190,33,4);
       });
-
       return c.toDataURL('image/png');
     }
-
 
     function makeImpressionsPage(){
       const c=bookletCanvas(),ctx=c.getContext('2d'),W=c.width,H=c.height;
@@ -3481,9 +3273,12 @@ window.openOfficialBookletForOwner=async function(){
       const c=bookletCanvas(),ctx=c.getContext('2d'),W=c.width,H=c.height;
       pageBase(ctx,W,H,'最後留下來的話','TRIP NOTES');
 
-      ctx.fillStyle='#C66914';ctx.font='700 27px sans-serif';ctx.fillText('總結',70,225);
+      ctx.fillStyle='#C66914';ctx.font='700 26px sans-serif';ctx.fillText('🏷️ 三個詞，留給這趟旅行',70,215);
+      const words=String(surveyState.threeWords||'').split(/[、，,／/|\s]+/).filter(Boolean).slice(0,3);
+      words.forEach((w,i)=>{const x=70+i*290;ctx.fillStyle='#E6DED3';ctx.fillRect(x,245,270,75);ctx.fillStyle='#2C3E35';ctx.font='700 22px sans-serif';ctx.textAlign='center';ctx.fillText(w.slice(0,10),x+135,292);});ctx.textAlign='left';
+      ctx.fillStyle='#C66914';ctx.font='700 27px sans-serif';ctx.fillText('總結',70,380);
       ctx.fillStyle='#2C3E35';ctx.font='500 23px sans-serif';
-      wrapCanvasText(ctx,surveyState.finalMessage||'—',70,280,W-140,35,18);
+      wrapCanvasText(ctx,surveyState.finalMessage||'—',70,435,W-140,35,11);
 
       // 小九宮格只是頁面下方裝飾；先等圖片畫完，再輸出這一頁。
       const img=new Image();
@@ -3668,31 +3463,20 @@ window.openOfficialBookletForOwner=async function(){
       const impressions=(surveyState.impressions||[]).map(impressionDisplay);
       const r=surveyState.ratings||{};
       const ratingText=ratingDefs.map(([key,label])=>`${label}：${Number(r[key]??0)} / 10`).join('\n');
-      const memory=[
-        `😆 最搞笑／有趣：${surveyState.happiest||'—'}`,
-        `💗 最感動／最有感：${surveyState.emotional||'—'}`,
-        `📸 如果只能帶走一個畫面：${surveyState.funniest||'—'}`,
-        `🫠 最狼狽：${surveyState.messiest||'—'}`
-      ].join('\n\n');
-      const food=[
-        `🏆 最想再吃一次：${surveyState.foodAgain||'—'}`,
-        `🤯 最意外好吃：${surveyState.foodSurprise||'—'}`,
-        `💀 最不合口味：${surveyState.foodFail||'—'}`,
-        `🎁 最想帶回去：${surveyState.foodTakeHome||'—'}`
-      ].join('\n');
+      const memory=memoryText();
+      const food=[`🏆 最好吃：${surveyState.foodAgain||'—'}`,`💀 最踩雷：${surveyState.foodFail||'—'}`].join('\n');
       const topText=top3.length
         ? `🥇 ${top3[0]||'—'}\n🥈 ${top3[1]||'—'}\n🥉 ${top3[2]||'—'}`
         : '—';
 
       host.innerHTML = `<div class="space-y-3">
-        ${readonlyBlock('第一個浮現的畫面', esc(surveyState.firstImage||''))}
         ${readonlyBlock('意外喜歡', esc(surveyState.surpriseSpot||'—'))}
         ${readonlyBlock('最愛體驗 TOP 3', esc(topText))}
         ${readonlyBlock('台灣胃頒獎典禮', esc(food))}
         ${readonlyBlock('旅行封面', `${surveyState.coverTitle?`封面標題：${esc(surveyState.coverTitle)}<br>`:''}${esc(surveyState.coverPhoto||'—')}`)}
-        ${readonlyBlock('四句話寫完這趟台灣', `🇹🇼 「我真的在台灣了」的瞬間：${esc(surveyState.taiwanMoment||'—')}<br>💡 來了才發現，台灣原來：${esc(surveyState.taiwanDiscovery||'—')}<br>🗣️ 回去後一定會講的事：${esc(surveyState.tellStory||'—')}<br>🥹 離開後最捨不得的：${esc(surveyState.missMost||'—')}`)}
-        ${readonlyBlock('旅行記憶四格', esc(memory))}
-        ${readonlyBlock('Day 1～Day 9 重玩排序', esc((surveyState.dayRank||[]).join('\n')))}
+        ${readonlyBlock('台灣印象交換日記', esc(surveyState.taiwanDiscovery||'—'))}
+        ${readonlyBlock('旅行回憶收藏夾', esc(memory))}
+        ${readonlyBlock('最喜歡的三天', esc((surveyState.dayRank||[]).join('\n')))}
         ${readonlyBlock('如果可以重新排一次', esc(surveyState.rearrange||''))}
         ${readonlyBlock('該邀功的還是要邀', esc(surveyState.credit||''))}
         ${readonlyBlock('台灣印象', `${esc(impressions.join('、')||'—')}<br><span class="text-xs text-gray-500">最有感：${esc(impressionDisplay(surveyState.impressionTop||'')||'—')}</span>`)}
@@ -3827,6 +3611,5 @@ window.addEventListener('DOMContentLoaded',async()=>{
   </div>
 </div>
 
-<script>window.addEventListener('load',async()=>{if(new URLSearchParams(location.search).get('view')!=='official')return;await window.__surveyCloudReady__;setTimeout(()=>{if(typeof window.openOfficialBookletForOwner==='function')window.openOfficialBookletForOwner().catch(console.warn)},500)});</script>
 </body>
 </html>

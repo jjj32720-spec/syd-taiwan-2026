@@ -2256,7 +2256,7 @@ window.openOfficialBookletForOwner=async function(){
       return [
         '【Day 1～Day 9｜最想重玩排序】',rank,
         '',
-        '【意外喜歡】',surveyState.surpriseSpot||'—',
+        '【黑馬逆襲】',surveyState.surpriseSpot||'—',
         '',
         '【最愛體驗 TOP 3】',
         `🥇 ${top3[0]||'—'}\n🥈 ${top3[1]||'—'}\n🥉 ${top3[2]||'—'}`,
@@ -2442,7 +2442,7 @@ window.openOfficialBookletForOwner=async function(){
       {
         title:'這趟旅程的最愛體驗 TOP',
         copy:'',
-        render: () => `${renderTournament()}<div class="mt-6 pt-5 border-t border-[#E2DDD5]"><label class="survey-label">✨ 意外喜歡・另外選出一個驚喜</label><p class="text-xs text-gray-500 mb-2">不一定是淘汰賽冠軍：哪個地方或體驗比你原本預期的更喜歡？</p><textarea class="survey-textarea" id="sv-surprise-spot" placeholder="原本沒有特別期待，結果去了意外很喜歡……">${esc(surveyState.surpriseSpot||'')}</textarea></div>`,
+        render: () => `${renderTournament()}<div class="mt-6 pt-5 border-t border-[#E2DDD5]"><label class="survey-label">🐎 隱藏賽事｜黑馬逆襲</label><p class="text-xs text-gray-500 mb-2">原本沒抱太大期待，結果意外圈粉的選手是誰？</p><textarea class="survey-textarea" id="sv-surprise-spot" placeholder="提名你的最強黑馬……">${esc(surveyState.surpriseSpot||'')}</textarea></div>`,
         collect: () => {const el=document.getElementById('sv-surprise-spot');if(el)surveyState.surpriseSpot=el.value.trim();}
       },
       {
@@ -2506,8 +2506,8 @@ window.openOfficialBookletForOwner=async function(){
       {
         title:'總結',
         copy:'這裡沒有固定格式。可以把它當成一小段旅行日記、替這十天做總結、回顧某些片段、寫感謝，或留下任何現在最想說的話。想寫多少、寫什麼都可以。',
-        render: () => `<label class="survey-label">最後，把任何你想留下來的話寫在這裡。</label><textarea class="survey-textarea" id="sv-final" style="min-height:180px" placeholder="可以寫成旅行日記、總結這十天、回顧最喜歡的片段、感謝某個安排，或只是隨便寫下現在的心情……">${esc(surveyState.finalMessage)}</textarea><div class="mt-6 pt-4 border-t border-[#E2DDD5]"><label class="survey-label">🏷️ 最後一題：用三個詞濃縮這趟旅行</label><p class="text-xs text-gray-500 mb-2">不用再開新頁，寫下最能代表這趟旅程的三個詞就好。</p><input class="survey-input" id="sv-three" placeholder="例如：驚喜、好吃、難忘" value="${esc(surveyState.threeWords||'')}"></div>`,
-        collect: () => {surveyState.finalMessage=document.getElementById('sv-final')?.value.trim()||'';surveyState.threeWords=document.getElementById('sv-three')?.value.trim()||'';}
+        render: () => `<textarea class="survey-textarea" id="sv-final" style="min-height:180px" placeholder="可以寫成旅行日記、總結這十天、回顧最喜歡的片段、感謝某個安排，或只是隨便寫下現在的心情……">${esc(surveyState.finalMessage)}</textarea><div class="mt-6 pt-4 border-t border-[#E2DDD5]"><label class="survey-label">🏷️ 最後一題：用三個詞濃縮這趟旅行</label><p class="text-xs text-gray-500 mb-2">寫下最能代表這趟旅程的三個詞。</p><div class="grid grid-cols-3 gap-2">${[0,1,2].map((i)=>`<input class="survey-input min-w-0" id="sv-three-${i}" maxlength="24" placeholder="第 ${i+1} 個詞" value="${esc(String(surveyState.threeWords||'').split(/[、，,／/|\s]+/).filter(Boolean)[i]||'')}">`).join('')}</div></div>`,
+        collect: () => {surveyState.finalMessage=document.getElementById('sv-final')?.value.trim()||'';surveyState.threeWords=[0,1,2].map(i=>document.getElementById('sv-three-'+i)?.value.trim()||'').filter(Boolean).join('、');}
       }
     ];
 
@@ -2816,7 +2816,7 @@ window.openOfficialBookletForOwner=async function(){
         <label class="survey-label">從你選的項目裡，再選一個「最有感」</label>
         <div class="survey-answer-hint">想像只能留下其中一個印象給半年後的自己，你會保留哪一個？</div>
         <select class="survey-select" id="sv-impression-top">${renderImpressionTopOptions()}</select>
-        <div class="mt-5 pt-4 border-t border-[#E2DDD5]"><label class="survey-label">📝 來台灣之後，有什麼事情跟你原本想的不一樣？</label><p class="text-xs text-gray-500 mb-2">一兩句話就好，這段會一起收進旅遊小書的台灣印象頁。</p><textarea class="survey-textarea" id="sv-tw-discovery" placeholder="原本以為……結果發現……">${esc(surveyState.taiwanDiscovery||'')}</textarea></div>`;
+        <div class="mt-5 pt-4 border-t border-[#E2DDD5]"><label class="survey-label">🔄 印象反轉</label><p class="text-xs text-gray-500 mb-2"></p><textarea class="survey-textarea" id="sv-tw-discovery" placeholder="原本以為……結果發現……">${esc(surveyState.taiwanDiscovery||'')}</textarea></div>`;
     }
 
     function impressionDisplay(x) {
@@ -3171,7 +3171,7 @@ window.openOfficialBookletForOwner=async function(){
         ctx.fillStyle='#C66914';ctx.font='700 26px sans-serif';ctx.fillText(['NO.1','NO.2','NO.3'][i],100,y+44);
         ctx.fillStyle='#2C3E35';ctx.font='700 27px sans-serif';wrapCanvasText(ctx,name||'—',225,y+57,W-320,38,2);
       });
-      ctx.fillStyle='#C66914';ctx.font='700 29px sans-serif';ctx.fillText('✨ 意外喜歡・另一個驚喜',70,820);
+      ctx.fillStyle='#C66914';ctx.font='700 29px sans-serif';ctx.fillText('🐎 黑馬逆襲',70,820);
       ctx.fillStyle='#F0E9DF';ctx.fillRect(70,860,W-140,315);
       ctx.fillStyle='#2C3E35';ctx.font='500 26px sans-serif';
       wrapCanvasText(ctx,surveyState.surpriseSpot||'—',100,930,W-200,40,6);
@@ -3462,7 +3462,7 @@ window.openOfficialBookletForOwner=async function(){
         : '—';
 
       host.innerHTML = `<div class="space-y-3">
-        ${readonlyBlock('意外喜歡', esc(surveyState.surpriseSpot||'—'))}
+        ${readonlyBlock('黑馬逆襲', esc(surveyState.surpriseSpot||'—'))}
         ${readonlyBlock('最愛體驗 TOP 3', esc(topText))}
         ${readonlyBlock('台灣胃頒獎典禮', esc(food))}
         ${readonlyBlock('旅行封面', `${surveyState.coverTitle?`封面標題：${esc(surveyState.coverTitle)}<br>`:''}${esc(surveyState.coverPhoto||'—')}`)}

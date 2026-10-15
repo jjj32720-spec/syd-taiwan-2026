@@ -2360,7 +2360,7 @@ window.openOfficialBookletForOwner=async function(){
       if(coverRaw && !coverPhotoData)throw new Error('封面照片壓縮失敗，請重新選擇照片');
       return await window.__saveSubmittedSurveyBookletCloud__({
         schemaVersion:1,
-        surveyState:JSON.parse(JSON.stringify(surveyState)),
+        surveyState:JSON.stringify(surveyState), // Firestore does not support nested arrays
         coverPhotoData
       });
     }
@@ -2374,7 +2374,7 @@ window.openOfficialBookletForOwner=async function(){
         }
         const payload=await window.__loadSubmittedSurveyBookletCloud__();
         if(!payload?.surveyState) throw new Error('目前還沒有收到已提交的小書');
-        surveyState={...blankSurveyState(),...payload.surveyState};
+        surveyState={...blankSurveyState(),...(typeof payload.surveyState==='string'?JSON.parse(payload.surveyState):payload.surveyState)};
         if(payload.coverPhotoData) await saveSurveyCoverPhoto(payload.coverPhotoData);
         if(status) status.textContent='✅ 已讀取最新提交版本';
         document.getElementById('survey-intro-card')?.classList.add('hidden');

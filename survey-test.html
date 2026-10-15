@@ -3224,19 +3224,35 @@ window.openOfficialBookletForOwner=async function(){
     }
 
     function makeHighlightsPage(){
-      const c=bookletCanvas(),ctx=c.getContext('2d'),W=c.width,H=c.height;
-      pageBase(ctx,W,H,'旅程最愛 × 意外驚喜','TOP 3 & SURPRISE');
+      const c=bookletCanvas(),ctx=c.getContext('2d'),W=c.width;
+      pageBase(ctx,W,c.height,'台灣旅行之最','BEST OF TAIWAN · 2026');
       const t=surveyState.tournament||{};
-      bookCard(ctx,70,205,860,365,'#FFF0BC',25);
-      ctx.fillStyle='#946A23';ctx.font='700 29px sans-serif';ctx.fillText('🏆  NO. 1  ·  冠軍',103,270);
-      bookText(ctx,t.champion||'—',104,346,785,160,45,23,'#30483C','700');
-      ctx.fillStyle='#987E50';ctx.font='500 20px sans-serif';ctx.fillText('THE GRAND CHAMPION',104,531);
-      const runners=[['🥈 NO. 2 · 亞軍',t.runnerUp,'#E3EAE4'],['🥉 NO. 3 · 季軍',t.thirdPlace,'#F0E3D5']];
-      runners.forEach(([label,val,bg],i)=>{const x=70+i*440;bookCard(ctx,x,594,420,290,bg,22);ctx.fillStyle='#786D5B';ctx.font='700 25px sans-serif';ctx.fillText(label,x+25,649);bookText(ctx,val||'—',x+25,718,368,125,32,18,'#30483C','700');});
-      bookCard(ctx,70,910,860,340,'#DDE8DF',24);
-      ctx.fillStyle='#526D5B';ctx.font='700 29px sans-serif';ctx.fillText('🐎  SECRET AWARD · 黑馬逆襲',103,975);
-      bookText(ctx,surveyState.surpriseSpot||'—',103,1052,780,150,30,18,'#30483C');
-      ctx.fillStyle='#8B8278';ctx.font='500 19px sans-serif';ctx.fillText('TAIWAN · 2026    /    BEST OF THE TRIP',72,1330);
+      // 景點前三名
+      bookCard(ctx,70,192,860,215,'#FFF0BC',23);
+      ctx.fillStyle='#946A23';ctx.font='700 27px sans-serif';ctx.fillText('🥇 景點冠軍  ·  NO. 1',100,241);
+      bookText(ctx,t.champion||'—',100,302,790,87,37,19,'#30483C','700');
+      [['🥈 景點亞軍',t.runnerUp,'#E5EBE6'],['🥉 景點季軍',t.thirdPlace,'#EFE0D3']].forEach(([label,val,bg],i)=>{
+        const x=70+i*440;bookCard(ctx,x,424,420,160,bg,20);
+        ctx.fillStyle='#786D5B';ctx.font='700 22px sans-serif';ctx.fillText(label,x+23,467);
+        bookText(ctx,val||'—',x+23,514,370,61,26,16,'#30483C','700');
+      });
+      bookCard(ctx,70,601,860,180,'#DDE8DF',20);
+      ctx.fillStyle='#526D5B';ctx.font='700 24px sans-serif';ctx.fillText('🐎 黑馬逆襲  ·  意外驚喜',96,646);
+      bookText(ctx,surveyState.surpriseSpot||'—',96,697,805,68,25,15,'#30483C');
+      // 美食獎項：兩張精簡卡片
+      [['🏆 最好吃',surveyState.foodAgain,'#30483C','#F6D99E','#FFFFFF'],['💀 最踩雷',surveyState.foodFail,'#E9DDD0','#93694D','#30483C']].forEach(([label,val,bg,lc,vc],i)=>{
+        const x=70+i*440;bookCard(ctx,x,798,420,148,bg,20);
+        ctx.fillStyle=lc;ctx.font='700 23px sans-serif';ctx.fillText(label,x+23,842);
+        bookText(ctx,val||'—',x+23,893,373,42,24,15,vc,'700');
+      });
+      const impressions=(surveyState.impressions||[]).map(impressionDisplay).filter(Boolean);
+      bookCard(ctx,70,964,860,147,'#FFFFFF',20);
+      ctx.fillStyle='#A16C39';ctx.font='700 24px sans-serif';ctx.fillText('💗 台灣印象 · 最有感',96,1007);
+      bookText(ctx,impressions.length?impressions.join('、'):'—',96,1057,802,45,23,15,'#30483C','700');
+      bookCard(ctx,70,1128,860,166,'#F0E5D8',20);
+      ctx.fillStyle='#946A4A';ctx.font='700 24px sans-serif';ctx.fillText('🔄 印象反轉',96,1171);
+      bookText(ctx,surveyState.taiwanDiscovery||'—',96,1220,802,60,23,15,'#30483C');
+      ctx.fillStyle='#8B8278';ctx.font='500 17px sans-serif';ctx.fillText('TAIWAN · 2026  /  HIGHLIGHTS & AWARDS',70,1350);
       return c.toDataURL('image/png');
     }
 
@@ -3272,33 +3288,27 @@ window.openOfficialBookletForOwner=async function(){
     }
 
     function makeFoodMemoryPage(){
-      const c=bookletCanvas(),ctx=c.getContext('2d'),W=c.width,H=c.height;
-      pageBase(ctx,W,H,'台灣胃 × 旅行回憶','FOOD AWARDS & MEMORY COLLECTION');
-      const foods=[['🏆 最好吃',surveyState.foodAgain||'—','#E3EDE4'],['💀 最踩雷',surveyState.foodFail||'—','#F0E2D6']];
-      foods.forEach(([label,value,bg],i)=>{const x=70+i*440;bookCard(ctx,x,205,420,248,bg,20);ctx.fillStyle='#566E5B';ctx.font='700 27px sans-serif';ctx.fillText(label,x+24,263);bookText(ctx,value,x+24,320,367,110,26,16,'#30483C');});
-      ctx.fillStyle='#30483C';ctx.font='700 30px sans-serif';ctx.fillText('📸 旅行回憶收藏夾',70,519);
-      ctx.fillStyle='#8B8278';ctx.font='500 19px sans-serif';ctx.fillText('THREE MOMENTS TO REMEMBER',70,554);
+      const c=bookletCanvas(),ctx=c.getContext('2d'),W=c.width;
+      pageBase(ctx,W,c.height,'旅行回憶 × 旅程成績單','MEMORIES & RATINGS · 2026');
       const sel=getMemorySelections();
-      const cards=[{x:70,y:588,w:420,h:310,bg:'#E9EDE6'},{x:510,y:588,w:420,h:310,bg:'#F0E4D7'},{x:70,y:918,w:860,h:330,bg:'#E6EBE2'}];
-      cards.forEach((b,i)=>{const s=sel[i]||{},m=MEMORY_CHOICES.find(x=>x.id===s.id);bookCard(ctx,b.x,b.y,b.w,b.h,b.bg,22);ctx.fillStyle='#946A4A';ctx.font='700 25px sans-serif';ctx.fillText(`${m?.emoji||'📸'} ${m?.title||'旅行回憶'}`,b.x+25,b.y+56);bookText(ctx,s.answer||'—',b.x+25,b.y+112,b.w-50,b.h-145,i===2?28:25,15,'#30483C');});
-      ctx.fillStyle='#8B8278';ctx.font='500 19px sans-serif';ctx.fillText('MEMORIES MADE IN TAIWAN · 2026',70,1320);
-      return c.toDataURL('image/png');
-    }
-
-    function makeImpressionsPage(){
-      const c=bookletCanvas(),ctx=c.getContext('2d'),W=c.width,H=c.height;
-      pageBase(ctx,W,H,'台灣印象與評分','TAIWAN THROUGH YOUR EYES');
-      const impressions=(surveyState.impressions||[]).map(impressionDisplay).filter(Boolean);
-      bookCard(ctx,70,200,860,245,'#E2EBE1',22);
-      ctx.fillStyle='#526D5B';ctx.font='700 27px sans-serif';ctx.fillText('💗 最有感',100,257);
-      bookText(ctx,impressions.length?impressions.join('、'):'—',100,317,795,105,32,18,'#30483C','700');
-      bookCard(ctx,70,465,860,225,'#F0E5D8',22);
-      ctx.fillStyle='#946A4A';ctx.font='700 25px sans-serif';ctx.fillText('🔄 印象反轉',100,523);
-      bookText(ctx,surveyState.taiwanDiscovery||'—',100,585,795,84,26,16,'#30483C');
-      ctx.fillStyle='#30483C';ctx.font='700 31px sans-serif';ctx.fillText('⭐ 旅行評分紀錄',70,761);
+      const cards=[{x:70,y:196,w:860,h:210,bg:'#E8EDE6'},{x:70,y:423,w:860,h:210,bg:'#F0E4D7'},{x:70,y:650,w:860,h:210,bg:'#E6EBE2'}];
+      cards.forEach((b,i)=>{
+        const s=sel[i]||{},m=MEMORY_CHOICES.find(x=>x.id===s.id);
+        bookCard(ctx,b.x,b.y,b.w,b.h,b.bg,20);
+        ctx.fillStyle='#946A4A';ctx.font='700 25px sans-serif';ctx.fillText(`${m?.emoji||'📸'} ${m?.title||'旅行回憶'}`,b.x+27,b.y+47);
+        bookText(ctx,s.answer||'—',b.x+27,b.y+99,b.w-54,98,25,15,'#30483C');
+      });
+      ctx.fillStyle='#30483C';ctx.font='700 28px sans-serif';ctx.fillText('⭐ 旅行評分紀錄',70,917);
       const defs=[['overall','整體旅行體驗'],['itinerary','行程安排'],['food','美食體驗'],['stay','住宿體驗'],['transport','交通體驗'],['comfort','人情味指數'],['returnTaiwan','再次來台灣意願']];
-      defs.forEach(([k,label],i)=>{const col=i%2,row=Math.floor(i/2),x=70+col*440,y=798+row*126;bookCard(ctx,x,y,420,108,i%2?'#F1E8DC':'#FFFFFF',17);ctx.fillStyle='#786F64';ctx.font='600 20px sans-serif';ctx.fillText(label,x+20,y+35);const v=surveyState.ratings?.[k];ctx.fillStyle='#30483C';ctx.font='700 40px sans-serif';ctx.fillText(v==null?'—':String(v),x+20,y+85);ctx.fillStyle='#9A948C';ctx.font='500 18px sans-serif';ctx.fillText('/ 10',x+95,y+83);});
-      ctx.fillStyle='#8B8278';ctx.font='500 18px sans-serif';ctx.fillText('TAIWAN · 2026   /   TRAVEL SCORECARD',70,1350);
+      defs.forEach(([k,label],i)=>{
+        const col=i%2,row=Math.floor(i/2),x=70+col*440,y=941+row*93;
+        bookCard(ctx,x,y,420,81,i%2?'#F1E8DC':'#FFFFFF',15);
+        ctx.fillStyle='#786F64';ctx.font='600 19px sans-serif';ctx.fillText(label,x+16,y+29);
+        const v=surveyState.ratings?.[k];ctx.fillStyle='#30483C';ctx.font='700 30px sans-serif';
+        ctx.fillText(v==null?'—':String(v),x+16,y+65);
+        ctx.fillStyle='#9A948C';ctx.font='500 16px sans-serif';ctx.fillText('/ 10',x+70,y+63);
+      });
+      ctx.fillStyle='#8B8278';ctx.font='500 17px sans-serif';ctx.fillText('TAIWAN · 2026  /  MOMENTS & SCORECARD',70,1350);
       return c.toDataURL('image/png');
     }
 
@@ -3396,10 +3406,9 @@ window.openOfficialBookletForOwner=async function(){
       const pages=[
         ['封面',await makeBookCover()],
         ['十天行程',makeItineraryPage()],
-        ['TOP 3',makeHighlightsPage()],
+        ['台灣旅行之最',makeHighlightsPage()],
         ['成就收藏',makeAchievementsPage()],
-        ['台灣胃＋回憶',makeFoodMemoryPage()],
-        ['台灣印象＋評分',makeImpressionsPage()],
+        ['回憶＋評分',makeFoodMemoryPage()],
         ['總結',await makeFinalPage()]
       ];
       window.__travelBookletPages=pages;

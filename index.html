@@ -5662,12 +5662,8 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
                 tr.addEventListener('dragover', expenseDragOver);
                 tr.addEventListener('drop', expenseDrop);
                 tr.addEventListener('dragend', expenseDragEnd);
-                const handle = tr.querySelector('.expense-touch-handle');
-                handle?.addEventListener('touchstart', expenseTouchStart, {passive:true});
-                handle?.addEventListener('touchmove', expenseTouchMove, {passive:false});
-                handle?.addEventListener('touchend', expenseTouchEnd);
                 tr.innerHTML = `
-                    <td class="py-2.5 whitespace-nowrap"><span title="按住拖曳排序" class="expense-touch-handle cursor-grab select-none text-gray-500" style="touch-action:none">⠿</span> <button type="button" onclick="moveExpense(${index},-1)" aria-label="上移" class="px-1">↑</button><button type="button" onclick="moveExpense(${index},1)" aria-label="下移" class="px-1">↓</button></td>
+                    <td class="py-2.5 whitespace-nowrap"><span title="按住拖曳排序" class="expense-touch-handle cursor-grab select-none text-gray-500" style="touch-action:none">⠿</span></td>
                     <td class="py-2.5 font-medium text-[#2C3E35]">${escapeExpenseText(item.name)}</td>
                     <td class="py-2.5"><span class="bg-[#F0EDEA] px-2 py-0.5 rounded text-[10px] font-bold text-[#2C3E35]">${item.category}</span></td>
                     <td class="py-2.5 font-bold text-[#2C3E35]">${item.needsSplitSetup ? '—' : getParticipantName(item.payer)}</td>
@@ -5679,6 +5675,10 @@ const emojis = ['🍠', '🧋', '👵🏻', '🏝️'];
                         <button onclick="deleteExpense(${index})" class="text-gray-400 hover:text-rose-600 font-bold px-2 py-1 rounded">刪除</button>
                     </td>
                 `;
+                const handle = tr.querySelector('.expense-touch-handle');
+                handle?.addEventListener('touchstart', expenseTouchStart, {passive:true});
+                handle?.addEventListener('touchmove', expenseTouchMove, {passive:false});
+                handle?.addEventListener('touchend', expenseTouchEnd);
                 tbody.appendChild(tr);
             });
 

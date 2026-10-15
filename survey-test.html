@@ -2252,7 +2252,7 @@ window.openOfficialBookletForOwner=async function(){
         <div style="font-size:11px;letter-spacing:2px;color:#A57442;font-weight:800;text-align:center;">SECRET UNLOCKED ✨</div>
         <h3 style="font-size:22px;font-weight:800;text-align:center;margin:10px 0 12px;color:#344639;">🐎 隱藏賽事｜黑馬逆襲</h3>
         <p style="font-size:13px;color:#777;margin-bottom:14px;line-height:1.8;">有沒有哪個原本沒抱太大期待，結果卻意外喜歡的景點、活動或體驗？</p>
-        <textarea class="survey-textarea" id="sv-surprise-spot" placeholder="寫下你的意外驚喜……">${esc(surveyState.surpriseSpot||'')}</textarea>
+        <textarea class="survey-textarea" id="sv-surprise-spot-modal" placeholder="寫下你的意外驚喜……">${esc(surveyState.surpriseSpot||'')}</textarea>
         <div style="margin-top:16px;"><button type="button" class="survey-btn primary" onclick="closeSurveyBlackHorse()" style="width:100%;">完成</button></div>
       </div>`;
       document.body.appendChild(backdrop);
@@ -2262,8 +2262,13 @@ window.openOfficialBookletForOwner=async function(){
     window.closeSurveyBlackHorse=function(){
       const modal=document.getElementById('survey-blackhorse-modal');
       if(!modal)return;
-      surveyState.surpriseSpot=modal.querySelector('#sv-surprise-spot')?.value.trim()||'';
-      saveSurveyState();modal.remove();
+      surveyState.surpriseSpot=modal.querySelector('#sv-surprise-spot-modal')?.value.trim()||'';
+      saveSurveyState();
+      modal.remove();
+      // 同步彈窗答案至問卷頁面上的黑馬小框，避免需要重新輸入。
+      const inlineAnswer=document.querySelector('#survey-question-body #sv-surprise-spot');
+      if(inlineAnswer) inlineAnswer.value=surveyState.surpriseSpot;
+
     };
     let draggedRankEl = null;
     let surveyCoverPhotoData = '';

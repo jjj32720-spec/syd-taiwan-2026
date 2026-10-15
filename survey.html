@@ -3332,8 +3332,6 @@ window.openOfficialBookletForOwner=async function(){
         ctx.fillStyle=color;ctx.font='700 16px sans-serif';ctx.textAlign='right';
         ctx.fillText(label,924,y+5);ctx.textAlign='left';
       }
-      categoryDivider(790,'02  ·  台灣美食','#4F7660');
-      categoryDivider(956,'03  ·  台灣印象','#A16C39');
       // 景點前三名
       bookCard(ctx,70,192,860,215,'#FFF0BC',23);
       ctx.fillStyle='#946A23';ctx.font='700 27px sans-serif';ctx.fillText('🥇 景點冠軍  ·  NO. 1',100,241);
@@ -3436,7 +3434,7 @@ window.openOfficialBookletForOwner=async function(){
       const photoData="booklet-final.jpg";
       await new Promise(resolve=>{
         img.onload=()=>{
-          const targetH=Math.round(H*0.35);
+          const targetH=Math.round(H*0.25);
         const boxW=W-54;
         const boxH=targetH;
         const x=(W-boxW)/2, y=H-72-boxH;

@@ -3227,6 +3227,21 @@ window.openOfficialBookletForOwner=async function(){
       const c=bookletCanvas(),ctx=c.getContext('2d'),W=c.width;
       pageBase(ctx,W,c.height,'台灣旅行之最','BEST OF TAIWAN · 2026');
       const t=surveyState.tournament||{};
+      // 三個主題用細色帶與小標籤區隔，維持六頁與原始答案不變。
+      function categoryRail(y1,y2,color){
+        ctx.fillStyle=color;ctx.fillRect(57,y1,5,y2-y1);
+      }
+      categoryRail(192,781,'#C99D49'); // 景點
+      categoryRail(798,946,'#4F7660'); // 美食
+      categoryRail(964,1294,'#BA8B75'); // 印象
+      function categoryDivider(y,label,color){
+        ctx.fillStyle='#D6CABC';ctx.fillRect(70,y,860,2);
+        ctx.fillStyle='#F7F1E7';ctx.fillRect(685,y-10,245,22);
+        ctx.fillStyle=color;ctx.font='700 16px sans-serif';ctx.textAlign='right';
+        ctx.fillText(label,924,y+5);ctx.textAlign='left';
+      }
+      categoryDivider(790,'02  ·  台灣美食','#4F7660');
+      categoryDivider(956,'03  ·  台灣印象','#A16C39');
       // 景點前三名
       bookCard(ctx,70,192,860,215,'#FFF0BC',23);
       ctx.fillStyle='#946A23';ctx.font='700 27px sans-serif';ctx.fillText('🥇 景點冠軍  ·  NO. 1',100,241);
@@ -3329,7 +3344,7 @@ window.openOfficialBookletForOwner=async function(){
       const photoData="booklet-final.jpg";
       await new Promise(resolve=>{
         img.onload=()=>{
-          const targetH=Math.round(H*0.42);
+          const targetH=Math.round(H*0.35);
         const boxW=W-54;
         const boxH=targetH;
         const x=(W-boxW)/2, y=H-72-boxH;
@@ -3406,8 +3421,8 @@ window.openOfficialBookletForOwner=async function(){
       const pages=[
         ['封面',await makeBookCover()],
         ['十天行程',makeItineraryPage()],
-        ['台灣旅行之最',makeHighlightsPage()],
         ['成就收藏',makeAchievementsPage()],
+        ['台灣旅行之最',makeHighlightsPage()],
         ['回憶＋評分',makeFoodMemoryPage()],
         ['總結',await makeFinalPage()]
       ];

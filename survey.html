@@ -2329,7 +2329,7 @@ window.openOfficialBookletForOwner=async function(){
     window.__reconcileOfficialSubmissionFromCloud__=reconcileOfficialSubmissionFromCloud;
     let surveyStep = 0;
     let surveyState = loadSurveyState();
-    // 黑馬獎：賽事完成後首次自動揭曉，關閉後可從賽事頁再次開啟。
+    // 黑馬獎：選出前三名後自動彈出，不顯示額外解鎖或查看按鈕。
     let blackHorseRevealed = !!surveyState.tournament?.thirdPlace;
     window.openSurveyBlackHorse=function(){
       document.getElementById('survey-blackhorse-modal')?.remove();
@@ -2343,7 +2343,7 @@ window.openOfficialBookletForOwner=async function(){
         <h3 style="font-size:22px;font-weight:800;text-align:center;margin:10px 0 12px;color:#344639;">🐎 隱藏賽事｜黑馬逆襲</h3>
         <p style="font-size:13px;color:#777;margin-bottom:14px;line-height:1.8;">有沒有哪個原本沒抱太大期待，結果卻意外喜歡的景點、活動或體驗？</p>
         <textarea class="survey-textarea" id="sv-surprise-spot" placeholder="寫下你的意外驚喜……">${esc(surveyState.surpriseSpot||'')}</textarea>
-        <div style="display:flex;gap:10px;margin-top:16px;"><button type="button" class="survey-btn" onclick="closeSurveyBlackHorse()" style="flex:1;">先關閉</button><button type="button" class="survey-btn primary" onclick="closeSurveyBlackHorse()" style="flex:1;">收下黑馬獎 🏅</button></div>
+        <div style="margin-top:16px;"><button type="button" class="survey-btn primary" onclick="closeSurveyBlackHorse()" style="width:100%;">完成</button></div>
       </div>`;
       document.body.appendChild(backdrop);
       backdrop.addEventListener('click',e=>{if(e.target===backdrop)window.closeSurveyBlackHorse();});
@@ -2354,8 +2354,6 @@ window.openOfficialBookletForOwner=async function(){
       if(!modal)return;
       surveyState.surpriseSpot=modal.querySelector('#sv-surprise-spot')?.value.trim()||'';
       saveSurveyState();modal.remove();
-      const btn=document.querySelector('#survey-question-body button[onclick="openSurveyBlackHorse()"]');
-      if(btn)btn.textContent=surveyState.surpriseSpot?'🐎 重新查看黑馬獎 ✨':'🐎 解鎖隱藏賽事 ✨';
     };
     let draggedRankEl = null;
     let surveyCoverPhotoData = '';
@@ -2560,7 +2558,7 @@ window.openOfficialBookletForOwner=async function(){
       {
         title:'這趟旅程的最愛體驗 TOP',
         copy:'',
-        render: () => `${renderTournament()}${tournamentPlacementsComplete()?`<div class="mt-6 pt-5 border-t border-[#E2DDD5]"><button type="button" class="survey-btn" onclick="openSurveyBlackHorse()">🐎 ${surveyState.surpriseSpot?'重新查看黑馬獎 ✨':'解鎖隱藏賽事 ✨'}</button></div>`:''}`,
+        render: () => renderTournament(),
         collect: () => {const el=document.getElementById('sv-surprise-spot');if(el)surveyState.surpriseSpot=el.value.trim();}
       },
       {
@@ -2623,8 +2621,8 @@ window.openOfficialBookletForOwner=async function(){
       },
       {
         title:'總結',
-        copy:'這裡沒有固定格式。可以把它當成一小段旅行日記、替這十天做總結、回顧某些片段、寫感謝，或留下任何現在最想說的話。想寫多少、寫什麼都可以。',
-        render: () => `<div class="mb-6 pb-4 border-b border-[#E2DDD5]"><label class="survey-label">🏷️ 用三個詞濃縮這趟旅行</label><p class="text-xs text-gray-500 mb-2">寫下最能代表這趟旅程的三個詞。</p><div class="grid grid-cols-3 gap-2">${[0,1,2].map((i)=>`<input class="survey-input min-w-0" id="sv-three-${i}" maxlength="24" placeholder="第 ${i+1} 個詞" value="${esc(String(surveyState.threeWords||'').split(/[、，,／/|\s]+/).filter(Boolean)[i]||'')}">`).join('')}</div></div><textarea class="survey-textarea" id="sv-final" style="min-height:180px" placeholder="可以寫成旅行日記、總結這十天、回顧最喜歡的片段、感謝某個安排，或只是隨便寫下現在的心情……">${esc(surveyState.finalMessage)}</textarea>`,
+        copy:'',
+        render: () => `<div class="mb-6 pb-4 border-b border-[#E2DDD5]"><label class="survey-label">🏷️ 用三個詞濃縮這趟旅行</label><p class="text-xs text-gray-500 mb-2">寫下最能代表這趟旅程的三個詞。</p><div class="grid grid-cols-3 gap-2">${[0,1,2].map((i)=>`<input class="survey-input min-w-0" id="sv-three-${i}" maxlength="24" placeholder="第 ${i+1} 個詞" value="${esc(String(surveyState.threeWords||'').split(/[、，,／/|\s]+/).filter(Boolean)[i]||'')}">`).join('')}</div></div><div class="mb-2"><label class="survey-label">✍️ 寫給這趟旅程的一段話</label><p class="text-xs text-gray-500 mt-1 mb-2">這裡沒有固定格式。可以把它當成一小段旅行日記、替這十天做總結、回顧某些片段、寫感謝，或留下任何現在最想說的話。想寫多少、寫什麼都可以。</p></div><textarea class="survey-textarea" id="sv-final" style="min-height:180px" placeholder="可以寫成旅行日記、總結這十天、回顧最喜歡的片段、感謝某個安排，或只是隨便寫下現在的心情……">${esc(surveyState.finalMessage)}</textarea>`,
         collect: () => {surveyState.finalMessage=document.getElementById('sv-final')?.value.trim()||'';surveyState.threeWords=[0,1,2].map(i=>document.getElementById('sv-three-'+i)?.value.trim()||'').filter(Boolean).join('、');}
       }
     ];
@@ -2764,7 +2762,12 @@ window.openOfficialBookletForOwner=async function(){
           </div>`;
       }
       if (t.complete) {
-        return `${renderTournamentPodium(t)}${renderBracket()}`;
+        return `${renderTournamentPodium(t)}${renderBracket()}
+          <div class="mt-5 pt-4 border-t border-[#E2DDD5]">
+            <label class="survey-label">🐎 黑馬逆襲｜你的意外驚喜</label>
+            <p class="text-xs text-gray-500 mb-2">有沒有哪個原本沒抱太大期待，結果卻意外喜歡的景點、活動或體驗？</p>
+            <textarea class="survey-textarea" id="sv-surprise-spot" placeholder="寫下你的意外驚喜……" oninput="surveyState.surpriseSpot=this.value;saveSurveyState()">${esc(surveyState.surpriseSpot||'')}</textarea>
+          </div>`;
       }
       const round=t.rounds[t.roundIndex];
       const a=round[t.matchIndex*2], b=round[t.matchIndex*2+1];
@@ -2935,7 +2938,7 @@ window.openOfficialBookletForOwner=async function(){
         <label class="survey-label">從你選的項目裡，再選一個「最有感」</label>
         <div class="survey-answer-hint">想像只能留下其中一個印象給半年後的自己，你會保留哪一個？</div>
         <select class="survey-select" id="sv-impression-top">${renderImpressionTopOptions()}</select>
-        <div class="mt-5 pt-4 border-t border-[#E2DDD5]"><label class="survey-label">🔄 印象反轉</label><p class="text-xs text-gray-500 mb-2">來台灣之前的想像，和實際體驗有什麼不同？有沒有哪件事讓你刷新了對台灣的認知？</p><textarea class="survey-textarea" id="sv-tw-discovery" placeholder="原本以為……結果發現……">${esc(surveyState.taiwanDiscovery||'')}</textarea></div>`;
+        <div class="mt-5 pt-4 border-t border-[#E2DDD5]"><label class="survey-label">🔄 印象反轉</label><p class="text-xs text-gray-500 mb-2">有沒有哪件事讓你刷新了對台灣的認知，與原本的想像不同？</p><textarea class="survey-textarea" id="sv-tw-discovery" placeholder="原本以為……結果發現……">${esc(surveyState.taiwanDiscovery||'')}</textarea></div>`;
     }
 
     function impressionDisplay(x) {
